@@ -552,6 +552,7 @@
         bilanHistory: bilanHistory,
         weeklyProgress: weeklyProgress,
         lastKnownWeek: lastKnownWeek,
+        volState: volState,
         savedAt: new Date().toISOString()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -592,6 +593,7 @@
       }
       if(state.weeklyProgress) Object.assign(weeklyProgress, state.weeklyProgress);
       if(typeof state.lastKnownWeek === 'number') lastKnownWeek = state.lastKnownWeek;
+      if(state.volState) Object.assign(volState, state.volState);
 
       return true;
     } catch(e) {
@@ -2626,6 +2628,12 @@
     renderSeancesList();
     renderBilan();
     renderHistorique();
+    // Ces 3 chiffres sont normalement mis à jour directement par adjustVol() au clic, pas par un
+    // render générique — après un rechargement, il faut les synchroniser manuellement une fois.
+    ['etirements','cardioLeger','cardioHiit'].forEach(k=>{
+      const el = document.getElementById('vol-'+k);
+      if(el) el.textContent = volState[k];
+    });
     document.querySelectorAll('[data-equip]').forEach(el=>{
       const keys = el.dataset.equip.split(',');
       el.classList.toggle('on', !!equipState[keys[0]]);
