@@ -358,6 +358,12 @@
       <div style="font-size:12.5px; color:var(--text-dim); line-height:1.6; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px;" id="stretch-sub-desc">
         Postures ciblées et efficaces, sans forme fixe imposée — va droit aux zones tendues.
       </div>
+      <div class="field-label">Position</div>
+      <div class="chip-row" id="stretch-pos-chips">
+        <div class="chip sel" data-pos="mixte" onclick="selectStretchPosition(this)">Mixte</div>
+        <div class="chip" data-pos="tapis" onclick="selectStretchPosition(this)">Tapis au sol</div>
+        <div class="chip" data-pos="debout" onclick="selectStretchPosition(this)">Debout uniquement</div>
+      </div>
     </div>
 
     <div id="cardio-options" style="display:none;">
@@ -801,23 +807,23 @@
 
   // Synchronisé avec base_exercices v9 : nom clinique/classique en primaire, nom yoga en alternative.
   const yogaPool = [
-    {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps'},
-    {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers'},
-    {classic:'Étirement des ischios-jambiers', yoga:'Pince (Forward Fold)', hold:50, per:false, instr:"Dos qui s'arrondit progressivement.", muscle:'Ischios'},
-    {classic:'Étirement des quadriceps', yoga:'Demi-grenouille', hold:40, per:true, instr:"Talon vers la fesse, bassin qui ne bascule pas vers l'avant.", muscle:'Quadriceps'},
-    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs'},
-    {classic:'Étirement combiné ischios-mollets-épaules', yoga:'Chien tête en bas', hold:40, per:false, instr:"Talons qui cherchent le sol sans forcer, dos long.", muscle:'Épaules'},
-    {classic:'Étirement du bas du dos (genoux à la poitrine)', yoga:"Posture de l'enfant", hold:60, per:false, instr:"Fesses vers les talons, bras tendus devant, respiration lente.", muscle:'Lombaires'},
-    {classic:'Rotation lombaire allongée', yoga:'Supine Twist', hold:50, per:true, instr:"Genoux qui tombent d'un côté, épaules qui restent au sol.", muscle:'Obliques'},
-    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos'},
-    {classic:'Rotation thoracique (open book)', yoga:'Thread the Needle', hold:45, per:true, instr:"Un bras glisse sous le corps, épaule et tempe au sol.", muscle:'Dos'},
-    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets'},
-    {classic:'Étirement de la nuque et des trapèzes', yoga:'—', hold:30, per:true, instr:"Oreille qui se rapproche de l'épaule, sans forcer avec la main.", muscle:'Épaules'},
-    {classic:'Étirement des pectoraux', yoga:'—', hold:40, per:true, instr:"Avant-bras contre le mur, buste qui pivote doucement à l'opposé.", muscle:'Pectoraux'},
-    {classic:'Ouverture de poitrine allongée', yoga:'Matsyasana (Fish Pose)', hold:45, per:false, instr:"Appui sur les avant-bras, poitrine ouverte vers le haut.", muscle:'Pectoraux'},
-    {classic:'Étirement abdominal doux', yoga:'Sphinx Pose', hold:50, per:false, instr:"Avant-bras au sol, coudes sous les épaules, bassin qui reste au sol.", muscle:'Abdos'},
-    {classic:'Jambes au mur (récupération)', yoga:'Legs-Up-The-Wall', hold:180, per:false, instr:"Bassin proche du mur, jambes tendues verticalement."},
-    {classic:'Relaxation finale allongée', yoga:'Savasana', hold:180, per:false, instr:"Corps totalement relâché, respiration naturelle, yeux fermés.", isClosing:true}
+    {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps', pos:'tapis'},
+    {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis'},
+    {classic:'Étirement des ischios-jambiers', yoga:'Pince (Forward Fold)', hold:50, per:false, instr:"Dos qui s'arrondit progressivement.", muscle:'Ischios', pos:'debout'},
+    {classic:'Étirement des quadriceps', yoga:'Demi-grenouille', hold:40, per:true, instr:"Talon vers la fesse, bassin qui ne bascule pas vers l'avant.", muscle:'Quadriceps', pos:'tapis'},
+    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs', pos:'tapis'},
+    {classic:'Étirement combiné ischios-mollets-épaules', yoga:'Chien tête en bas', hold:40, per:false, instr:"Talons qui cherchent le sol sans forcer, dos long.", muscle:'Épaules', pos:'tapis'},
+    {classic:'Étirement du bas du dos (genoux à la poitrine)', yoga:"Posture de l'enfant", hold:60, per:false, instr:"Fesses vers les talons, bras tendus devant, respiration lente.", muscle:'Lombaires', pos:'tapis'},
+    {classic:'Rotation lombaire allongée', yoga:'Supine Twist', hold:50, per:true, instr:"Genoux qui tombent d'un côté, épaules qui restent au sol.", muscle:'Obliques', pos:'tapis'},
+    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos', pos:'tapis'},
+    {classic:'Rotation thoracique (open book)', yoga:'Thread the Needle', hold:45, per:true, instr:"Un bras glisse sous le corps, épaule et tempe au sol.", muscle:'Dos', pos:'tapis'},
+    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets', pos:'debout'},
+    {classic:'Étirement de la nuque et des trapèzes', yoga:'—', hold:30, per:true, instr:"Oreille qui se rapproche de l'épaule, sans forcer avec la main.", muscle:'Épaules', pos:'debout'},
+    {classic:'Étirement des pectoraux', yoga:'—', hold:40, per:true, instr:"Avant-bras contre le mur, buste qui pivote doucement à l'opposé.", muscle:'Pectoraux', pos:'debout'},
+    {classic:'Ouverture de poitrine allongée', yoga:'Matsyasana (Fish Pose)', hold:45, per:false, instr:"Appui sur les avant-bras, poitrine ouverte vers le haut.", muscle:'Pectoraux', pos:'tapis'},
+    {classic:'Étirement abdominal doux', yoga:'Sphinx Pose', hold:50, per:false, instr:"Avant-bras au sol, coudes sous les épaules, bassin qui reste au sol.", muscle:'Abdos', pos:'tapis'},
+    {classic:'Jambes au mur (récupération)', yoga:'Legs-Up-The-Wall', hold:180, per:false, instr:"Bassin proche du mur, jambes tendues verticalement.", pos:'tapis'},
+    {classic:'Relaxation finale allongée', yoga:'Savasana', hold:180, per:false, instr:"Corps totalement relâché, respiration naturelle, yeux fermés.", isClosing:true, pos:'tapis'}
   ];
 
   // Exercices HIIT/complexe — crédit renfo réduit (0,4 principal / 0,2 secondaire) car charge légère
@@ -1349,7 +1355,9 @@
     let budget = selectedTime*60;
     let queue = []; let used = 0;
     const closing = yogaPool.find(p=>p.isClosing);
-    const withoutClosing = yogaPool.filter(p=>!p.isClosing);
+    let withoutClosing = yogaPool.filter(p=>!p.isClosing);
+    if(stretchPosition !== 'mixte') withoutClosing = withoutClosing.filter(p=>p.pos===stretchPosition);
+    if(withoutClosing.length===0) withoutClosing = yogaPool.filter(p=>!p.isClosing); // repli si le filtre ne laisse rien
     const includeClosing = (stretchSub==='yoga' && selectedTime>=15);
     const closingTime = includeClosing ? closing.hold : 0;
     const workBudget = budget - closingTime;
@@ -1564,7 +1572,9 @@
     }
 
     if(ex.type==='strength'){
-      const isWeighted = ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e));
+      const isBodyweightOnly = ex.equip.length===0;
+      const isWeighted = !ex.isHold && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
+      const defWeight = isBodyweightOnly ? 0 : 5;
       const isHold = !!ex.isHold;
       const isUni = !!ex.unilateral;
       if(currentInputFor !== ex.name){
@@ -1573,15 +1583,15 @@
         const defReps = isHold ? 20 : 10;
         if(isUni){
           currentInput = {
-            weightL: isWeighted ? (last.weightL != null ? last.weightL : 5) : null,
-            weightR: isWeighted ? (last.weightR != null ? last.weightR : 5) : null,
+            weightL: isWeighted ? (last.weightL != null ? last.weightL : defWeight) : null,
+            weightR: isWeighted ? (last.weightR != null ? last.weightR : defWeight) : null,
             repsL: last.repsL != null ? last.repsL : defReps,
             repsR: last.repsR != null ? last.repsR : defReps,
             isHold: isHold
           };
         } else {
           currentInput = {
-            weight: isWeighted ? (last.weight != null ? last.weight : 5) : null,
+            weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null,
             reps: last.reps != null ? last.reps : defReps,
             isHold: isHold
           };
@@ -1826,7 +1836,7 @@
   function adjustVol(key, delta){
     volState[key] = Math.max(0, volState[key]+delta);
     document.getElementById('vol-'+key).textContent = volState[key];
-    renderVolTotalTime();
+    renderRemainingTime(); // couvre à la fois le dashboard (temps restant + jauge) et Réglages (temps total)
     if(typeof saveState==='function') saveState();
   }
   function adjustMuscleTarget(group, muscle, delta){
@@ -1834,7 +1844,7 @@
     m.target = Math.max(0, m.target + delta);
     renderVolumeSettings();
     renderGroupOverview();
-    renderVolTotalTime();
+    renderRemainingTime(); // couvre dashboard + Réglages, pas juste le total local
     if(typeof saveState==='function') saveState();
   }
 
@@ -2070,7 +2080,7 @@
     pool.forEach(ex=>{
       const available = ex.equip.every(e=>equipState[e]);
       const equipLabel = ex.equip.length ? ex.equip.map(e=>({db3:'Haltères 3kg',db5:'Haltères 5kg',elastic_light:'Élastique léger',elastic_strong:'Élastique fort',chair:'Chaise',door:'Porte',table:'Table',pullbar:'Barre',gripper:'Pince',mat:'Tapis',gym:'Salle',kettlebell:'Kettlebell'}[e]||e)).join(', ') : 'Aucun matériel requis';
-      const isWeighted = ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e));
+      const isWeighted = !ex.isHold && (ex.equip.length===0 || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
       const roleBadge = ex.role==='primary'
         ? '<span style="color:var(--petrol); font-weight:600; font-size:10.5px;">● PRINCIPAL</span>'
         : '<span style="color:var(--amber); font-weight:600; font-size:10.5px;">○ SECONDAIRE</span>';
@@ -2145,19 +2155,21 @@
     const last = lastLogged[exerciseName] || {};
     const pool = exercisePools[openMuscleContext] || [];
     const ex = pool.find(p=>p.name===exerciseName);
-    const isWeighted = ex && ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e));
+    const isBodyweightOnly = ex && ex.equip.length===0;
+    const isWeighted = ex && !ex.isHold && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
+    const defWeight = isBodyweightOnly ? 0 : 5;
     const isHold = ex && ex.isHold;
     const isUni = ex && ex.unilateral;
     const defReps = isHold ? 20 : 10;
     if(isUni){
       logInput = {
-        weightL: isWeighted ? (last.weightL != null ? last.weightL : 5) : null,
-        weightR: isWeighted ? (last.weightR != null ? last.weightR : 5) : null,
+        weightL: isWeighted ? (last.weightL != null ? last.weightL : defWeight) : null,
+        weightR: isWeighted ? (last.weightR != null ? last.weightR : defWeight) : null,
         repsL: last.repsL != null ? last.repsL : defReps,
         repsR: last.repsR != null ? last.repsR : defReps
       };
     } else {
-      logInput = { weight: isWeighted ? (last.weight != null ? last.weight : 5) : null, reps: last.reps != null ? last.reps : defReps };
+      logInput = { weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null, reps: last.reps != null ? last.reps : defReps };
     }
     renderMuscleDetail();
   }
@@ -2282,6 +2294,13 @@
 
   /* ---- sous-choix étirement / yoga ---- */
   let stretchSub = 'etirement';
+  let stretchPosition = 'mixte';
+  function selectStretchPosition(el){
+    stretchPosition = el.dataset.pos;
+    document.querySelectorAll('#stretch-pos-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    refreshPreview();
+  }
   function selectStretchSub(v){
     stretchSub = v;
     document.getElementById('sub-etirement').classList.toggle('sel', v==='etirement');
@@ -2521,7 +2540,14 @@
       session.queue[idx].actualSetsDone = session.queue[idx].currentSet - 1; // vrai compte avant écrasement, pour le récap
       session.queue[idx].currentSet = session.queue[idx].targetSets + 1; // retire de la rotation
       const nextIdx = circuitNextIndex(idx);
-      if(nextIdx === null){ finishSession(); return; }
+      if(nextIdx === null){
+        // Plus rien dans la rotation circuit — mais il peut rester des étirements de clôture
+        // (même logique que circuitValidateSet, sinon on les saute sans les proposer).
+        const pending = firstPendingSequentialIndex();
+        if(pending !== null){ session.format = 'groupe'; session.index = pending; renderCard(); }
+        else { finishSession(); }
+        return;
+      }
       session.circuitIdx = nextIdx;
       renderCard();
     } else {
