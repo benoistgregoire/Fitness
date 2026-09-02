@@ -235,7 +235,7 @@
 <header>
   <div class="header-top">
     <div class="eyebrow">Programme &middot; Phase Base</div>
-    <button class="gear-btn" onclick="showSection('equipement','seances')" aria-label="Mon matériel">
+    <button class="gear-btn" onclick="openEquipement()" aria-label="Mon matériel">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     </button>
   </div>
@@ -275,7 +275,7 @@
 
   <!-- ============ MATÉRIEL ============ -->
   <section id="equipement">
-    <button class="back-btn" onclick="showSection('seances','seances')">← Retour</button>
+    <button class="back-btn" onclick="closeEquipement()">← Retour</button>
     <div class="detail-title">Mon matériel</div>
     <div class="detail-sub">Coche ce que tu as sous la main maintenant.</div>
     <div class="equip-row"><div class="label">Haltères</div><div class="toggle on" data-equip="db3,db5" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
@@ -708,8 +708,8 @@
   // (1,0 = principal, 0,5 = secondaire — cf. pondération musculaire.xlsx). Les pools par
   // muscle sont dérivés automatiquement plus bas, avec badge Principal/Secondaire affiché.
   const EXERCISE_DEFS = {
-    'Squat au poids du corps': { equip:[], instr:"Poids du corps, amplitude complète, tempo contrôlé — bonne option zéro matériel.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
-      detail:{ position:"Pieds largeur épaules, pointes légèrement vers l\'extérieur, bras devant pour l\'équilibre.", mouvement:"Descendre en poussant les hanches vers l\'arrière et en pliant les genoux, jusqu\'à cuisses parallèles au sol si possible. Genoux alignés avec les orteils.", tempo:"3s descente, 1s pause en bas, 2s remontée.", repRange:"12-20 reps (monter en charge une fois 20 reps atteintes — sac à dos par exemple).", vigilance:"Talons qui restent au sol, dos neutre (pas arrondi). Réduire l\'amplitude si douleur au genou plutôt que forcer." } },
+    'Squat': { equip:[], instr:"Amplitude complète, tempo contrôlé — à main libre ou avec haltères tenues au niveau des épaules.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
+      detail:{ position:"Pieds largeur épaules, pointes légèrement vers l'extérieur. Mains libres devant pour l'équilibre, ou une haltère dans chaque main au niveau des épaules.", mouvement:"Descendre en poussant les hanches vers l'arrière et en pliant les genoux, jusqu'à cuisses parallèles au sol si possible. Genoux alignés avec les orteils.", tempo:"3s descente, 1s pause en bas, 2s remontée.", repRange:"12-20 reps à main libre ; 10-15 reps avec haltères selon la charge.", vigilance:"Talons qui restent au sol, dos neutre (pas arrondi). Réduire l'amplitude si douleur au genou plutôt que forcer." } },
     'Squat élastique': { equip:["elastic_light", "elastic_strong"], instr:"Élastique tendu en position basse, genoux qui ne rentrent pas vers l\'intérieur.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
       detail:{ position:"Élastique sous les pieds, tenu au niveau des épaules, pieds largeur épaules.", mouvement:"Même trajectoire que le squat classique — la résistance de l\'élastique augmente en fin de mouvement (remontée).", tempo:"3s descente, 1s pause, 2s remontée contre la résistance.", repRange:"12-15 reps.", vigilance:"Les genoux ne doivent pas partir vers l\'intérieur sous la tension de l\'élastique — piège classique de cet exercice." } },
     'Squat bulgare': { equip:["db3", "db5"], instr:"Pied arrière juste posé, tronc vertical, descente lente (tempo 3s).", unilateral:true, recSets:3, compound:true, restSec:105, muscles:{'Fessiers':0.5, 'Quadriceps':1.0},
@@ -886,7 +886,7 @@
   // du même mécanisme genou/quadriceps ; symétrique par défaut ailleurs (pas de preuve d'asymétrie).
   // Modifiable à chaque série, mémorisée pour suivre la vraie progression.
   const lastLogged = {
-    'Squat bulgare': {weightL:5, repsL:13, weightR:5, repsR:8},
+    'Squat bulgare': {weight:5, repsL:13, repsR:8},
     'Squat isométrique dos au mur': {reps:45},
     'RDL haltères': {weight:8, reps:20},
     'Pompes classiques': {reps:12},
@@ -895,8 +895,8 @@
     'Planche latérale': {repsL:50, repsR:60},
     'Fentes marchées': {repsL:12, repsR:8},
     'Step-up': {repsL:12, repsR:8},
-    'Presse à cuisses (salle)': {weightL:40, repsL:10, weightR:40, repsR:7},
-    'Squat au poids du corps': {reps:15},
+    'Presse à cuisses (salle)': {weight:40, repsL:10, repsR:7},
+    'Squat': {weight:0, reps:15},
     'Squat élastique': {reps:15},
     'Demi-squat guidé (salle)': {weight:20, reps:10},
     'Squat sumo': {reps:12},
@@ -921,7 +921,7 @@
     'Développé couché à la barre (salle)': {weight:35, reps:8},
     'Band pull-apart': {reps:15},
     'Face pull élastique': {reps:15},
-    'Rowing unilatéral haltère': {weightL:5, repsL:12, weightR:5, repsR:12},
+    'Rowing unilatéral haltère': {weight:5, repsL:12, repsR:12},
     'Rowing bâtard haltères': {weight:5, reps:12},
     'Tirage assisté à la barre': {reps:8},
     'Rowing machine (salle)': {weight:20, reps:12},
@@ -956,12 +956,10 @@
   let exerciseLog = [];
   function logSet(exerciseName, inputData){
     const entry = { date: todayISO(), exercise: exerciseName };
-    if(inputData.repsL != null){
-      entry.weightL = inputData.weightL; entry.repsL = inputData.repsL;
-      entry.weightR = inputData.weightR; entry.repsR = inputData.repsR;
-    } else {
-      entry.weight = inputData.weight; entry.reps = inputData.reps;
-    }
+    if(inputData.weight != null) entry.weight = inputData.weight;
+    if(inputData.difficulty != null) entry.difficulty = inputData.difficulty;
+    if(inputData.repsL != null){ entry.repsL = inputData.repsL; entry.repsR = inputData.repsR; }
+    else { entry.reps = inputData.reps; }
     exerciseLog.push(entry);
   }
   let currentInput = {weight:null, reps:null};
@@ -977,9 +975,12 @@
   }
   function adjustCurrentInput(field, delta){
     const isWeight = field.startsWith('weight');
-    currentInput[field] = Math.max(isWeight?0:1, currentInput[field] + delta);
+    const isDifficulty = field === 'difficulty';
+    const min = isWeight ? 0 : (isDifficulty ? 1 : 1);
+    const max = isDifficulty ? 5 : Infinity;
+    currentInput[field] = Math.min(max, Math.max(min, currentInput[field] + delta));
     const el = document.getElementById('cur-'+field);
-    if(el) el.textContent = isWeight ? (currentInput[field]+' kg') : currentInput[field];
+    if(el) el.textContent = isWeight ? (currentInput[field]+' kg') : (isDifficulty ? currentInput[field]+'/5' : currentInput[field]);
   }
 
   // Synchronisé avec base_exercices v9 : nom clinique/classique en primaire, nom yoga en alternative.
@@ -1121,12 +1122,25 @@
   let selectedSport = 'ht_velo';
   let selectedIntensity = 'faible';
 
+  let currentSectionId = 'dashboard';
   function showSection(id, navTarget){
+    currentSectionId = id;
     document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     if(navTarget){ const b=document.querySelector('.nav-btn[data-target="'+navTarget+'"]'); if(b) b.classList.add('active'); }
     window.scrollTo(0,0);
+  }
+  // Mémorise l'écran de départ pour que le bouton retour de "Mon matériel" ramène au bon endroit,
+  // plutôt que de toujours renvoyer vers Séances quelle que soit l'origine.
+  let equipReturnTo = 'dashboard';
+  const EQUIP_NAV_MAP = { dashboard:'dashboard', seances:'seances', bilan:'bilan', historique:'historique' };
+  function openEquipement(){
+    equipReturnTo = currentSectionId;
+    showSection('equipement', null);
+  }
+  function closeEquipement(){
+    showSection(equipReturnTo, EQUIP_NAV_MAP[equipReturnTo] || null);
   }
   document.querySelectorAll('.nav-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> showSection(btn.dataset.target, btn.dataset.target));
@@ -1380,6 +1394,12 @@
       let pool = yogaPool.filter(p => !p.isClosing && p.muscle===m);
       if(pool.length===0 && STRETCH_MUSCLE_FALLBACK[m]){
         pool = yogaPool.filter(p => !p.isClosing && p.muscle===STRETCH_MUSCLE_FALLBACK[m]);
+      }
+      // Le filtre position est une vraie contrainte, pas une préférence avec repli — si aucun
+      // étirement compatible n'existe pour ce muscle dans cette position, ce muscle n'aura tout
+      // simplement pas d'étirement de clôture plutôt que de proposer une position non voulue.
+      if(stretchPosition !== 'mixte'){
+        pool = pool.filter(p => p.pos===stretchPosition);
       }
       byMuscle[m] = pool;
     });
@@ -1775,60 +1795,56 @@
 
     if(ex.type==='strength'){
       const isBodyweightOnly = ex.equip.length===0;
-      const isWeighted = !ex.isHold && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
-      const defWeight = isBodyweightOnly ? 0 : 5;
       const isHold = !!ex.isHold;
+      const isElastic = !isHold && ex.equip.some(e=>['elastic_light','elastic_strong'].includes(e));
+      const isWeighted = !isHold && !isElastic && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
+      const defWeight = isBodyweightOnly ? 0 : 5;
       const isUni = !!ex.unilateral;
       if(currentInputFor !== ex.name){
         currentInputFor = ex.name;
         const last = lastLogged[ex.name] || {};
         const defReps = isHold ? 20 : 10;
+        currentInput = {
+          weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null,
+          difficulty: isElastic ? (last.difficulty != null ? last.difficulty : 3) : null,
+          isHold: isHold
+        };
         if(isUni){
-          currentInput = {
-            weightL: isWeighted ? (last.weightL != null ? last.weightL : defWeight) : null,
-            weightR: isWeighted ? (last.weightR != null ? last.weightR : defWeight) : null,
-            repsL: last.repsL != null ? last.repsL : defReps,
-            repsR: last.repsR != null ? last.repsR : defReps,
-            isHold: isHold
-          };
+          currentInput.repsL = last.repsL != null ? last.repsL : defReps;
+          currentInput.repsR = last.repsR != null ? last.repsR : defReps;
         } else {
-          currentInput = {
-            weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null,
-            reps: last.reps != null ? last.reps : defReps,
-            isHold: isHold
-          };
+          currentInput.reps = last.reps != null ? last.reps : defReps;
         }
       }
       html += '<div class="load-chip-row" style="cursor:default; flex-direction:column; align-items:stretch; gap:10px;">';
       html += '<div style="font-size:11px; color:var(--text-faint);">Charge de cette série <span style="color:var(--petrol);">(dernière valeur mémorisée, modifiable)</span></div>';
+      // Poids et dureté élastique sont toujours partagés (même haltère/élastique dans les 2 mains) —
+      // seules les répétitions différencient gauche/droite sur un exercice unilatéral.
+      if(isWeighted){
+        html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
+          '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
+          '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'weight\',-1)">−</button>'+
+          '<div class="vol-val" id="cur-weight">'+currentInput.weight+' kg</div>'+
+          '<button class="stepper-btn" onclick="adjustCurrentInput(\'weight\',1)">+</button></div></div>';
+      } else if(isElastic){
+        html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
+          '<span style="font-size:12px; color:var(--text-dim);">Dureté élastique</span>'+
+          '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'difficulty\',-1)">−</button>'+
+          '<div class="vol-val" id="cur-difficulty">'+currentInput.difficulty+'/5</div>'+
+          '<button class="stepper-btn" onclick="adjustCurrentInput(\'difficulty\',1)">+</button></div></div>';
+      } else {
+        html += '<div style="font-size:12px; color:var(--text-dim);">Poids du corps</div>';
+      }
       if(isUni){
         ['L','R'].forEach(side=>{
           const label = side==='L' ? 'Gauche' : 'Droite';
-          html += '<div style="font-size:11px; color:var(--text-dim); font-weight:600; margin-top:4px;">'+label+'</div>';
-          if(isWeighted){
-            html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-              '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
-              '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'weight'+side+'\',-1)">−</button>'+
-              '<div class="vol-val" id="cur-weight'+side+'">'+currentInput['weight'+side]+' kg</div>'+
-              '<button class="stepper-btn" onclick="adjustCurrentInput(\'weight'+side+'\',1)">+</button></div></div>';
-          }
-          html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-            '<span style="font-size:12px; color:var(--text-dim);">'+(isHold?'Temps de tenue (s)':'Répétitions')+'</span>'+
+          html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px;">'+
+            '<span style="font-size:12px; color:var(--text-dim);">'+label+' — '+(isHold?'Temps (s)':'Reps')+'</span>'+
             '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'reps'+side+'\','+(isHold?-5:-1)+')">−</button>'+
             '<div class="vol-val" id="cur-reps'+side+'">'+currentInput['reps'+side]+'</div>'+
             '<button class="stepper-btn" onclick="adjustCurrentInput(\'reps'+side+'\','+(isHold?5:1)+')">+</button></div></div>';
         });
-        if(!isWeighted) html += '<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">Poids du corps'+(ex.equip.includes('elastic_light')||ex.equip.includes('elastic_strong')?' + élastique (ajuste au besoin)':'')+'</div>';
       } else {
-        if(isWeighted){
-          html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-            '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
-            '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'weight\',-1)">−</button>'+
-            '<div class="vol-val" id="cur-weight">'+currentInput.weight+' kg</div>'+
-            '<button class="stepper-btn" onclick="adjustCurrentInput(\'weight\',1)">+</button></div></div>';
-        } else {
-          html += '<div style="font-size:12px; color:var(--text-dim);">Poids du corps'+(ex.equip.includes('elastic_light')||ex.equip.includes('elastic_strong')?' + élastique (ajuste au besoin)':'')+'</div>';
-        }
         html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
           '<span style="font-size:12px; color:var(--text-dim);">'+(isHold?'Temps de tenue (s)':'Répétitions')+'</span>'+
           '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustCurrentInput(\'reps\','+(isHold?-5:-1)+')">−</button>'+
@@ -2194,12 +2210,11 @@
     renderWeeklyLog();
   }
   function fmtSetShort(entry){
+    const prefix = entry.weight!=null ? entry.weight+'kg × ' : (entry.difficulty!=null ? 'élastique '+entry.difficulty+'/5 × ' : '');
     if(entry.repsL != null){
-      const wL = entry.weightL!=null ? entry.weightL+'kg×' : '';
-      const wR = entry.weightR!=null ? entry.weightR+'kg×' : '';
-      return 'G '+wL+entry.repsL+' · D '+wR+entry.repsR;
+      return prefix+'G '+entry.repsL+' · D '+entry.repsR;
     }
-    return (entry.weight!=null ? entry.weight+'kg × ' : '') + entry.reps + (entry.weight!=null ? ' reps' : '');
+    return prefix + entry.reps + (entry.weight!=null || entry.difficulty!=null ? ' reps' : '');
   }
   function renderWeeklyLog(){
     const box = document.getElementById('weekly-log-content');
@@ -2337,8 +2352,9 @@
     let html = '';
     pool.forEach(ex=>{
       const available = ex.equip.every(e=>equipState[e]);
-      const equipLabel = ex.equip.length ? [...new Set(ex.equip.map(e=>({db3:'Haltères',db5:'Haltères',elastic_light:'Élastique léger',elastic_strong:'Élastique fort',chair:'Chaise',door:'Porte',table:'Table',pullbar:'Barre',gripper:'Pince',mat:'Tapis',gym:'Salle',kettlebell:'Kettlebell'}[e]||e)))].join(', ') : 'Aucun matériel requis';
-      const isWeighted = !ex.isHold && (ex.equip.length===0 || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
+      const equipLabel = ex.equip.length ? [...new Set(ex.equip.map(e=>({db3:'Haltères',db5:'Haltères',elastic_light:'Élastique léger',elastic_strong:'Élastique fort',chair:'Chaise',door:'Porte',table:'Table',pullbar:'Barre',gripper:'Pince',mat:'Tapis',gym:'Salle',kettlebell:'Kettlebell'}[e]||e)))].join(', ') : (ex.isHold ? 'Poids du corps' : 'Poids du corps (haltères optionnelles)');
+      const isElastic = !ex.isHold && ex.equip.some(e=>['elastic_light','elastic_strong'].includes(e));
+      const isWeighted = !ex.isHold && !isElastic && (ex.equip.length===0 || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
       const roleBadge = ex.role==='primary'
         ? '<span style="color:var(--petrol); font-weight:600; font-size:10.5px;">● PRINCIPAL</span>'
         : '<span style="color:var(--amber); font-weight:600; font-size:10.5px;">○ SECONDAIRE</span>';
@@ -2371,34 +2387,31 @@
           const isHold = !!ex.isHold;
           const isUni = !!ex.unilateral;
           html += '<div class="load-chip-row" style="cursor:default; flex-direction:column; align-items:stretch; gap:8px; margin-top:8px;">';
+          if(isWeighted){
+            html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
+              '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
+              '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'weight\',-1)">−</button>'+
+              '<div class="vol-val" id="log-weight">'+logInput.weight+' kg</div>'+
+              '<button class="stepper-btn" onclick="adjustLogInput(\'weight\',1)">+</button></div></div>';
+          } else if(isElastic){
+            html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
+              '<span style="font-size:12px; color:var(--text-dim);">Dureté élastique</span>'+
+              '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'difficulty\',-1)">−</button>'+
+              '<div class="vol-val" id="log-difficulty">'+logInput.difficulty+'/5</div>'+
+              '<button class="stepper-btn" onclick="adjustLogInput(\'difficulty\',1)">+</button></div></div>';
+          } else {
+            html += '<div style="font-size:12px; color:var(--text-dim);">Poids du corps</div>';
+          }
           if(isUni){
             ['L','R'].forEach(side=>{
               const label = side==='L' ? 'Gauche' : 'Droite';
-              html += '<div style="font-size:11px; color:var(--text-dim); font-weight:600;">'+label+'</div>';
-              if(isWeighted){
-                html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-                  '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
-                  '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'weight'+side+'\',-1)">−</button>'+
-                  '<div class="vol-val" id="log-weight'+side+'">'+logInput['weight'+side]+' kg</div>'+
-                  '<button class="stepper-btn" onclick="adjustLogInput(\'weight'+side+'\',1)">+</button></div></div>';
-              }
-              html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-                '<span style="font-size:12px; color:var(--text-dim);">'+(isHold?'Temps de tenue (s)':'Répétitions')+'</span>'+
+              html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px;">'+
+                '<span style="font-size:12px; color:var(--text-dim);">'+label+' — '+(isHold?'Temps (s)':'Reps')+'</span>'+
                 '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'reps'+side+'\','+(isHold?-5:-1)+')">−</button>'+
                 '<div class="vol-val" id="log-reps'+side+'">'+logInput['reps'+side]+'</div>'+
                 '<button class="stepper-btn" onclick="adjustLogInput(\'reps'+side+'\','+(isHold?5:1)+')">+</button></div></div>';
             });
-            if(!isWeighted) html += '<div style="font-size:11px; color:var(--text-dim);">Poids du corps</div>';
           } else {
-            if(isWeighted){
-              html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
-                '<span style="font-size:12px; color:var(--text-dim);">Poids</span>'+
-                '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'weight\',-1)">−</button>'+
-                '<div class="vol-val" id="log-weight">'+logInput.weight+' kg</div>'+
-                '<button class="stepper-btn" onclick="adjustLogInput(\'weight\',1)">+</button></div></div>';
-            } else {
-              html += '<div style="font-size:12px; color:var(--text-dim);">Poids du corps</div>';
-            }
             html += '<div style="display:flex; align-items:center; justify-content:space-between;">'+
               '<span style="font-size:12px; color:var(--text-dim);">'+(isHold?'Temps de tenue (s)':'Répétitions')+'</span>'+
               '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'reps\','+(isHold?-5:-1)+')">−</button>'+
@@ -2427,36 +2440,39 @@
     const pool = exercisePools[openMuscleContext] || [];
     const ex = pool.find(p=>p.name===exerciseName);
     const isBodyweightOnly = ex && ex.equip.length===0;
-    const isWeighted = ex && !ex.isHold && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
-    const defWeight = isBodyweightOnly ? 0 : 5;
     const isHold = ex && ex.isHold;
+    const isElastic = ex && !isHold && ex.equip.some(e=>['elastic_light','elastic_strong'].includes(e));
+    const isWeighted = ex && !isHold && !isElastic && (isBodyweightOnly || ex.equip.some(e=>['db3','db5','kettlebell','gym'].includes(e)));
+    const defWeight = isBodyweightOnly ? 0 : 5;
     const isUni = ex && ex.unilateral;
     const defReps = isHold ? 20 : 10;
+    logInput = {
+      weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null,
+      difficulty: isElastic ? (last.difficulty != null ? last.difficulty : 3) : null
+    };
     if(isUni){
-      logInput = {
-        weightL: isWeighted ? (last.weightL != null ? last.weightL : defWeight) : null,
-        weightR: isWeighted ? (last.weightR != null ? last.weightR : defWeight) : null,
-        repsL: last.repsL != null ? last.repsL : defReps,
-        repsR: last.repsR != null ? last.repsR : defReps
-      };
+      logInput.repsL = last.repsL != null ? last.repsL : defReps;
+      logInput.repsR = last.repsR != null ? last.repsR : defReps;
     } else {
-      logInput = { weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null, reps: last.reps != null ? last.reps : defReps };
+      logInput.reps = last.reps != null ? last.reps : defReps;
     }
     renderMuscleDetail();
   }
   function cancelLogSet(){ loggingExercise = null; renderMuscleDetail(); }
   function adjustLogInput(field, delta){
     const isWeight = field.startsWith('weight');
-    logInput[field] = Math.max(isWeight?0:1, logInput[field] + delta);
+    const isDifficulty = field === 'difficulty';
+    const min = isWeight ? 0 : 1;
+    const max = isDifficulty ? 5 : Infinity;
+    logInput[field] = Math.min(max, Math.max(min, logInput[field] + delta));
     const el = document.getElementById('log-'+field);
-    if(el) el.textContent = isWeight ? (logInput[field]+' kg') : logInput[field];
+    if(el) el.textContent = isWeight ? (logInput[field]+' kg') : (isDifficulty ? logInput[field]+'/5' : logInput[field]);
   }
   function confirmLogSet(exerciseName){
-    if(logInput.repsL != null){
-      lastLogged[exerciseName] = { weightL: logInput.weightL, repsL: logInput.repsL, weightR: logInput.weightR, repsR: logInput.repsR };
-    } else {
-      lastLogged[exerciseName] = { weight: logInput.weight, reps: logInput.reps };
-    }
+    const entry = { weight: logInput.weight, difficulty: logInput.difficulty };
+    if(logInput.repsL != null){ entry.repsL = logInput.repsL; entry.repsR = logInput.repsR; }
+    else { entry.reps = logInput.reps; }
+    lastLogged[exerciseName] = entry;
     logSet(exerciseName, logInput);
     // Crédite TOUS les muscles réels de l'exercice (pas seulement celui affiché sur cet écran) —
     // cohérent avec ce qui se passe en séance guidée pour le même exercice.
@@ -2637,11 +2653,10 @@
   }
 
   function saveCurrentInputToLog(exName){
-    if(currentInput.repsL != null){
-      lastLogged[exName] = { weightL: currentInput.weightL, repsL: currentInput.repsL, weightR: currentInput.weightR, repsR: currentInput.repsR };
-    } else {
-      lastLogged[exName] = { weight: currentInput.weight, reps: currentInput.reps };
-    }
+    const entry = { weight: currentInput.weight, difficulty: currentInput.difficulty };
+    if(currentInput.repsL != null){ entry.repsL = currentInput.repsL; entry.repsR = currentInput.repsR; }
+    else { entry.reps = currentInput.reps; }
+    lastLogged[exName] = entry;
     logSet(exName, currentInput);
   }
 
@@ -2754,11 +2769,12 @@
     const ex = curEx();
     let restTotal = ex.restSec || 60; // vraie valeur loggée par exercice, 60 en secours si absente
     let restRemaining = restTotal;
+    const prefix = currentInput.weight!=null ? currentInput.weight+'kg × ' : (currentInput.difficulty!=null ? 'élastique '+currentInput.difficulty+'/5 × ' : '');
     let loggedText;
     if(currentInput.repsL != null){
-      loggedText = 'G '+(currentInput.weightL!=null?currentInput.weightL+'kg×':'')+currentInput.repsL+' · D '+(currentInput.weightR!=null?currentInput.weightR+'kg×':'')+currentInput.repsR;
+      loggedText = prefix+'G '+currentInput.repsL+' · D '+currentInput.repsR;
     } else {
-      loggedText = (currentInput.weight!=null ? currentInput.weight+'kg × ' : '')+currentInput.reps+' reps';
+      loggedText = prefix+currentInput.reps+(currentInput.weight!=null||currentInput.difficulty!=null?' reps':'');
     }
     let html = '<div class="lastload-chip">Série faite : <b>'+loggedText+'</b></div>';
     html += '<div class="timer-ring" id="rest-ring" style="background:conic-gradient(var(--amber) 0deg, var(--surface-raised) 0deg);"><div class="t" id="rest-t">'+fmtTime(restTotal)+'</div></div>';
