@@ -159,6 +159,15 @@
   .result-line .rp{ font-family:var(--font-data); font-size:10px; color:var(--petrol); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px;}
   .result-line .rn{ font-size:13.5px; font-weight:600; }
   .result-line .rd{ font-family:var(--font-data); font-size:12px; color:var(--text-dim); white-space:nowrap; margin-left:10px;}
+  .result-line-interactive{ display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); cursor:pointer; -webkit-user-select:none; user-select:none; }
+  .result-line-interactive.dragging{ background:rgba(47,168,160,.12); border-radius:8px; margin:0 -8px; padding:9px 8px; border-bottom-color:transparent; }
+  .result-line-interactive:last-child{ border-bottom:none; }
+  .result-line-interactive .rl-main{ flex:1; display:flex; justify-content:space-between; align-items:center; min-width:0; }
+  .result-line-interactive .rp{ font-family:var(--font-data); font-size:10px; color:var(--petrol); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px;}
+  .result-line-interactive .rn{ font-size:13.5px; font-weight:600; }
+  .result-line-interactive .rd{ font-family:var(--font-data); font-size:12px; color:var(--text-dim); white-space:nowrap; margin-left:10px;}
+  .cycle-btn{ background:var(--surface); border:1px solid var(--line); color:var(--petrol); width:32px; height:32px;
+    border-radius:8px; font-size:15px; cursor:pointer; flex-shrink:0; }
   .protocol-box{ font-size:12.5px; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px; line-height:1.55; margin-top:12px;}
 
   .sess-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
@@ -175,6 +184,7 @@
     color:var(--petrol); background:rgba(47,168,160,.12); border:1px solid var(--petrol-dim); border-radius:20px; padding:4px 10px; margin-bottom:10px;}
   .pattern-badge.yoga{ color:var(--lav); background:rgba(138,127,214,.12); border-color:var(--lav-dim); }
   .pattern-badge.cardio{ color:var(--coral); background:rgba(226,104,95,.12); border-color:var(--coral-dim); }
+  .pattern-badge.warmup{ color:var(--amber); background:rgba(224,194,61,.12); border-color:var(--amber); }
   .sess-exname{ font-size:21px; font-weight:700; margin-bottom:4px; }
   .sess-instructions{ font-size:13px; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px; margin-bottom:12px; line-height:1.55;}
   .detail-toggle-row{ font-size:12px; color:var(--petrol); font-weight:600; padding:6px 2px; margin:-6px 0 8px; cursor:pointer; }
@@ -589,7 +599,15 @@
   // les vraies données. L'état testMode lui-même n'est jamais persisté (repart toujours à false).
   let testMode = false;
   function toggleTestMode(){
-    testMode = !testMode;
+    if(testMode){
+      // On désactive : recharge immédiatement pour repartir sur les vraies données sauvegardées,
+      // sinon les changements faits pendant le test resteraient en mémoire et pourraient être
+      // écrasés dans le vrai stockage à la prochaine action réelle (exactement le risque signalé).
+      testMode = false;
+      location.reload();
+      return;
+    }
+    testMode = true;
     renderTestModeBanner();
   }
   function renderTestModeBanner(){
@@ -964,6 +982,14 @@
   }
   let currentInput = {weight:null, reps:null};
   let currentInputFor = null;
+  // État de l'aperçu renfo avant lancement — permet de réordonner/changer un exercice sans
+  // relancer toute la génération (qui piocherait un plan différent).
+  let previewResultLines = [];
+  let previewSessionFormat = 'groupe';
+  let previewStretchLines = [];
+  let previewMuscles = [];
+  let previewTotalUsedBeforeStretch = 0;
+  let previewWarmup = 0;
   let showExerciseDetail = false;
   let detailShownFor = null;
   function toggleExerciseDetail(){ showExerciseDetail = !showExerciseDetail; renderCard(); }
@@ -985,46 +1011,55 @@
 
   // Synchronisé avec base_exercices v9 : nom clinique/classique en primaire, nom yoga en alternative.
   const yogaPool = [
-    {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps', pos:'tapis'},
-    {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis'},
-    {classic:'Étirement des ischios-jambiers', yoga:'Pince (Forward Fold)', hold:50, per:false, instr:"Dos qui s'arrondit progressivement.", muscle:'Ischios', pos:'debout'},
-    {classic:'Étirement des quadriceps', yoga:'Demi-grenouille', hold:40, per:true, instr:"Talon vers la fesse, bassin qui ne bascule pas vers l'avant.", muscle:'Quadriceps', pos:'tapis'},
-    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs', pos:'tapis'},
-    {classic:'Étirement combiné ischios-mollets-épaules', yoga:'Chien tête en bas', hold:40, per:false, instr:"Talons qui cherchent le sol sans forcer, dos long.", muscle:'Épaules', pos:'tapis'},
-    {classic:'Étirement du bas du dos (genoux à la poitrine)', yoga:"Posture de l'enfant", hold:60, per:false, instr:"Fesses vers les talons, bras tendus devant, respiration lente.", muscle:'Lombaires', pos:'tapis'},
-    {classic:'Rotation lombaire allongée', yoga:'Supine Twist', hold:50, per:true, instr:"Genoux qui tombent d'un côté, épaules qui restent au sol.", muscle:'Obliques', pos:'tapis'},
-    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos', pos:'tapis'},
-    {classic:'Rotation thoracique (open book)', yoga:'Thread the Needle', hold:45, per:true, instr:"Un bras glisse sous le corps, épaule et tempe au sol.", muscle:'Dos', pos:'tapis'},
-    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets', pos:'debout'},
-    {classic:'Étirement de la nuque et des trapèzes', yoga:'—', hold:30, per:true, instr:"Oreille qui se rapproche de l'épaule, sans forcer avec la main.", muscle:'Épaules', pos:'debout'},
-    {classic:'Étirement des pectoraux', yoga:'—', hold:40, per:true, instr:"Avant-bras contre le mur, buste qui pivote doucement à l'opposé.", muscle:'Pectoraux', pos:'debout'},
-    {classic:'Ouverture de poitrine allongée', yoga:'Matsyasana (Fish Pose)', hold:45, per:false, instr:"Appui sur les avant-bras, poitrine ouverte vers le haut.", muscle:'Pectoraux', pos:'tapis'},
-    {classic:'Étirement abdominal doux', yoga:'Sphinx Pose', hold:50, per:false, instr:"Avant-bras au sol, coudes sous les épaules, bassin qui reste au sol.", muscle:'Abdos', pos:'tapis'},
-    {classic:'Jambes au mur (récupération)', yoga:'Legs-Up-The-Wall', hold:180, per:false, instr:"Bassin proche du mur, jambes tendues verticalement.", pos:'tapis'},
-    {classic:'Relaxation finale allongée', yoga:'Savasana', hold:180, per:false, instr:"Corps totalement relâché, respiration naturelle, yeux fermés.", isClosing:true, pos:'tapis'}
+    {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Un genou au sol, l\'autre jambe fléchie devant à 90°, mains sur la cuisse avant ou levées au ciel.", mouvement:"Pousser légèrement le bassin vers l\'avant tout en gardant le buste droit, jusqu\'à sentir l\'étirement à l\'avant de la hanche arrière.", tempo:"Respiration lente et profonde, approfondir légèrement à chaque expiration sans forcer.", vigilance:"Sensation d\'étirement, jamais de douleur articulaire au genou au sol — glisser un coussin dessous si besoin." }},
+    {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis', detail:{ position:"Cheville de la jambe pliée posée devant, sur ou juste devant le genou opposé, jambe arrière tendue derrière.", mouvement:"Incliner le buste vers l\'avant en gardant le dos long, jusqu\'à sentir l\'étirement dans la fesse.", tempo:"Respiration profonde, rester immobile en laissant la tension se relâcher progressivement.", vigilance:"Le genou avant ne doit jamais forcer en torsion — si inconfortable, réduire l\'angle de la cheville." }},
+    {classic:'Étirement des ischios-jambiers', yoga:'Pince (Forward Fold)', hold:50, per:false, instr:"Dos qui s'arrondit progressivement.", muscle:'Ischios', pos:'debout', detail:{ position:"Debout ou assis, jambes tendues (légère flexion des genoux autorisée si tension excessive).", mouvement:"Plier au niveau des hanches (pas du dos) en laissant le buste descendre vers les jambes.", tempo:"Respiration lente, le dos qui s\'arrondit progressivement à chaque expiration, sans à-coup.", vigilance:"Ne jamais forcer avec les mains pour tirer plus bas — la tension doit rester modérée, jamais douloureuse à l\'arrière du genou." }},
+    {classic:'Étirement des quadriceps', yoga:'Demi-grenouille', hold:40, per:true, instr:"Talon vers la fesse, bassin qui ne bascule pas vers l'avant.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Allongé sur le ventre ou sur le côté, une main attrape la cheville du même côté.", mouvement:"Tirer doucement le talon vers la fesse, bassin qui reste stable sans basculer vers l\'avant.", tempo:"Respiration profonde, tenir sans à-coup.", vigilance:"Le genou ne doit pas subir de torsion — arrêter si douleur à l\'articulation plutôt qu\'à l\'avant de la cuisse." }},
+    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs', pos:'tapis', detail:{ position:"Assis, plantes de pieds jointes devant soi, genoux ouverts vers l\'extérieur.", mouvement:"Laisser les genoux descendre vers le sol sous leur propre poids, buste qui peut s\'incliner légèrement vers l\'avant.", tempo:"Respiration lente, aucune poussée active sur les genoux avec les mains.", vigilance:"Ne jamais appuyer avec force sur les genoux pour les rapprocher du sol — laisser la gravité faire le travail." }},
+    {classic:'Étirement combiné ischios-mollets-épaules', yoga:'Chien tête en bas', hold:40, per:false, instr:"Talons qui cherchent le sol sans forcer, dos long.", muscle:'Épaules', pos:'tapis', detail:{ position:"Mains et pieds au sol, bassin poussé vers le haut, corps formant un V inversé.", mouvement:"Talons qui cherchent le sol sans forcer, dos qui s\'allonge, légers pédalages des jambes pour étirer alternativement chaque mollet.", tempo:"Respiration profonde et régulière, quelques respirations par côté.", vigilance:"Les talons n\'ont pas besoin de toucher le sol — le dos long compte plus que la position des talons." }},
+    {classic:'Étirement du bas du dos (genoux à la poitrine)', yoga:"Posture de l'enfant", hold:60, per:false, instr:"Fesses vers les talons, bras tendus devant, respiration lente.", muscle:'Lombaires', pos:'tapis', detail:{ position:"Assis sur les talons, buste qui s\'incline vers l\'avant, bras tendus devant ou le long du corps.", mouvement:"Laisser le poids du buste s\'enfoncer doucement vers le sol, front posé si possible.", tempo:"Respiration très lente, chaque expiration accompagnant un relâchement supplémentaire.", vigilance:"Si inconfortable aux genoux, écarter légèrement les genoux ou glisser un coussin sous les fesses." }},
+    {classic:'Rotation lombaire allongée', yoga:'Supine Twist', hold:50, per:true, instr:"Genoux qui tombent d'un côté, épaules qui restent au sol.", muscle:'Obliques', pos:'tapis', detail:{ position:"Allongé sur le dos, genoux pliés ramenés vers la poitrine.", mouvement:"Laisser les genoux tomber d\'un côté, épaules qui restent au sol, regard qui peut partir du côté opposé.", tempo:"Respiration profonde, rester immobile en laissant la torsion se relâcher naturellement.", vigilance:"Les deux épaules doivent rester au sol — si l\'une décolle, réduire l\'angle de la torsion." }},
+    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos', pos:'tapis', detail:{ position:"À quatre pattes, mains sous les épaules, genoux sous les hanches.", mouvement:"En inspirant, creuser le dos et lever la tête (chameau) ; en expirant, arrondir le dos et rentrer le menton (chat).", tempo:"Un cycle complet par respiration, mouvement fluide et continu.", vigilance:"Mouvement toujours guidé par la respiration, jamais forcé ou brusque." }},
+    {classic:'Rotation thoracique (open book)', yoga:'Thread the Needle', hold:45, per:true, instr:"Un bras glisse sous le corps, épaule et tempe au sol.", muscle:'Dos', pos:'tapis', detail:{ position:"À quatre pattes, un bras qui glisse sous le corps, paume vers le ciel.", mouvement:"L\'épaule et la tempe viennent se poser au sol, l\'autre bras peut s\'allonger ou se poser sur le dos.", tempo:"Respiration lente, rester immobile plusieurs respirations avant de changer de côté.", vigilance:"Le mouvement vient du haut du dos, pas d\'une torsion forcée du cou." }},
+    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets', pos:'debout', detail:{ position:"Debout face à un mur, une jambe reculée tendue, talon au sol, l\'autre jambe fléchie devant.", mouvement:"Pousser le buste vers le mur en gardant le talon arrière plaqué au sol.", tempo:"Respiration régulière, tenue stable sans rebond.", vigilance:"Le talon arrière ne doit jamais décoller — réduire la distance au mur si nécessaire." }},
+    {classic:'Étirement de la nuque et des trapèzes', yoga:'—', hold:30, per:true, instr:"Oreille qui se rapproche de l'épaule, sans forcer avec la main.", muscle:'Épaules', pos:'debout', detail:{ position:"Debout ou assis, dos droit.", mouvement:"Incliner doucement la tête d\'un côté, oreille qui se rapproche de l\'épaule, main qui peut ajouter une légère pression.", tempo:"Respiration lente, jamais de à-coup avec la main.", vigilance:"La pression de la main doit rester très légère — c\'est le poids de la tête qui étire, pas la force du bras." }},
+    {classic:'Étirement des pectoraux', yoga:'—', hold:40, per:true, instr:"Avant-bras contre le mur, buste qui pivote doucement à l'opposé.", muscle:'Pectoraux', pos:'debout', detail:{ position:"Avant-bras contre un mur ou un cadre de porte, coude à hauteur d\'épaule.", mouvement:"Pivoter doucement le buste à l\'opposé du bras, jusqu\'à sentir l\'étirement à l\'avant de l\'épaule/poitrine.", tempo:"Respiration profonde, approfondir légèrement à chaque expiration.", vigilance:"Douleur à l\'épaule = signal d\'arrêt immédiat, pas juste réduire l\'intensité." }},
+    {classic:'Ouverture de poitrine allongée', yoga:'Matsyasana (Fish Pose)', hold:45, per:false, instr:"Appui sur les avant-bras, poitrine ouverte vers le haut.", muscle:'Pectoraux', pos:'tapis', detail:{ position:"Allongé sur le dos, appui sur les avant-bras, poitrine qui s\'ouvre vers le haut.", mouvement:"Laisser la tête basculer légèrement en arrière si confortable, cage thoracique qui s\'ouvre.", tempo:"Respiration ample et profonde, c\'est l\'ouverture de la cage thoracique qui compte.", vigilance:"Ne jamais mettre de poids sur le sommet du crâne — l\'appui reste sur les avant-bras." }},
+    {classic:'Étirement abdominal doux', yoga:'Sphinx Pose', hold:50, per:false, instr:"Avant-bras au sol, coudes sous les épaules, bassin qui reste au sol.", muscle:'Abdos', pos:'tapis', detail:{ position:"Allongé sur le ventre, avant-bras au sol, coudes sous les épaules.", mouvement:"Pousser légèrement dans les avant-bras pour soulever le buste, bassin qui reste au sol.", tempo:"Respiration profonde, extension douce et progressive.", vigilance:"Sensation dans le bas du dos = réduire l\'extension, ça ne doit se sentir qu\'à l\'avant du corps." }},
+    {classic:'Jambes au mur (récupération)', yoga:'Legs-Up-The-Wall', hold:180, per:false, instr:"Bassin proche du mur, jambes tendues verticalement.", pos:'tapis', detail:{ position:"Allongé sur le dos, bassin proche d\'un mur, jambes tendues verticalement contre le mur.", mouvement:"Rester immobile, bras relâchés le long du corps.", tempo:"Respiration lente et naturelle, c\'est une posture de récupération passive.", vigilance:"Si les jambes fourmillent après plusieurs minutes, les plier légèrement ou sortir de la posture." }},
+    {classic:'Relaxation finale allongée', yoga:'Savasana', hold:180, per:false, instr:"Corps totalement relâché, respiration naturelle, yeux fermés.", isClosing:true, pos:'tapis', detail:{ position:"Allongé sur le dos, bras et jambes légèrement écartés, corps totalement relâché.", mouvement:"Aucun mouvement — relâchement progressif de chaque partie du corps.", tempo:"Respiration naturelle, sans contrôle particulier.", vigilance:"Aucune — c'est la seule posture où rien n'est à surveiller, juste à laisser aller." } }
   ];
 
   // Exercices HIIT/complexe — crédit renfo réduit (0,4 principal / 0,2 secondaire) car charge légère
   // et fatigue diluée sur plusieurs mouvements enchaînés (cf. pondération musculaire.xlsx).
   const hiitCircuitExercises = [
     { name:'Pompe + planche latérale tournante (haltères)', equip:['db3','db5'], instr:"Planche bras tendus, mains sur les haltères : 1 pompe, puis pivoter en planche latérale en levant un haltère, tenir 3s, revenir au centre. Pompe, pivoter de l'autre côté avec l'autre bras — alterner.",
-      muscles:{'Pectoraux':0.4,'Dos':0.2,'Obliques':0.4,'Biceps':0.2,'Gainage':0.2} },
+      muscles:{'Pectoraux':0.4,'Dos':0.2,'Obliques':0.4,'Biceps':0.2,'Gainage':0.2},
+      detail:{ position:"Position de planche haute, mains posées sur les haltères au sol, largeur épaules.", mouvement:"Une pompe complète, puis pivoter en planche latérale en levant l\'haltère du bras d\'appui vers le plafond, tenir 3s, revenir au centre. Refaire une pompe, pivoter de l\'autre côté.", tempo:"Rythme soutenu mais contrôlé — mieux vaut moins de répétitions propres que beaucoup de répétitions bâclées.", vigilance:"Le bassin ne doit pas s\'affaisser pendant la pompe ni la rotation — si la fatigue casse la forme, réduire l\'amplitude de la rotation plutôt que d\'abandonner la ligne du corps." } },
     { name:'Squat + développé léger enchaîné (thruster léger)', equip:['db3','db5'], instr:"Squat puis développé au-dessus de la tête dans le prolongement de la remontée, mouvement fluide.",
-      muscles:{'Quadriceps':0.4,'Épaules':0.4,'Fessiers':0.2} },
+      muscles:{'Quadriceps':0.4,'Épaules':0.4,'Fessiers':0.2},
+      detail:{ position:"Debout, haltères aux épaules, pieds largeur épaules.", mouvement:"Descendre en squat complet, puis à la remontée, enchaîner directement sur un développé au-dessus de la tête — un seul mouvement fluide.", tempo:"Rythme rapide mais fluide, l\'élan de la remontée du squat doit porter naturellement le développé.", vigilance:"Le bas du dos ne doit pas cambrer excessivement pendant le développé — gainer les abdos, surtout en fin de série." } },
     { name:'Renegade row rapide (HIIT)', equip:['db3','db5'], instr:"Position planche, rowing alterné bras gauche/droit, bassin stable sans rotation.",
-      muscles:{'Dos':0.2,'Abdos':0.4,'Pectoraux':0.2} },
+      muscles:{'Dos':0.2,'Abdos':0.4,'Pectoraux':0.2},
+      detail:{ position:"Position de planche haute, mains sur les haltères, pieds écartés pour la stabilité.", mouvement:"Tirer un haltère vers la hanche en alternant les bras, bassin qui reste face au sol sans tourner.", tempo:"Rythme rapide, alternance continue sans pause entre les côtés.", vigilance:"La rotation du bassin est l\'erreur la plus fréquente sous fatigue — ralentir plutôt que de laisser le bassin tourner à chaque tirage." } },
     { name:'Mountain climbers rapides (HIIT)', equip:[], instr:"Version rythmée du mountain climber lent, bassin stable, rythme soutenu.",
-      muscles:{'Gainage':0.4,'Épaules':0.2} },
+      muscles:{'Gainage':0.4,'Épaules':0.2},
+      detail:{ position:"Position de planche haute, mains sous les épaules.", mouvement:"Ramener les genoux vers la poitrine en alternance, rythme rapide façon course sur place à l\'horizontale.", tempo:"Rythme soutenu, cadence rapide et régulière.", vigilance:"Le bassin doit rester bas et stable — s\'il remonte en pyramide sous la fatigue, ralentir le rythme pour le reprendre en main." } },
     { name:'Complexe haltères léger (RDL + curl + développé épaules)', equip:['db3','db5'], instr:"Enchaîner sans reposer les haltères : RDL → curl biceps → développé épaules. Dos plat, cadence contrôlée.",
-      muscles:{'Fessiers':0.4,'Biceps':0.4,'Épaules':0.4,'Ischios':0.2,'Triceps':0.2} },
+      muscles:{'Fessiers':0.4,'Biceps':0.4,'Épaules':0.4,'Ischios':0.2,'Triceps':0.2},
+      detail:{ position:"Debout, un haltère dans chaque main, bras tendus le long du corps.", mouvement:"Enchaîner sans reposer les haltères : RDL (hanches reculent, dos plat) → remontée avec curl biceps → développé épaules au-dessus de la tête → redescendre et recommencer.", tempo:"Cadence contrôlée malgré l\'enchaînement — c\'est un complexe technique, pas une course de vitesse.", vigilance:"Le dos doit rester plat pendant tout le RDL, même en fin de série — c\'est la partie la plus à risque de l\'enchaînement sous fatigue." } },
     { name:'Burpee complet (avec saut)', equip:[], instr:"Comme le pompe-squat, avec un saut à la remontée.", caution:"⚠ Impact plus élevé — à réserver aux périodes sans sensibilité genou active", excluded:true,
-      muscles:{'Pectoraux':0.4,'Quadriceps':0.4,'Abdos':0.4,'Épaules':0.2,'Mollets':0.2} },
+      muscles:{'Pectoraux':0.4,'Quadriceps':0.4,'Abdos':0.4,'Épaules':0.2,'Mollets':0.2},
+      detail:{ position:"Debout, pieds largeur hanches.", mouvement:"Descendre en squat, poser les mains au sol, sauter les pieds en arrière en position de planche, une pompe, ramener les pieds, sauter à la verticale.", tempo:"Rythme rapide, mouvement enchaîné sans pause.", vigilance:"Impact élevé à l\'atterrissage — exclu par défaut de ta rotation vu ta sensibilité genou, à ne réintroduire que si le genou est complètement asymptomatique sur une longue période." } },
     { name:'Fente latérale + rotation du tronc', equip:[], instr:"Grand pas sur le côté, hanche qui recule, buste qui pivote vers la jambe fléchie à la remontée — alterner les côtés. Sans saut, zéro matériel.",
-      muscles:{'Adducteurs':0.4,'Abducteurs':0.4,'Obliques':0.4,'Quadriceps':0.2} },
+      muscles:{'Adducteurs':0.4,'Abducteurs':0.4,'Obliques':0.4,'Quadriceps':0.2},
+      detail:{ position:"Debout, pieds largeur hanches.", mouvement:"Grand pas sur le côté en pliant le genou de la jambe qui bouge, hanche qui recule ; à la remontée, le buste pivote vers la jambe fléchie.", tempo:"Rythme modéré à soutenu, contrôle prioritaire sur la vitesse vu l\'engagement latéral du genou.", vigilance:"Le genou de la jambe fléchie ne doit pas partir vers l\'intérieur — reste aligné avec les orteils même en rythme rapide." } },
     { name:'Rowing bâtard + fente arrière enchaîné', equip:['db3','db5'], instr:"Fente arrière, puis buste penché ~45° (un haltère dans chaque main) : tirer les deux haltères vers les hanches en même temps, redescendre, remonter de la fente — alterner les côtés. Dos plat tout du long.",
-      muscles:{'Dos':0.2,'Biceps':0.4,'Quadriceps':0.4,'Fessiers':0.2,'Lombaires':0.2} },
+      muscles:{'Dos':0.2,'Biceps':0.4,'Quadriceps':0.4,'Fessiers':0.2,'Lombaires':0.2},
+      detail:{ position:"Debout, un haltère dans chaque main.", mouvement:"Fente arrière avec une jambe, puis à la remontée, buste penché à ~45° pour tirer les deux haltères vers les hanches (rowing bâtard), redescendre les haltères, remonter de la fente.", tempo:"Rythme contrôlé — enchaînement technique en deux temps, pas un mouvement à faire vite au détriment de la forme.", vigilance:"Le dos doit rester plat pendant la phase rowing, même en alternant avec la fente — ne pas laisser le dos s\'arrondir sous la fatigue." } },
     { name:'RDL + extension triceps enchaîné', equip:['db3','db5'], instr:"RDL (dos plat, hanches reculent en premier, haltères proches des jambes), puis en haut du mouvement, extension triceps au-dessus de la tête.",
-      muscles:{'Ischios':0.4,'Triceps':0.4,'Lombaires':0.2} }
+      muscles:{'Ischios':0.4,'Triceps':0.4,'Lombaires':0.2},
+      detail:{ position:"Debout, un haltère dans chaque main.", mouvement:"RDL (hanches reculent en premier, dos plat, haltères proches des jambes), puis en haut du mouvement, extension triceps au-dessus de la tête.", tempo:"Rythme contrôlé, la transition RDL→triceps doit rester fluide sans à-coup.", vigilance:"Le dos ne doit jamais s\'arrondir pendant le RDL, même enchaîné avec le mouvement de bras qui suit." } }
   ];
   const HIIT_WORK_SEC = 40;
   const HIIT_TRANSITION_SEC = 20;
@@ -1076,9 +1111,14 @@
     let queue = [];
     chosen.forEach(ex=>{
       queue.push({ type:'hiit', pattern:'Cardio HIIT', name:ex.name, instr:ex.instr, caution:ex.caution,
-        targetSets:rounds, currentSet:1, muscles:ex.muscles, workSec:HIIT_WORK_SEC });
+        targetSets:rounds, currentSet:1, muscles:ex.muscles, workSec:HIIT_WORK_SEC, detail:ex.detail });
     });
     lastGeneratedQueue = queue;
+    if(warmup > 0){
+      lastGeneratedQueue.unshift({type:'warmup', pattern:'Échauffement', name:'Échauffement général', holdSeconds:warmup*60,
+        instr:"Montée en régime progressive : mobilité articulaire, quelques mouvements légers pour préparer le corps à l'intensité qui arrive.",
+        targetSets:1, currentSet:1});
+    }
     sessionFormat = 'circuit';
     const perRoundSec = chosen.length ? chosen.length*HIIT_WORK_SEC + Math.max(0,chosen.length-1)*HIIT_TRANSITION_SEC : 0;
     const totalSec = rounds*perRoundSec + (rounds-1)*HIIT_ROUND_REST_SEC;
@@ -1353,13 +1393,32 @@
   }
 
   // Priorité polyarticulaire : trie le pool pour proposer les exercices compound avant les isolations.
+  function shuffleArray(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
   function sortedPool(muscleName){
     const pool = exercisePools[muscleName].filter(ex => ex.equip.every(e=>equipState[e]));
-    return pool.slice().sort((a,b)=> (b.compound?1:0)-(a.compound?1:0));
+    // Priorité stricte conservée (principal > secondaire, polyarticulaire > isolation), mais
+    // mélange aléatoire à l'intérieur de chaque palier — sinon c'est toujours le même exercice
+    // en tête qui sort à chaque génération, même quand d'autres équivalents sont disponibles.
+    const tierPrimaryCompound = shuffleArray(pool.filter(e=>e.role==='primary' && e.compound));
+    const tierPrimaryIso = shuffleArray(pool.filter(e=>e.role==='primary' && !e.compound));
+    const tierSecCompound = shuffleArray(pool.filter(e=>e.role!=='primary' && e.compound));
+    const tierSecIso = shuffleArray(pool.filter(e=>e.role!=='primary' && !e.compound));
+    return [...tierPrimaryCompound, ...tierPrimaryIso, ...tierSecCompound, ...tierSecIso];
   }
 
   function nextBlock(muscleName, cursor, remainingBudget, useRec, forcedSets){
-    const pool = sortedPool(muscleName);
+    // Le pool mélangé est calculé une seule fois par muscle par génération et mis en cache sur le
+    // curseur — sinon rappeler sortedPool() à chaque bloc referait un mélange différent à chaque
+    // fois, et le cycle poolIdx sauterait ou répéterait des exercices au hasard.
+    if(!cursor.pool) cursor.pool = sortedPool(muscleName);
+    const pool = cursor.pool;
     if(pool.length===0) return null;
     const ex = pool[cursor.poolIdx % pool.length];
     let sets;
@@ -1380,7 +1439,7 @@
     includeClosingStretch = el.dataset.stretch === 'oui';
     document.querySelectorAll('#stretch-toggle-chips .chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel');
-    refreshPreview();
+    toggleClosingStretchOnly();
   }
   // Repli quand un muscle sélectionné n'a pas d'étirement dédié dans le pool
   const STRETCH_MUSCLE_FALLBACK = { Biceps:'Pectoraux', Triceps:'Épaules', 'Avant-bras':'Épaules', Abducteurs:'Fessiers', Gainage:'Lombaires' };
@@ -1454,9 +1513,10 @@
         const block = nextBlock(m, cursor, remaining/muscles.length, useRecommendedSets, uniformSets);
         if(!block) continue;
         if(cursor.blocks>0 && block.est > remaining) continue;
-        resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound});
-        queue.push({type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
-          restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail});
+        const queueItem = {type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
+          restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail};
+        queue.push(queueItem);
+        resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound, queueRef:queueItem});
         totalUsed += block.est;
         remaining -= block.est;
         cursor.poolIdx++;
@@ -1469,15 +1529,26 @@
     // Étirement de clôture (~10% du temps), ciblé sur les muscles travaillés aujourd'hui.
     let stretchLines = [];
     let stretchUsedSec = 0;
+    previewMuscles = muscles;
+    previewTotalUsedBeforeStretch = totalUsed;
+    previewWarmup = warmup;
     if(includeClosingStretch && totalUsed > warmup){
       const stretchBudgetSec = Math.round((totalUsed - warmup) * 60 * 0.10);
       const { picked, used } = pickClosingStretches(muscles, stretchBudgetSec);
       picked.forEach(p=>{
-        queue.push({type:'hold', pattern:'Étirements', name:p.classic, holdSeconds:p.hold, per:p.per, instr:p.instr, targetSets:1, currentSet:1});
+        queue.push({type:'hold', pattern:'Étirements', name:p.classic, holdSeconds:p.hold, per:p.per, instr:p.instr, targetSets:1, currentSet:1, detail:p.detail});
         stretchLines.push({name:p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
       });
       stretchUsedSec = used;
       totalUsed += used/60;
+    }
+
+    // L'échauffement était compté dans le budget temps (variable warmup) mais jamais généré comme
+    // une vraie étape guidée — on l'ajoute maintenant en tête de queue pour de vrai.
+    if(warmup > 0){
+      queue.unshift({type:'warmup', pattern:'Échauffement', name:'Échauffement général', holdSeconds:warmup*60,
+        instr:"Montée en régime progressive : mobilité articulaire (chevilles, hanches, épaules), quelques répétitions légères des mouvements à venir, rythme cardiaque qui augmente doucement.",
+        targetSets:1, currentSet:1});
     }
 
     lastGeneratedQueue = queue;
@@ -1532,21 +1603,113 @@
 
     let html = '<div class="result-card"><div class="result-total"><div><div class="l">Durée estimée</div><div class="n">'+displayedTotal+' min</div></div>'+
       '<div class="l" style="text-align:right;">'+(warmup?warmup+' min échauffement<br>':'')+muscles.length+' muscle(s)</div></div>';
-    resultLines.forEach(l=>{
-      html += '<div class="result-line"><div><div class="rp">'+l.pattern+(l.compound?' ⚡':'')+'</div><div class="rn">'+l.name+(l.unilateral?' <span style="color:var(--amber);font-size:10px;">(x2 côtés)</span>':'')+'</div></div>'+
-        '<div class="rd">'+l.sets+' séries<br>~'+fmtMinSec(l.estSec)+'</div></div>';
-    });
+    html += '<div id="preview-exercise-rows"></div>';
     html += circuitNote + setsRuleNote;
-    if(stretchLines.length){
-      // (intro retirée pour gagner de la place — la liste des étirements suffit)
-      stretchLines.forEach(s=>{
-        html += '<div class="result-line"><div><div class="rp" style="color:var(--lav);">Étirement · '+s.muscle+'</div><div class="rn">'+s.name+'</div></div>'+
-          '<div class="rd">'+(s.per?'2×':'')+s.hold+'s</div></div>';
-      });
-    }
+    html += '<div id="preview-stretch-rows"></div>';
     html += '</div><div style="font-size:11px;color:var(--text-faint);margin-top:8px;">Règle : 3 séries max par exercice — au-delà, 2 exercices pour varier.</div>';
     html += '<button class="gen-btn primary" onclick="startSession()">✓ Démarrer la séance</button>';
+    previewResultLines = resultLines;
+    previewStretchLines = stretchLines;
+    previewSessionFormat = sessionFormat;
     document.getElementById('result-zone').innerHTML = html;
+    renderPreviewRows();
+    renderPreviewStretchRows();
+  }
+
+  // Affiche les lignes d'exercices de l'aperçu (avant de lancer la séance) avec des contrôles
+  // pour réordonner (▲▼) et changer d'exercice (⇄, cycle parmi les alternatives à muscle principal
+  // identique). Rejoue uniquement l'affichage — ne relance jamais generateRenfo(), donc ne perd
+  // jamais les changements manuels faits ici.
+  let draggedPreviewIdx = null;
+  let longPressTimer = null;
+  function startLongPress(idx){
+    clearTimeout(longPressTimer);
+    longPressTimer = setTimeout(()=>{ draggedPreviewIdx = idx; renderPreviewRows(); }, 450);
+  }
+  function cancelLongPress(){ clearTimeout(longPressTimer); }
+  function tapPreviewRow(idx){
+    if(draggedPreviewIdx === null) return; // pas d'appui long en cours, un tap normal ne fait rien
+    if(draggedPreviewIdx === idx){ draggedPreviewIdx = null; renderPreviewRows(); return; } // retap = annuler
+    const [item] = previewResultLines.splice(draggedPreviewIdx, 1);
+    previewResultLines.splice(idx, 0, item);
+    // Les positions occupées par les exercices renfo dans lastGeneratedQueue restent les mêmes
+    // (échauffement/étirements ne bougent pas) — seul l'ordre DANS ces positions change.
+    const positions = previewResultLines.map(l => lastGeneratedQueue.indexOf(l.queueRef)).filter(p=>p>=0).sort((a,b)=>a-b);
+    previewResultLines.forEach((l,i)=>{ lastGeneratedQueue[positions[i]] = l.queueRef; });
+    draggedPreviewIdx = null;
+    renderPreviewRows();
+  }
+
+  function renderPreviewRows(){
+    const wrap = document.getElementById('preview-exercise-rows');
+    if(!wrap) return;
+    let html = '';
+    if(draggedPreviewIdx !== null){
+      html += '<div style="font-size:11.5px; color:var(--petrol); text-align:center; padding:6px 0;">Touche l\'exercice où le déplacer — ou touche-le à nouveau pour annuler</div>';
+    }
+    previewResultLines.forEach((l,i)=>{
+      const isDragged = draggedPreviewIdx === i;
+      html += '<div class="result-line-interactive'+(isDragged?' dragging':'')+'" '+
+        'ontouchstart="startLongPress('+i+')" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress()" '+
+        'onmousedown="startLongPress('+i+')" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" '+
+        'onclick="tapPreviewRow('+i+')">'+
+        '<div class="rl-main"><div><div class="rp">'+l.pattern+(l.compound?' ⚡':'')+'</div><div class="rn">'+l.name+(l.unilateral?' <span style="color:var(--amber);font-size:10px;">(x2 côtés)</span>':'')+'</div></div>'+
+        '<div class="rd">'+l.sets+' séries<br>~'+fmtMinSec(l.estSec)+'</div></div>'+
+        '<button class="cycle-btn" onclick="event.stopPropagation(); cyclePreviewExercise('+i+')" title="Changer exercice (même muscle principal)">⇄</button>'+
+        '</div>';
+    });
+    wrap.innerHTML = html;
+  }
+
+  function renderPreviewStretchRows(){
+    const wrap = document.getElementById('preview-stretch-rows');
+    if(!wrap) return;
+    let html = '';
+    previewStretchLines.forEach(s=>{
+      html += '<div class="result-line"><div><div class="rp" style="color:var(--lav);">Étirement · '+s.muscle+'</div><div class="rn">'+s.name+'</div></div>'+
+        '<div class="rd">'+(s.per?'2×':'')+s.hold+'s</div></div>';
+    });
+    wrap.innerHTML = html;
+  }
+
+  // Recalcule UNIQUEMENT la portion étirements de clôture (ajout/retrait) sans jamais retoucher
+  // aux exercices de renfo déjà choisis/réordonnés dans l'aperçu — sinon cocher/décocher cette
+  // case relancerait tout generateRenfo() et rebattrait aléatoirement toute la liste au passage.
+  function toggleClosingStretchOnly(){
+    // Retire tous les étirements de clôture actuels de la queue d'exécution (type 'hold' uniquement,
+    // les exercices renfo et l'échauffement type 'warmup' ne sont jamais touchés).
+    lastGeneratedQueue = lastGeneratedQueue.filter(q => q.type !== 'hold');
+    previewStretchLines = [];
+    if(includeClosingStretch && previewTotalUsedBeforeStretch > previewWarmup){
+      const stretchBudgetSec = Math.round((previewTotalUsedBeforeStretch - previewWarmup) * 60 * 0.10);
+      const { picked } = pickClosingStretches(previewMuscles, stretchBudgetSec);
+      picked.forEach(p=>{
+        lastGeneratedQueue.push({type:'hold', pattern:'Étirements', name:p.classic, holdSeconds:p.hold, per:p.per, instr:p.instr, targetSets:1, currentSet:1, detail:p.detail});
+        previewStretchLines.push({name:p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
+      });
+    }
+    renderPreviewStretchRows();
+  }
+
+  function cyclePreviewExercise(idx){
+    const l = previewResultLines[idx];
+    const pool = (exercisePools[l.pattern] || []).filter(p => p.role==='primary' && p.equip.every(e=>equipState[e]));
+    if(pool.length <= 1) return; // rien d'autre de disponible à proposer
+    const curIdx = pool.findIndex(p => p.name === l.name);
+    const next = pool[(curIdx+1) % pool.length];
+    l.name = next.name;
+    l.unilateral = next.unilateral;
+    l.compound = next.compound;
+    const workSec = previewSessionFormat==='circuit'
+      ? l.sets * (next.unilateral ? 80 : 40) + 20 // 20s = transition circuit (CIRCUIT_TRANSITION_SEC, locale à generateRenfo)
+      : Math.round(blockTimeMin(l.sets, next)*60);
+    l.estSec = workSec;
+    Object.assign(l.queueRef, {
+      name: next.name, instr: next.instr, unilateral: next.unilateral, restSec: next.restSec,
+      compound: next.compound, equip: next.equip, isHold: next.isHold, muscles: next.muscles,
+      role: next.role, focusNote: next.focusNote, detail: next.detail
+    });
+    renderPreviewRows();
   }
 
   function generateYoga(){
@@ -1575,13 +1738,13 @@
       const p = withoutClosing[idx % withoutClosing.length];
       const dur = p.hold*(p.per?2:1);
       if(used > 0 && used+dur > workBudget*1.15) { guard++; idx++; continue; } // évite un gros dépassement en fin de liste
-      queue.push({type:'hold', pattern:'Étirements', name:displayName(p), holdSeconds:p.hold, per:p.per, instr:p.instr});
+      queue.push({type:'hold', pattern:'Étirements', name:displayName(p), holdSeconds:p.hold, per:p.per, instr:p.instr, detail:p.detail});
       used += dur;
       idx++;
       guard++;
     }
     if(includeClosing){
-      queue.push({type:'hold', pattern:'Étirements', name:displayName(closing), holdSeconds:closing.hold, per:false, instr:closing.instr});
+      queue.push({type:'hold', pattern:'Étirements', name:displayName(closing), holdSeconds:closing.hold, per:false, instr:closing.instr, detail:closing.detail});
       used += closingTime;
     }
     lastGeneratedQueue = queue;
@@ -1624,6 +1787,11 @@
         '<br><span style="color:var(--text-faint);">5 min échauffement + '+reps+'× ('+conf.work+'s effort / '+conf.rest+'s récup)</span></div></div>';
     }
     lastGeneratedQueue = queue;
+    if(warmupSec > 0){
+      lastGeneratedQueue.unshift({type:'warmup', pattern:'Échauffement', name:'Échauffement cardio', holdSeconds:warmupSec,
+        instr:"Montée en régime progressive — allure très facile, jambes qui se réveillent doucement avant d'attaquer le protocole.",
+        targetSets:1, currentSet:1});
+    }
 
     // Cardio = surtout une recommandation à suivre sur son propre appareil (montre/home trainer/Garmin) —
     // le plus utile ici est de pouvoir logger le temps fait, pas forcément lancer un timer guidé dans l'appli.
@@ -1666,9 +1834,15 @@
 
   function startSession(){
     if(!lastGeneratedQueue || !lastGeneratedQueue.length) return;
+    // Le format "visé" (circuit ou groupe) est déterminé sur le premier vrai exercice, en ignorant
+    // un éventuel échauffement en tête — mais la séance démarre TOUJOURS en séquentiel pendant
+    // l'échauffement, puis bascule vers le format visé une fois l'échauffement terminé.
+    const firstReal = lastGeneratedQueue.find(q => q.type !== 'warmup');
+    const intendedFormat = (firstReal && (firstReal.type==='strength' || firstReal.type==='hiit')) ? sessionFormat : 'groupe';
+    const startsWithWarmup = lastGeneratedQueue[0] && lastGeneratedQueue[0].type==='warmup';
     session = { queue: lastGeneratedQueue.map(q=>Object.assign({}, q, {currentSet:1, state:'active'})), index:0,
       elapsed:0, doneCount:0, skipped:[], timerInterval:null, restInterval:null, repIndex:1,
-      format: (lastGeneratedQueue[0] && (lastGeneratedQueue[0].type==='strength' || lastGeneratedQueue[0].type==='hiit')) ? sessionFormat : 'groupe',
+      format: startsWithWarmup ? 'groupe' : intendedFormat, intendedFormat: intendedFormat,
       circuitIdx:0, round:1, finished:false, stretchSecondsDone:0 };
     showSection('seance-active', null);
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -1751,7 +1925,7 @@
     }
     renderDots();
 
-    const badgeClass = ex.type==='hold' ? 'pattern-badge yoga' : (ex.type==='interval'||ex.type==='steady'||ex.type==='hiit' ? 'pattern-badge cardio' : 'pattern-badge');
+    const badgeClass = ex.type==='hold' ? 'pattern-badge yoga' : (ex.type==='warmup' ? 'pattern-badge warmup' : (ex.type==='interval'||ex.type==='steady'||ex.type==='hiit' ? 'pattern-badge cardio' : 'pattern-badge'));
     let html = '<div class="illu-box">'+iconFor(ex.pattern)+'</div>';
     html += '<div class="'+badgeClass+'">'+ex.pattern+'</div>';
     html += '<div class="sess-exname">'+ex.name+(ex.unilateral?' <span style="font-size:12px; color:var(--amber); font-family:var(--font-data);">×2 côtés</span>':'')+'</div>';
@@ -1872,7 +2046,7 @@
       if(ex.currentSet >= ex.targetSets){
         html += '<div class="extra-row"><button class="extra-btn" onclick="addExtraSet()">+ Série supplémentaire</button></div>';
       }
-    } else if(ex.type==='hold'){
+    } else if(ex.type==='hold' || ex.type==='warmup'){
       html += '<div id="hold-timer-wrap"></div>';
       html += '<div class="extra-row"><button class="extra-btn" onclick="extendHold(15)">+15s</button><button class="extra-btn" onclick="advanceExercise()">Suivant →</button></div>';
     } else if(ex.type==='interval'){
@@ -1888,7 +2062,7 @@
 
     document.getElementById('sess-card').innerHTML = html;
 
-    if(ex.type==='hold'){ startHoldTimer(ex); }
+    if(ex.type==='hold' || ex.type==='warmup'){ startHoldTimer(ex); }
     if(ex.type==='interval'){ startIntervalTimer(ex); }
     if(ex.type==='steady'){ startSteadyTimer(ex); }
   }
@@ -2640,7 +2814,7 @@
     renderHoldRing();
     session.restInterval = setInterval(()=>{
       holdRemaining--; renderHoldRing();
-      if(holdRemaining<=0){ clearInterval(session.restInterval); session.stretchSecondsDone += ex.holdSeconds; advanceExercise(); }
+      if(holdRemaining<=0){ clearInterval(session.restInterval); if(ex.type==='hold') session.stretchSecondsDone += ex.holdSeconds; advanceExercise(); }
     }, 1000);
   }
   function extendHold(sec){ holdTotal += sec; holdRemaining += sec; renderHoldRing(); }
@@ -2847,8 +3021,13 @@
     clearInterval(session.restInterval);
     const ex = session.queue[session.index];
     if(ex) ex.currentSet = ex.targetSets + 1; // marque explicitement comme complété (cohérent avec le mode circuit)
+    const wasWarmup = ex && ex.type==='warmup';
     session.doneCount++;
     session.index++;
+    if(wasWarmup && session.intendedFormat==='circuit'){
+      session.format = 'circuit';
+      session.circuitIdx = session.index;
+    }
     renderCard();
   }
   function skipExercise(){
@@ -2870,9 +3049,14 @@
       session.circuitIdx = nextIdx;
       renderCard();
     } else {
+      const wasWarmup = session.queue[session.index] && session.queue[session.index].type==='warmup';
       session.queue[session.index].actualSetsDone = session.queue[session.index].currentSet - 1;
       session.skipped.push(session.index);
       session.index++;
+      if(wasWarmup && session.intendedFormat==='circuit'){
+        session.format = 'circuit';
+        session.circuitIdx = session.index;
+      }
       renderCard();
     }
   }
@@ -2938,7 +3122,7 @@
     // visiter deux fois le même exercice unilatéral affiché séparément, on fusionne le compte).
     const tally = {}; // nom -> { setsDone, targetSets, skipped, isHold }
     session.queue.forEach(ex=>{
-      if(!tally[ex.name]) tally[ex.name] = { setsDone:0, targetSets:0, skipped:false, isHold: ex.type==='hold' };
+      if(!tally[ex.name]) tally[ex.name] = { setsDone:0, targetSets:0, skipped:false, isHold: ex.type==='hold' || ex.type==='warmup' };
       const wasSkipped = ex.actualSetsDone != null;
       const setsDone = wasSkipped ? ex.actualSetsDone : Math.max(0, Math.min(ex.currentSet-1, ex.targetSets));
       tally[ex.name].setsDone += setsDone;
