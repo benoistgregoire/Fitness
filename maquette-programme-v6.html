@@ -280,6 +280,13 @@
       <!-- généré par JS : renderGroupOverview() -->
     </div>
 
+    <h2 class="section-title">Répartition par groupe</h2>
+    <div class="chip-row" id="dash-period-chips" style="margin-bottom:2px;">
+      <div class="chip sel" data-period="week" onclick="selectDashPeriod(this)">Cette semaine</div>
+      <div class="chip" data-period="rolling" onclick="selectDashPeriod(this)">7 derniers jours</div>
+    </div>
+    <div id="dash-muscle-chart"><!-- généré par renderDashMuscleChart() --></div>
+
     <h2 class="section-title">Composer ma séance</h2>
     <button class="cta-generate" style="background:var(--petrol);" onclick="goToGenerator('renfo')">💪 Renfo</button>
     <button class="cta-generate" style="background:var(--lav); color:#181330;" onclick="goToGenerator('yoga')">🧘 Étirements / Yoga</button>
@@ -288,6 +295,7 @@
 
   <!-- ============ SÉANCES ============ -->
   <section id="seances">
+    <button class="cta-generate" style="background:var(--petrol); margin-bottom:18px;" onclick="goToGenerator('renfo','seances')">💪 Composer ma séance</button>
     <h2 class="section-title">Volume hebdo par muscle</h2>
     <div id="seances-list"><!-- généré par renderSeancesList() --></div>
     <div style="font-size:11.5px; color:var(--text-faint); margin:-2px 0 18px; text-align:center;">Tape un muscle pour voir ses exercices</div>
@@ -334,7 +342,7 @@
 
   <!-- ============ GÉNÉRATEUR ============ -->
   <section id="generateur">
-    <button class="back-btn" onclick="showSection('dashboard','dashboard')">← Retour</button>
+    <button class="back-btn" onclick="showSection(genReturnTo, genReturnTo)">← Retour</button>
     <div class="detail-title" id="gen-title" style="margin:0;">Composer ma séance</div>
     <span class="mode-pill renfo" id="gen-pill">💪 Renfo</span>
     <div class="detail-sub" style="margin-top:10px;">Choisis le temps, laisse-toi guider.</div>
@@ -355,6 +363,9 @@
       <div class="field-label">Quels muscles ?</div>
       <div class="chip-row" id="pattern-chips">
         <div class="chip chip-auto sel" data-mode="auto" onclick="selectAuto()">⚡ Auto (recommandé)</div>
+      </div>
+      <button class="link-btn" style="margin-top:8px;" onclick="toggleManualMuscles()">Choisir manuellement <span id="manual-toggle-arrow">↓</span></button>
+      <div class="chip-row" id="manual-pattern-chips" style="display:none; margin-top:8px;">
         <div class="chip" data-pattern="Quadriceps" onclick="selectManual(this)">Quadriceps</div>
         <div class="chip" data-pattern="Ischios" onclick="selectManual(this)">Ischios</div>
         <div class="chip" data-pattern="Mollets" onclick="selectManual(this)">Mollets</div>
@@ -374,21 +385,48 @@
       </div>
       <div id="auto-explain" style="font-size:11.5px; color:var(--text-dim); margin-top:10px; line-height:1.6;"></div>
 
-      <div class="field-label">Format de séance</div>
-      <div class="chip-row" id="format-chips">
-        <div class="chip" data-format="groupe" onclick="selectFormat(this)">Groupe par groupe</div>
-        <div class="chip sel" data-format="circuit" onclick="selectFormat(this)">⚡ Circuit</div>
-      </div>
-      <div id="format-explain" style="font-size:11.5px; color:var(--text-dim); margin-top:8px; line-height:1.6;">
-        Format circuit — rotation entre exercices, transitions courtes. Sélectionne des muscles pour voir le détail.
+      <div class="field-label" id="auto-category-label">Cible d'entraînement (mode auto)</div>
+      <div class="chip-row" id="auto-category-chips">
+        <div class="chip sel" data-cat="fullbody" onclick="selectAutoCategory(this)">Full body</div>
+        <div class="chip" data-cat="bas" onclick="selectAutoCategory(this)">Bas du corps</div>
+        <div class="chip" data-cat="haut" onclick="selectAutoCategory(this)">Haut du corps</div>
+        <div class="chip" data-cat="push" onclick="selectAutoCategory(this)">Push</div>
+        <div class="chip" data-cat="pull" onclick="selectAutoCategory(this)">Pull</div>
+        <div class="chip" data-cat="core" onclick="selectAutoCategory(this)">Core</div>
       </div>
 
-      <div class="field-label">Étirement de clôture ?</div>
-      <div class="chip-row" id="stretch-toggle-chips">
-        <div class="chip sel" data-stretch="oui" onclick="selectStretchToggle(this)">Oui</div>
+      <button class="link-btn" style="margin-top:16px;" onclick="toggleAdvancedSettings()">⚙️ Réglages avancés <span id="advanced-toggle-arrow">▸</span></button>
+      <div id="advanced-settings" style="display:none; margin-top:10px;">
+        <div class="field-label">Format de séance</div>
+        <div class="chip-row" id="format-chips">
+          <div class="chip" data-format="groupe" onclick="selectFormat(this)">Groupe par groupe</div>
+          <div class="chip sel" data-format="circuit" onclick="selectFormat(this)">⚡ Circuit</div>
+        </div>
+        <div id="format-explain" style="font-size:11.5px; color:var(--text-dim); margin-top:8px; line-height:1.6;">
+          Format circuit — rotation entre exercices, transitions courtes. Sélectionne des muscles pour voir le détail.
+        </div>
+
+        <div class="field-label">Core en fin de séance ?</div>
+        <div class="chip-row" id="core-finisher-chips">
+          <div class="chip sel" data-core="0" onclick="selectCoreFinisher(this)">Non</div>
+          <div class="chip" data-core="5" onclick="selectCoreFinisher(this)">5 min</div>
+          <div class="chip" data-core="10" onclick="selectCoreFinisher(this)">10 min</div>
+          <div class="chip" data-core="15" onclick="selectCoreFinisher(this)">15 min</div>
+        </div>
+
+        <div class="field-label">Échauffement ?</div>
+        <div class="chip-row" id="warmup-toggle-chips">
+          <div class="chip sel" data-warmup="oui" onclick="selectWarmupToggle(this)">Oui</div>
+          <div class="chip" data-warmup="non" onclick="selectWarmupToggle(this)">Non</div>
+        </div>
+
+        <div class="field-label">Étirement de clôture ?</div>
+        <div class="chip-row" id="stretch-toggle-chips">
+          <div class="chip sel" data-stretch="oui" onclick="selectStretchToggle(this)">Oui</div>
         <div class="chip" data-stretch="non" onclick="selectStretchToggle(this)">Non</div>
       </div>
       <div style="font-size:11px; color:var(--text-faint); margin-top:6px;">Si oui : ~10% du temps de la séance, ciblé sur les muscles travaillés aujourd'hui.</div>
+      </div>
     </div>
 
     <div id="yoga-options" style="display:none;">
@@ -1023,6 +1061,25 @@
   }
 
   // Synchronisé avec base_exercices v9 : nom clinique/classique en primaire, nom yoga en alternative.
+  // Échauffement — mouvements dynamiques légers (pas de charge), tagués par muscle pour proposer
+  // des exercices distincts liés à ce qui va vraiment être travaillé, plutôt qu'un seul gros bloc
+  // générique. Même structure que yogaPool pour les étirements.
+  const warmupPool = [
+    { name:'Squats dynamiques légers', muscle:'Quadriceps', sec:30, instr:"Amplitude progressive, poids du corps uniquement, rythme modéré." },
+    { name:'Fentes marchées légères', muscle:'Ischios', sec:30, instr:"Pas contrôlés, sans charge, juste pour activer la chaîne postérieure." },
+    { name:'Cercles de hanches', muscle:'Fessiers', sec:20, instr:"Grands cercles amples de la hanche, dans les deux sens." },
+    { name:'Rotations des chevilles', muscle:'Mollets', sec:20, instr:"Cercles amples de la cheville, dans les deux sens, puis l'autre pied." },
+    { name:'Balancements de jambe latéraux', muscle:'Adducteurs', sec:20, instr:"Balancement contrôlé d'un côté à l'autre, amplitude progressive." },
+    { name:'Marche latérale légère', muscle:'Abducteurs', sec:20, instr:"Petits pas latéraux, genoux légèrement fléchis, sans élastique." },
+    { name:'Cercles de bras', muscle:'Épaules', sec:20, instr:"Grands cercles des bras tendus, dans les deux sens." },
+    { name:'Balancement de bras croisés', muscle:'Pectoraux', sec:20, instr:"Bras tendus qui se croisent devant la poitrine puis s'ouvrent largement." },
+    { name:'Chat-vache dynamique', muscle:'Dos', sec:30, instr:"Enchaînement fluide creuser/arrondir le dos, rythme respiration." },
+    { name:'Rotations de poignets et coudes', muscle:'Avant-bras', sec:15, instr:"Cercles des poignets, puis flexion/extension légère des coudes." },
+    { name:'Rotations du tronc debout', muscle:'Obliques', sec:20, instr:"Rotation du buste d'un côté à l'autre, bras relâchés, bassin stable." },
+    { name:'Gainage dynamique léger', muscle:'Gainage', sec:20, instr:"Alternance courte planche/genoux au sol, sans forcer." },
+    { name:'Extension du dos debout', muscle:'Lombaires', sec:20, instr:"Mains sur les hanches, légère extension arrière puis retour, amplitude modérée." },
+  ];
+
   const yogaPool = [
     {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Un genou au sol, l\'autre jambe fléchie devant à 90°, mains sur la cuisse avant ou levées au ciel.", mouvement:"Pousser légèrement le bassin vers l\'avant tout en gardant le buste droit, jusqu\'à sentir l\'étirement à l\'avant de la hanche arrière.", tempo:"Respiration lente et profonde, approfondir légèrement à chaque expiration sans forcer.", vigilance:"Sensation d\'étirement, jamais de douleur articulaire au genou au sol — glisser un coussin dessous si besoin." }},
     {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis', detail:{ position:"Cheville de la jambe pliée posée devant, sur ou juste devant le genou opposé, jambe arrière tendue derrière.", mouvement:"Incliner le buste vers l\'avant en gardant le dos long, jusqu\'à sentir l\'étirement dans la fesse.", tempo:"Respiration profonde, rester immobile en laissant la tension se relâcher progressivement.", vigilance:"Le genou avant ne doit jamais forcer en torsion — si inconfortable, réduire l\'angle de la cheville." }},
@@ -1222,6 +1279,7 @@
     weeklyProgress.cardioHiit = 0;
     weeklyProgress.etirement = 0;
     renderGroupOverview();
+    renderDashMuscleChart();
     renderVolumeSettings();
     renderSeancesList();
     renderRemainingTime();
@@ -1234,7 +1292,9 @@
     else if(mode==='cardio') generateCardio();
   }
 
-  function goToGenerator(m){
+  let genReturnTo = 'dashboard';
+  function goToGenerator(m, returnTo){
+    genReturnTo = returnTo || 'dashboard';
     mode = m;
     document.getElementById('renfo-options').style.display = m==='renfo' ? 'block':'none';
     document.getElementById('yoga-options').style.display = m==='yoga' ? 'block':'none';
@@ -1248,7 +1308,18 @@
     pill.textContent = m==='renfo' ? '💪 Renfo' : (m==='yoga' ? '🧘 Étirements / Yoga' : '🏃 Cardio');
 
     if(m==='cardio') renderCardioAutoExplain();
-    if(m==='renfo') refreshPatternChipColors();
+    if(m==='renfo'){
+      refreshPatternChipColors();
+      // Si une sélection manuelle est déjà active, on la déplie et on remet les bonnes puces en
+      // surbrillance — sinon la sélection en cours resterait invisible derrière le lien replié.
+      if(!autoMode && manualPatterns.length){
+        document.getElementById('manual-pattern-chips').style.display = 'flex';
+        document.getElementById('manual-toggle-arrow').textContent = '↑';
+        document.querySelectorAll('#manual-pattern-chips .chip').forEach(c=>{
+          c.classList.toggle('sel', manualPatterns.includes(c.dataset.pattern));
+        });
+      }
+    }
     refreshPreview();
     showSection('generateur', null);
   }
@@ -1257,13 +1328,57 @@
     document.querySelectorAll('#time-chips .chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel'); selectedTime = parseInt(el.dataset.time);
     if(mode==='cardio') renderCardioAutoExplain();
+    if(mode==='renfo'){ if(autoMode) renderAutoExplain(); renderFormatExplain(); }
     refreshPreview();
   }
 
+  // Catégories d'entraînement pour structurer le mode auto — sinon l'auto pioche sur tout le corps
+  // sans respecter une vraie logique de split (utile pour une séance de rattrapage en fin de
+  // semaine, mais pas pour un entraînement structuré Bas/Haut/Push/Pull).
+  const CATEGORY_MUSCLES = {
+    fullbody: null,
+    bas: ['Quadriceps','Ischios','Fessiers','Mollets','Adducteurs','Abducteurs'],
+    haut: ['Dos','Pectoraux','Épaules','Biceps','Triceps','Avant-bras'],
+    push: ['Pectoraux','Épaules','Triceps'],
+    pull: ['Dos','Biceps','Avant-bras'],
+    core: ['Abdos','Gainage','Obliques','Lombaires']
+  };
+  let autoCategory = 'fullbody';
+  let coreFinisherMin = 0;
+  function selectCoreFinisher(el){
+    coreFinisherMin = parseInt(el.dataset.core);
+    document.querySelectorAll('#core-finisher-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    refreshPreview();
+  }
+  function selectAutoCategory(el){
+    autoCategory = el.dataset.cat;
+    document.querySelectorAll('#auto-category-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderAutoExplain();
+    renderFormatExplain();
+    refreshPreview();
+  }
+  function toggleManualMuscles(){
+    const el = document.getElementById('manual-pattern-chips');
+    const arrow = document.getElementById('manual-toggle-arrow');
+    const isHidden = el.style.display === 'none';
+    el.style.display = isHidden ? 'flex' : 'none';
+    arrow.textContent = isHidden ? '↑' : '↓';
+  }
+  function toggleAdvancedSettings(){
+    const el = document.getElementById('advanced-settings');
+    const arrow = document.getElementById('advanced-toggle-arrow');
+    const isHidden = el.style.display === 'none';
+    el.style.display = isHidden ? 'block' : 'none';
+    arrow.textContent = isHidden ? '▾' : '▸';
+  }
   function selectAuto(){
     autoMode = true; manualPatterns = [];
-    document.querySelectorAll('#pattern-chips .chip').forEach(c=>c.classList.remove('sel'));
+    document.querySelectorAll('#pattern-chips .chip, #manual-pattern-chips .chip').forEach(c=>c.classList.remove('sel'));
     document.querySelector('.chip-auto').classList.add('sel');
+    document.getElementById('auto-category-label').style.display = '';
+    document.getElementById('auto-category-chips').style.display = '';
     renderAutoExplain();
     renderFormatExplain();
     refreshPreview();
@@ -1271,6 +1386,8 @@
   function selectManual(el){
     autoMode = false;
     document.querySelector('.chip-auto').classList.remove('sel');
+    document.getElementById('auto-category-label').style.display = 'none';
+    document.getElementById('auto-category-chips').style.display = 'none';
     el.classList.toggle('sel');
     const p = el.dataset.pattern;
     if(manualPatterns.includes(p)) manualPatterns = manualPatterns.filter(x=>x!==p);
@@ -1297,19 +1414,49 @@
     if(isLarge && (d.lastSetsCount||0) > 3 && d.lastTrained < 2) return false; // 48h+ requis après grosse séance
     return true;
   }
+  // Priorité de taille/efficacité par muscle plutôt qu'un simple booléen "a un exercice compound"
+  // (trop grossier — presque tout muscle a AU MOINS un mouvement compound en secondaire). Tier 1 =
+  // grands groupes moteurs, Tier 2 = moyens/polyarticulaires mais moins prioritaires, Tier 3 = petits
+  // muscles/isolations. Sert à départager les choix auto à déficit comparable.
+  const MUSCLE_SIZE_TIER = {
+    Quadriceps:1, Ischios:1, Dos:1, Pectoraux:1,
+    Fessiers:2, Épaules:2, Triceps:2,
+    Mollets:3, Adducteurs:3, Abducteurs:3, Biceps:3, 'Avant-bras':3,
+    Abdos:3, Gainage:3, Obliques:3, Lombaires:3
+  };
+  function muscleTier(name){ return MUSCLE_SIZE_TIER[name] || 3; }
+
   function pickAutoMuscles(nSlots){
-    const all = Object.keys(musclesFlat).map(name=>{
+    const categoryFilter = CATEGORY_MUSCLES[autoCategory];
+    let all = Object.keys(musclesFlat).map(name=>{
       const d = musclesFlat[name];
       return { name, group:d.group, deficit:(d.target-d.done)/d.target, lastTrained:d.lastTrained, lastSetsCount:d.lastSetsCount, minRecovery:d.minRecovery, target:d.target, done:d.done };
     });
+    if(categoryFilter) all = all.filter(m => categoryFilter.includes(m.name));
     const eligible = all.filter(isMuscleEligible);
     const excluded = all.filter(m => !isMuscleEligible(m));
-    eligible.sort((a,b)=>b.deficit-a.deficit);
+    // À déficit égal (très fréquent en semaine fraîche, tout le monde à 0), on départage par
+    // ancienneté d'entraînement (le plus délaissé d'abord), puis aléatoirement si toujours égal —
+    // sinon le premier muscle dans l'ordre de déclaration gagnait systématiquement (Pectoraux avant
+    // Dos par exemple), un biais invisible et jamais justifié physiologiquement.
+    // Tri par palier de déficit (pas de valeur exacte) puis préférence polyarticulaire, puis
+    // ancienneté d'entraînement, puis aléatoire — s'applique à TOUTE la liste triée, pas juste au
+    // slot "1 par groupe". Sans ça, une catégorie resserrée comme Push/Pull (un seul groupe réel)
+    // ne bénéficiait quasiment jamais de la préférence, qui ne jouait que sur ce seul slot.
+    eligible.sort((a,b)=>{
+      const bucketA = Math.round(a.deficit / 0.15), bucketB = Math.round(b.deficit / 0.15);
+      if(bucketA !== bucketB) return bucketB - bucketA;
+      const tierDiff = muscleTier(a.name) - muscleTier(b.name);
+      if(tierDiff !== 0) return tierDiff;
+      return b.lastTrained-a.lastTrained || Math.random()-0.5;
+    });
 
     let chosen = [];
     if(eligible.length) chosen.push(eligible[0]); // le plus faible absolu, toujours
     ['jambes','haut','tronc'].forEach(g=>{
       if(chosen.length>=nSlots) return;
+      // Le tri ci-dessus place déjà les muscles polyarticulaires en tête à déficit comparable —
+      // simple recherche du premier du groupe suffit maintenant, plus besoin de logique dédiée ici.
       const weakestInGroup = eligible.find(m=>m.group===g && !chosen.includes(m));
       if(weakestInGroup) chosen.push(weakestInGroup);
     });
@@ -1405,6 +1552,15 @@
     const restMin = ((exerciseObj.restSec || 60) / 60) * Math.max(0, sets - 1);
     return work + restMin;
   }
+  // En circuit, chaque série ne "coûte" que le travail + une transition courte vers l'exercice
+  // suivant — le vrai repos est partagé entre exercices via la rotation, jamais attendu
+  // individuellement comme en mode groupe. Utiliser blockTimeMin (repos complet par série) pour
+  // budgéter un circuit surestimait fortement le temps consommé, faisant sembler la séance
+  // terminée bien avant la durée demandée (45min/60min rendaient 17-24min réels).
+  function blockTimeMinCircuit(sets, exerciseObj){
+    const workSec = sets * (exerciseObj.unilateral ? 80 : 40);
+    return (workSec + 20) / 60;
+  }
 
   // Priorité polyarticulaire : trie le pool pour proposer les exercices compound avant les isolations.
   function shuffleArray(arr){
@@ -1427,7 +1583,7 @@
     return [...tierPrimaryCompound, ...tierPrimaryIso, ...tierSecCompound, ...tierSecIso];
   }
 
-  function nextBlock(muscleName, cursor, remainingBudget, useRec, forcedSets){
+  function nextBlock(muscleName, cursor, remainingBudget, useRec, forcedSets, remainingNeedCap){
     // Le pool mélangé est calculé une seule fois par muscle par génération et mis en cache sur le
     // curseur — sinon rappeler sortedPool() à chaque bloc referait un mélange différent à chaque
     // fois, et le cycle poolIdx sauterait ou répéterait des exercices au hasard.
@@ -1444,11 +1600,26 @@
       const cycleTime = (ex.unilateral?2:1) + (ex.restSec||60)/60;
       sets = Math.max(1, Math.min(3, Math.round(remainingBudget/cycleTime)));
     }
-    const t = blockTimeMin(sets, ex);
+    // Plafonne pour ne pas dépasser le besoin hebdo restant de ce muscle (évite le "20 au lieu de
+    // 10" — proposer plus de séries que ce qu'il reste réellement à faire). Ignoré en 2e passe de
+    // remplissage (remainingNeedCap absent) où on accepte un léger dépassement plutôt que de
+    // perdre du temps de créneau prévu.
+    if(remainingNeedCap != null){
+      const weightForThisMuscle = ex.muscles[muscleName] || 1;
+      sets = Math.min(sets, Math.max(1, Math.ceil(remainingNeedCap / weightForThisMuscle)));
+    }
+    const t = sessionFormat==='circuit' ? blockTimeMinCircuit(sets, ex) : blockTimeMin(sets, ex);
     return { name:ex.name, sets, instr:ex.instr, unilateral:ex.unilateral, est:t, compound:ex.compound, restSec:ex.restSec, equip:ex.equip, isHold:ex.isHold, muscles:ex.muscles, role:ex.role, focusNote:ex.focusNote, detail:ex.detail, controlledTempo:ex.controlledTempo };
   }
 
   let includeClosingStretch = true;
+  let warmupEnabled = true;
+  function selectWarmupToggle(el){
+    warmupEnabled = el.dataset.warmup === 'oui';
+    document.querySelectorAll('#warmup-toggle-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    refreshPreview();
+  }
   function selectStretchToggle(el){
     includeClosingStretch = el.dataset.stretch === 'oui';
     document.querySelectorAll('#stretch-toggle-chips .chip').forEach(c=>c.classList.remove('sel'));
@@ -1473,6 +1644,32 @@
     } else {
       queue.push(Object.assign({type:'hold', pattern:'Étirements', name:name, holdSeconds:p.hold, per:false, instr:p.instr, detail:p.detail, muscle:p.muscle}, extra));
     }
+  }
+
+  // Sélectionne des exercices d'échauffement distincts pour les muscles réellement travaillés
+  // aujourd'hui, en tournante jusqu'à combler le budget — même principe que pickClosingStretches.
+  function pickWarmupExercises(musclesWorked, budgetSec){
+    const byMuscle = {};
+    musclesWorked.forEach(m=>{
+      byMuscle[m] = warmupPool.filter(p => p.muscle===m);
+    });
+    const cursors = {}; musclesWorked.forEach(m=>cursors[m]=0);
+    // Mobilité générale si aucun muscle sélectionné n'a de correspondance directe (rare, mais évite
+    // un échauffement vide plutôt que de forcer un muscle non pertinent).
+    const generic = [{ name:'Mobilité articulaire générale', muscle:null, sec:30, instr:"Quelques rotations douces (chevilles, hanches, épaules), rythme cardiaque qui augmente doucement." }];
+
+    let picked = []; let used = 0; let guard = 0; let mi = 0;
+    while(used < budgetSec && guard < 30 && musclesWorked.length){
+      const m = musclesWorked[mi % musclesWorked.length];
+      const pool = byMuscle[m].length ? byMuscle[m] : generic;
+      const p = pool[cursors[m] % pool.length];
+      picked.push(p);
+      used += p.sec;
+      cursors[m]++;
+      mi++; guard++;
+    }
+    if(picked.length===0 && budgetSec>0) picked.push(generic[0]);
+    return { picked, used };
   }
 
   function pickClosingStretches(musclesWorked, stretchBudgetSec){
@@ -1508,51 +1705,176 @@
     return { picked, used };
   }
 
+  // Simulation réaliste du temps circuit — même logique utilisée pour DÉCIDER combien ajouter
+  // pendant la génération ET pour l'affichage final, pour que les deux soient enfin cohérents
+  // (c'était la vraie cause des écarts de temps : la génération utilisait une estimation par bloc
+  // qui ignorait le repos de tour, l'affichage le comptait — donc l'un remplissait "trop tôt" par
+  // rapport à ce que l'autre annonçait).
+  const CIRCUIT_WORK_SEC = 40;
+  const CIRCUIT_TRANSITION_SEC = 20;
+  const CIRCUIT_ROUND_REST_SEC = 90;
+  function simulateCircuitMin(items){
+    if(!items.length) return 0;
+    const state = items.map(it=>it.sets);
+    const n = items.length;
+    function nextIdx(from){
+      for(let step=1; step<=n; step++){ const i=(from+step)%n; if(state[i]>0) return i; }
+      return null;
+    }
+    let cur = state.findIndex(s=>s>0);
+    if(cur===-1) return 0;
+    let totalSec = 0, guard = 0;
+    while(guard<500){
+      totalSec += items[cur].workSec;
+      state[cur]--;
+      const nxt = nextIdx(cur);
+      if(nxt===null) break;
+      totalSec += (nxt<=cur) ? CIRCUIT_ROUND_REST_SEC : CIRCUIT_TRANSITION_SEC;
+      cur = nxt;
+      guard++;
+    }
+    return totalSec/60;
+  }
+  // Convertit les items de la queue au format attendu par simulateCircuitMin.
+  function toCircuitItems(list){
+    return list.map(l=>({sets:l.sets, workSec:(l.unilateral?80:40)}));
+  }
+
   function generateRenfo(){
-    const warmup = selectedTime>=20?4:0;
+    // Échauffement et étirements suivent maintenant la même règle : 10% du temps total demandé,
+    // plafonné à 5min, et seulement s'ils sont activés (toggle). Calculés sur selectedTime
+    // directement (pas de compounding en cascade) pour rester prévisibles indépendamment l'un
+    // de l'autre.
+    const warmup = warmupEnabled ? Math.min(5, Math.round(selectedTime * 0.10)) : 0;
     let muscles = autoMode ? pickAutoMuscles(slotsForTime(selectedTime)).chosen
                             : (manualPatterns.length?manualPatterns:Object.keys(musclesFlat));
     const useRecommendedSets = selectedTime >= 30;
-    let remaining = selectedTime - warmup;
+    const estimatedStretchMin = includeClosingStretch ? Math.min(5, Math.round(selectedTime * 0.10)) : 0;
+    // Budget total pour le renfo (principal + extension + core combinés) — plus de sous-budgets
+    // cloisonnés en amont : en circuit, tout tourne dans LA MÊME rotation, donc le vrai temps ne
+    // peut être connu qu'en simulant l'ensemble (voir simulateCircuitMin), pas en additionnant des
+    // estimations par bloc qui ignoraient le repos de tour (90s) — c'était la vraie cause des
+    // écarts observés en usage réel (jusqu'à +10min sur une séance de 45min).
+    const renfoTargetMin = selectedTime - warmup - estimatedStretchMin;
+    // Plafonné à la moitié du budget renfo pour ne jamais écraser le reste de la séance si le
+    // temps choisi est court par rapport au core demandé.
+    const effectiveCoreMin = Math.min(coreFinisherMin, Math.floor(renfoTargetMin / 2));
+    let remaining = renfoTargetMin; // encore utilisé pour dimensionner en mode groupe (repos réel = fiable)
     let totalUsed = warmup;
     let queue = []; let resultLines = [];
     let cursors = {}; muscles.forEach(m=>{ cursors[m] = {poolIdx:0, blocks:0}; });
 
-    // Séance courte (<30min) : on fige un nombre de séries UNIFORME pour tous les exercices dès le
-    // départ, plutôt que de le recalculer exercice par exercice avec un budget qui rétrécit (ce qui
-    // donnait 3 séries pour le premier exercice puis 1 seule pour les suivants — mauvais pour un
-    // circuit à repos court, où des séries de durée très inégale cassent le rythme).
     let uniformSets = null;
     if(!useRecommendedSets){
-      const avgCycleMin = 1.6; // estimation moyenne (mix bilatéral/unilatéral, repos réel inclus)
+      const avgCycleMin = 1.6;
       const totalSlots = Math.max(1, muscles.length);
       for(const candidate of [3,2,1]){
         if(candidate * avgCycleMin * totalSlots <= remaining || candidate===1){ uniformSets = candidate; break; }
       }
     }
 
-    // Remplissage en tournante : chaque muscle reçoit au moins 1 bloc (exercice polyarticulaire
-    // en priorité), puis on distribue les blocs restants en rotation tant qu'il reste du temps.
-    let safety = 0; let addedSomething = true;
-    while(remaining > 0.4 && addedSomething && safety < 120){
-      addedSomething = false;
-      for(const m of muscles){
-        if(remaining <= 0.4) break;
-        const cursor = cursors[m];
-        const block = nextBlock(m, cursor, remaining/muscles.length, useRecommendedSets, uniformSets);
-        if(!block) continue;
-        if(cursor.blocks>0 && block.est > remaining) continue;
-        const queueItem = {type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
-          restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail, controlledTempo:block.controlledTempo};
-        queue.push(queueItem);
-        resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound, queueRef:queueItem});
-        totalUsed += block.est;
-        remaining -= block.est;
-        cursor.poolIdx++;
-        cursor.blocks++;
-        addedSomething = true;
+    let remainingNeed = {};
+    muscles.forEach(m=>{ remainingNeed[m] = Math.max(0, (musclesFlat[m] ? musclesFlat[m].target - musclesFlat[m].done : 0)); });
+
+    // En circuit : le temps réellement écoulé se mesure par simulation complète (rotation + repos
+    // de tour), pas par simple somme de blocs. En groupe : le suivi `remaining` classique reste
+    // fiable (repos réel entre séries, déjà correctement compté par blockTimeMin).
+    function circuitElapsedMin(){ return simulateCircuitMin(toCircuitItems(resultLines)); }
+    function fillTargetReached(targetMin){
+      return sessionFormat==='circuit' ? circuitElapsedMin() >= targetMin - 0.3 : remaining <= 0.4;
+    }
+
+    function runFillPass(muscleList, targetMin){
+      let safety2 = 0; let addedSomething2 = true;
+      while(!fillTargetReached(targetMin) && addedSomething2 && safety2 < 120){
+        addedSomething2 = false;
+        for(const m of muscleList){
+          if(fillTargetReached(targetMin)) break;
+          if(!cursors[m]) cursors[m] = {poolIdx:0, blocks:0};
+          if(remainingNeed[m] == null) remainingNeed[m] = Math.max(0, (musclesFlat[m] ? musclesFlat[m].target - musclesFlat[m].done : 0));
+          if(remainingNeed[m] <= 0) continue;
+          const cursor = cursors[m];
+          const budgetHint = sessionFormat==='circuit' ? Math.max(1, (targetMin - circuitElapsedMin())/muscleList.length) : remaining/muscleList.length;
+          const block = nextBlock(m, cursor, budgetHint, useRecommendedSets, uniformSets, remainingNeed[m]);
+          if(!block) continue;
+          if(sessionFormat!=='circuit' && cursor.blocks>0 && block.est > remaining) continue;
+          const queueItem = {type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
+            restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail, controlledTempo:block.controlledTempo};
+          queue.push(queueItem);
+          resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound, queueRef:queueItem});
+          totalUsed += block.est;
+          remaining -= block.est;
+          cursor.poolIdx++;
+          cursor.blocks++;
+          Object.entries(block.muscles).forEach(([m2,w])=>{
+            if(remainingNeed[m2] != null) remainingNeed[m2] = Math.max(0, remainingNeed[m2] - block.sets*w);
+          });
+          addedSomething2 = true;
+        }
+        safety2++;
       }
-      safety++;
+    }
+    // Le principal (+extension+dernier recours) vise renfoTargetMin - core, pour laisser sa place
+    // garantie au core finisher ensuite ; s'il n'y a pas de core, vise directement le total.
+    const mainTargetMin = renfoTargetMin - effectiveCoreMin;
+    runFillPass(muscles, mainTargetMin);
+
+    // S'il reste un vrai créneau une fois les muscles choisis épuisés (cible atteinte ou plus de
+    // pool dispo), on ÉTEND la sélection à un autre muscle qui en a encore besoin, plutôt que de
+    // dépasser ceux déjà couverts ou de laisser le créneau vide. Reste dans la même logique de
+    // catégorie si le mode auto structuré était actif (Push reste Push, etc.).
+    if(!fillTargetReached(mainTargetMin)){
+      const categoryFilter = CATEGORY_MUSCLES[autoCategory];
+      const candidates = Object.keys(musclesFlat)
+        .filter(m => !muscles.includes(m))
+        .filter(m => !categoryFilter || categoryFilter.includes(m))
+        .filter(m => effectiveCoreMin<=0 || !['Abdos','Gainage','Obliques','Lombaires'].includes(m)) // le tronc reste réservé au bloc core dédié plus bas s'il est activé
+        .map(name=>{
+          const d = musclesFlat[name];
+          return { name, group:d.group, deficit:(d.target-d.done)/Math.max(1,d.target), lastTrained:d.lastTrained, lastSetsCount:d.lastSetsCount, minRecovery:d.minRecovery, target:d.target, done:d.done };
+        })
+        .filter(isMuscleEligible)
+        .sort((a,b)=>b.deficit-a.deficit);
+      let addedMuscle = false;
+      for(const c of candidates){
+        if(fillTargetReached(mainTargetMin)) break;
+        muscles.push(c.name);
+        addedMuscle = true;
+      }
+      if(addedMuscle) runFillPass(muscles, mainTargetMin);
+    }
+
+    // Dernier recours : catégorie resserrée (Push/Pull...) dont tous les muscles ont déjà atteint
+    // leur cible cette semaine, mais du temps demandé reste non comblé et aucun autre muscle n'est
+    // disponible dans la catégorie pour l'absorber. Progressif (petits incréments, on s'arrête dès
+    // que le temps est comblé) plutôt que de débloquer d'un coup jusqu'à la cible complète.
+    if(!fillTargetReached(mainTargetMin)){
+      let rounds = 0;
+      while(!fillTargetReached(mainTargetMin) && rounds < 6){
+        let bumped = false;
+        muscles.forEach(m=>{
+          if((remainingNeed[m]||0) < 6){
+            remainingNeed[m] = (remainingNeed[m]||0) + 3;
+            bumped = true;
+          }
+        });
+        if(!bumped) break;
+        const beforeElapsed = sessionFormat==='circuit' ? circuitElapsedMin() : remaining;
+        runFillPass(muscles, mainTargetMin);
+        const afterElapsed = sessionFormat==='circuit' ? circuitElapsedMin() : remaining;
+        if(afterElapsed === beforeElapsed) break; // plus de progrès possible (pool épuisé), inutile d'insister
+        rounds++;
+      }
+    }
+
+    // Core en fin de séance — vise maintenant le total complet (renfoTargetMin), pas un budget
+    // séparé : le principal s'est arrêté à mainTargetMin pour lui laisser sa place garantie.
+    if(effectiveCoreMin > 0){
+      const coreMuscles = ['Abdos','Gainage','Obliques','Lombaires'].filter(m => !muscles.includes(m));
+      if(coreMuscles.length){
+        runFillPass(coreMuscles, renfoTargetMin);
+        muscles = muscles.concat(coreMuscles);
+      }
     }
 
     // Étirement de clôture (~10% du temps), ciblé sur les muscles travaillés aujourd'hui.
@@ -1561,8 +1883,8 @@
     previewMuscles = muscles;
     previewTotalUsedBeforeStretch = totalUsed;
     previewWarmup = warmup;
-    if(includeClosingStretch && totalUsed > warmup){
-      const stretchBudgetSec = Math.round((totalUsed - warmup) * 60 * 0.10);
+    if(includeClosingStretch && estimatedStretchMin > 0){
+      const stretchBudgetSec = estimatedStretchMin * 60;
       const { picked, used } = pickClosingStretches(muscles, stretchBudgetSec);
       picked.forEach(p=>{
         pushStretchItem(queue, p, {targetSets:1, currentSet:1});
@@ -1583,45 +1905,17 @@
       if(controlled.length) queue = [...controlled, ...rest];
     }
 
-    // L'échauffement était compté dans le budget temps (variable warmup) mais jamais généré comme
-    // une vraie étape guidée — on l'ajoute maintenant en tête de queue pour de vrai.
+    // Échauffement : exercices distincts liés aux muscles réellement travaillés aujourd'hui (même
+    // principe que les étirements de clôture), plutôt qu'un seul gros bloc générique.
     if(warmup > 0){
-      queue.unshift({type:'warmup', pattern:'Échauffement', name:'Échauffement général', holdSeconds:warmup*60,
-        instr:"Montée en régime progressive : mobilité articulaire (chevilles, hanches, épaules), quelques répétitions légères des mouvements à venir, rythme cardiaque qui augmente doucement.",
-        targetSets:1, currentSet:1});
+      const { picked } = pickWarmupExercises(muscles, warmup*60);
+      picked.slice().reverse().forEach(p=>{
+        queue.unshift({type:'warmup', pattern:'Échauffement', name:p.name, holdSeconds:p.sec, instr:p.instr, targetSets:1, currentSet:1});
+      });
     }
 
     lastGeneratedQueue = queue;
     totalUsed = Math.round(totalUsed);
-
-    // Simule le vrai déroulé circuit (rotation entre exercices, 20s transition, 90s entre tours)
-    // au lieu d'une approximation — pour que le temps affiché corresponde à la vraie séance.
-    // Convention circuit : 40s de travail par série (80s si unilatéral), 20s de transition.
-    const CIRCUIT_WORK_SEC = 40;
-    const CIRCUIT_TRANSITION_SEC = 20;
-    const CIRCUIT_ROUND_REST_SEC = 90;
-    function simulateCircuitMin(items){
-      if(!items.length) return 0;
-      const state = items.map(it=>it.sets);
-      const n = items.length;
-      function nextIdx(from){
-        for(let step=1; step<=n; step++){ const i=(from+step)%n; if(state[i]>0) return i; }
-        return null;
-      }
-      let cur = state.findIndex(s=>s>0);
-      if(cur===-1) return 0;
-      let totalSec = 0, guard = 0;
-      while(guard<500){
-        totalSec += items[cur].workSec;
-        state[cur]--;
-        const nxt = nextIdx(cur);
-        if(nxt===null) break;
-        totalSec += (nxt<=cur) ? CIRCUIT_ROUND_REST_SEC : CIRCUIT_TRANSITION_SEC; // repos de tour si on boucle, sinon transition
-        cur = nxt;
-        guard++;
-      }
-      return totalSec/60;
-    }
 
     const isCircuitFormat = sessionFormat==='circuit' && resultLines.length>1;
     let displayedTotal = totalUsed;
@@ -1723,8 +2017,8 @@
     // les exercices renfo et l'échauffement type 'warmup' ne sont jamais touchés).
     lastGeneratedQueue = lastGeneratedQueue.filter(q => q.type !== 'hold');
     previewStretchLines = [];
-    if(includeClosingStretch && previewTotalUsedBeforeStretch > previewWarmup){
-      const stretchBudgetSec = Math.round((previewTotalUsedBeforeStretch - previewWarmup) * 60 * 0.10);
+    if(includeClosingStretch){
+      const stretchBudgetSec = Math.min(5, Math.round(selectedTime * 0.10)) * 60;
       const { picked } = pickClosingStretches(previewMuscles, stretchBudgetSec);
       picked.forEach(p=>{
         pushStretchItem(lastGeneratedQueue, p, {targetSets:1, currentSet:1});
@@ -1966,6 +2260,7 @@
     if(cardioLogIntensity === 'intense') weeklyProgress.cardioHiit += cardioLogValue;
     else weeklyProgress.cardioLeger += cardioLogValue;
     renderGroupOverview();
+    renderDashMuscleChart();
     renderRemainingTime();
     if(typeof saveState==='function') saveState();
     document.getElementById('result-zone').innerHTML =
@@ -2275,6 +2570,58 @@
     };
   }
 
+  // Totaux glissants sur N jours (contrairement à "cette semaine" qui repart de zéro chaque lundi)
+  // — reconstruit depuis exerciseLog puisque musclesData.done ne connaît que le compteur hebdo
+  // courant, pas l'historique jour par jour.
+  function computeRollingTotals(days){
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().slice(0,10);
+    let jambes=0, haut=0, tronc=0;
+    exerciseLog.forEach(e=>{
+      if(e.date < cutoffStr) return;
+      const def = EXERCISE_DEFS[e.exercise];
+      if(!def || !def.muscles) return;
+      Object.entries(def.muscles).forEach(([m,w])=>{
+        const d = musclesFlat[m];
+        if(!d) return;
+        if(d.group==='jambes') jambes += w;
+        else if(d.group==='haut') haut += w;
+        else if(d.group==='tronc') tronc += w;
+      });
+    });
+    return { jambes: Math.round(jambes*10)/10, haut: Math.round(haut*10)/10, tronc: Math.round(tronc*10)/10 };
+  }
+
+  let dashPeriod = 'week';
+  function selectDashPeriod(el){
+    dashPeriod = el.dataset.period;
+    document.querySelectorAll('#dash-period-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderDashMuscleChart();
+  }
+  function renderDashMuscleChart(){
+    const wrap = document.getElementById('dash-muscle-chart');
+    if(!wrap) return;
+    const totals = dashPeriod==='rolling' ? computeRollingTotals(7) : computeCurrentWeekTotals();
+    const max = Math.max(1, totals.jambes, totals.haut, totals.tronc);
+    const rows = [
+      { label:'Jambes', val:totals.jambes, color:'var(--petrol)' },
+      { label:'Haut du corps', val:totals.haut, color:'var(--amber)' },
+      { label:'Tronc', val:totals.tronc, color:'var(--green)' }
+    ];
+    let html = '<div class="chart-card">';
+    rows.forEach(r=>{
+      const pct = Math.round(100*r.val/max);
+      html += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;">'+
+        '<div style="width:88px; color:var(--text-dim);">'+r.label+'</div>'+
+        '<div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:'+pct+'%; background:'+r.color+';"></div></div>'+
+        '<div style="font-family:var(--font-data); font-size:12px; width:40px; text-align:right;">'+r.val+'</div></div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
   // Semaine du programme — calculée depuis la vraie date, incrémente automatiquement tous les 7
   // jours depuis le 1er septembre 2026. Si la semaine calculée diffère de la dernière connue
   // (stockée), on réinitialise automatiquement la progression hebdo (comme resetWeekProgress()).
@@ -2420,6 +2767,7 @@
     m.target = Math.max(0, m.target + delta);
     renderVolumeSettings();
     renderGroupOverview();
+    renderDashMuscleChart();
     renderRemainingTime(); // couvre dashboard + Réglages, pas juste le total local
     if(typeof saveState==='function') saveState();
   }
@@ -2824,7 +3172,10 @@
             '<button class="sec-btn" style="flex:0 0 auto; padding:0 14px;" onclick="cancelLogSet()">Annuler</button></div>';
           html += '</div>';
         } else {
-          html += '<button class="log-btn" onclick="startLogSet(\''+ex.name.replace(/'/g,"\\'")+'\')">+ Enregistrer une série</button>';
+          html += '<div style="display:flex; gap:8px;">'+
+            '<button class="log-btn" style="flex:1;" onclick="startLogSet(\''+ex.name.replace(/'/g,"\\'")+'\')">+ Enregistrer une série</button>'+
+            '<button class="sec-btn" style="flex:0 0 auto; padding:0 12px;" onclick="removeSet(\''+ex.name.replace(/'/g,"\\'")+'\')" title="Retirer une série de cet exercice (corrige une erreur de saisie)">➖</button>'+
+            '</div>';
         }
       } else {
         html += '<div class="missing-note">⚠ Matériel manquant — coche-le dans Réglages</div>';
@@ -2833,6 +3184,34 @@
     });
     if(pool.length===0) html = '<div style="font-size:12px; color:var(--text-dim);">Aucun exercice dans la base pour ce muscle pour l\'instant.</div>';
     document.getElementById('muscle-detail-list').innerHTML = html;
+  }
+
+  // Retire le crédit d'une série pour CET exercice — symétrique de creditMuscles, décrémente tous
+  // les muscles réels de l'exercice (pas juste celui affiché), jamais en dessous de 0. Pensé pour
+  // corriger une erreur de saisie (mauvais exercice loggé, doublon...) sans devoir tout réinitialiser.
+  function removeSet(exerciseName){
+    const def = EXERCISE_DEFS[exerciseName];
+    if(!def || !def.muscles){
+      if(!confirm('Retirer une série de "'+exerciseName+'" du muscle '+openMuscleContext+' ?')) return;
+      const d = musclesFlat[openMuscleContext];
+      d.done = Math.max(0, Math.round((d.done - 1)*100)/100);
+      musclesData[d.group][openMuscleContext].done = d.done;
+    } else {
+      const parts = Object.keys(def.muscles).map(m=>m+' -'+def.muscles[m]).join(', ');
+      if(!confirm('Retirer une série de "'+exerciseName+'" ? Ça enlèvera : '+parts)) return;
+      Object.entries(def.muscles).forEach(([m,w])=>{
+        const d = musclesFlat[m];
+        if(!d) return;
+        d.done = Math.max(0, Math.round((d.done - w)*100)/100);
+        musclesData[d.group][m].done = d.done;
+      });
+    }
+    renderMuscleDetail();
+    renderSeancesList();
+    renderGroupOverview();
+    renderDashMuscleChart();
+    renderRemainingTime();
+    if(typeof saveState==='function') saveState();
   }
 
   function startLogSet(exerciseName){
@@ -2884,6 +3263,7 @@
     renderMuscleDetail();
     renderSeancesList();
     renderGroupOverview();
+    renderDashMuscleChart();
     renderVolumeSettings();
     renderRemainingTime();
     if(typeof saveState==='function') saveState();
@@ -2900,7 +3280,7 @@
   // Colore la bordure de chaque puce muscle selon son niveau d'entraînement de la semaine — même
   // code couleur que le dashboard, pour voir en un coup d'œil qui est en retard avant de choisir.
   function refreshPatternChipColors(){
-    document.querySelectorAll('#pattern-chips .chip[data-pattern]').forEach(el=>{
+    document.querySelectorAll('#pattern-chips .chip[data-pattern], #manual-pattern-chips .chip[data-pattern]').forEach(el=>{
       const d = musclesFlat[el.dataset.pattern];
       if(!d) return;
       const pct = d.target ? Math.round(100*d.done/d.target) : 0;
@@ -2919,6 +3299,7 @@
   function toggleGroup(g){
     expandedGroup = (expandedGroup===g) ? null : g;
     renderGroupOverview();
+    renderDashMuscleChart();
   }
   function renderGroupOverview(){
     const wrap = document.getElementById('group-overview');
@@ -2985,6 +3366,7 @@
     wrap.innerHTML = html;
   }
   renderGroupOverview();
+  renderDashMuscleChart();
   renderVolumeSettings();
   renderSeancesList();
   renderBilan();
@@ -3068,7 +3450,7 @@
     if(session.format==='circuit'){ circuitValidateSet(); return; }
     const ex = curEx();
     saveCurrentInputToLog(ex.name);
-    if(ex.type==='strength' && ex.muscles){ creditMuscles(ex.muscles); renderGroupOverview(); renderRemainingTime(); if(typeof saveState==='function') saveState(); }
+    if(ex.type==='strength' && ex.muscles){ creditMuscles(ex.muscles); renderGroupOverview(); renderDashMuscleChart(); renderRemainingTime(); if(typeof saveState==='function') saveState(); }
     if(ex.currentSet < ex.targetSets){ ex.currentSet++; startRestTimer(); }
     else { advanceExercise(); }
   }
@@ -3114,6 +3496,7 @@
       if(ex.type==='strength' && ex.muscles){ creditMuscles(ex.muscles); }
     }
     renderGroupOverview();
+    renderDashMuscleChart();
     renderRemainingTime();
     if(typeof saveState==='function') saveState();
     ex.currentSet++;
@@ -3338,6 +3721,7 @@
     // (où le premier item de la queue n'est pas 'hold', donc firstType ne suffit pas).
     if(session.stretchSecondsDone > 0) weeklyProgress.etirement += session.stretchSecondsDone/60;
     renderGroupOverview();
+    renderDashMuscleChart();
     renderRemainingTime();
     if(typeof saveState==='function') saveState();
 
@@ -3385,6 +3769,7 @@
     // reflète immédiatement l'état rechargé (poids/volumes/bilan/etc.), plutôt que les valeurs
     // d'exemple par défaut avec lesquelles la page vient de se charger une première fois.
     renderGroupOverview();
+    renderDashMuscleChart();
     renderVolumeSettings();
     renderSeancesList();
     renderBilan();
