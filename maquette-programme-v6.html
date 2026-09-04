@@ -168,6 +168,16 @@
   .result-line-interactive .rd{ font-family:var(--font-data); font-size:12px; color:var(--text-dim); white-space:nowrap; margin-left:10px;}
   .cycle-btn{ background:var(--surface); border:1px solid var(--line); color:var(--petrol); width:32px; height:32px;
     border-radius:8px; font-size:15px; cursor:pointer; flex-shrink:0; }
+  .cardio-log-adjust{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px; }
+  .cardio-log-adjust .stepper-btn{ flex-shrink:0; }
+  .cardio-log-num{ width:72px; text-align:center; font-family:var(--font-data); font-size:20px; font-weight:700;
+    color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 4px; }
+  .saved-session-row{ display:flex; align-items:center; gap:6px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .saved-session-row:last-child{ border-bottom:none; }
+  .saved-session-row .ssn-main{ flex:1; min-width:0; cursor:pointer; }
+  .saved-session-row .ssn-name{ font-size:14px; font-weight:600; color:var(--text); }
+  .saved-session-row .ssn-meta{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+  .ssn-icon-btn{ background:var(--surface); border:1px solid var(--line); width:32px; height:32px; border-radius:8px; font-size:14px; cursor:pointer; flex-shrink:0; }
   .protocol-box{ font-size:12.5px; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:13px; line-height:1.55; margin-top:12px;}
 
   .sess-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
@@ -314,12 +324,21 @@
     <div id="muscle-detail-list"><!-- généré par openMuscleDetail() --></div>
   </section>
 
+  <!-- ============ SÉANCES SAUVEGARDÉES ============ -->
+  <section id="seances-sauvegardees">
+    <button class="back-btn" onclick="showSection('generateur', null)">← Retour</button>
+    <div class="detail-title">Mes séances sauvegardées</div>
+    <div class="detail-sub">Prépare une séance à l'avance (ex. voyage, élastique uniquement), retrouve-la ici sans tout reconfigurer.</div>
+    <div id="saved-sessions-list"><!-- généré par renderSavedSessions() --></div>
+  </section>
+
   <!-- ============ GÉNÉRATEUR ============ -->
   <section id="generateur">
     <button class="back-btn" onclick="showSection('dashboard','dashboard')">← Retour</button>
     <div class="detail-title" id="gen-title" style="margin:0;">Composer ma séance</div>
     <span class="mode-pill renfo" id="gen-pill">💪 Renfo</span>
     <div class="detail-sub" style="margin-top:10px;">Choisis le temps, laisse-toi guider.</div>
+    <button class="link-btn" style="margin-bottom:10px;" onclick="showSection('seances-sauvegardees', null); renderSavedSessions();">📂 Mes séances sauvegardées (<span id="saved-count">0</span>)</button>
 
     <div class="field-label">Temps disponible</div>
     <div class="chip-row" id="time-chips">
@@ -327,6 +346,9 @@
       <div class="chip sel" data-time="30" onclick="selectTime(this)">30 min</div>
       <div class="chip" data-time="45" onclick="selectTime(this)">45 min</div>
       <div class="chip" data-time="60" onclick="selectTime(this)">60 min</div>
+      <div class="chip cardio-only-time" style="display:none;" data-time="75" onclick="selectTime(this)">75 min</div>
+      <div class="chip cardio-only-time" style="display:none;" data-time="90" onclick="selectTime(this)">90 min</div>
+      <div class="chip cardio-only-time" style="display:none;" data-time="120" onclick="selectTime(this)">120 min</div>
     </div>
 
     <div id="renfo-options">
@@ -501,21 +523,8 @@
     <div id="weekly-log-content"><!-- généré par renderWeeklyLog() --></div>
     <div id="historique-content"><!-- généré par renderHistorique() --></div>
 
-    <h2 class="section-title">Évolution du volume par groupe</h2>
-    <div class="chart-card">
-      <div class="chart-title">% objectif atteint par semaine</div>
-      <div class="chart-sub">Jambes / Haut du corps / Tronc — exemple illustratif</div>
-      <svg width="100%" height="90" viewBox="0 0 320 90" preserveAspectRatio="none">
-        <polyline points="10,60 100,50 190,45 300,35" fill="none" stroke="#2fa8a0" stroke-width="2"/>
-        <polyline points="10,68 100,58 190,52 300,48" fill="none" stroke="#e8a33d" stroke-width="2"/>
-        <polyline points="10,45 100,40 190,30 300,20" fill="none" stroke="#5cb85c" stroke-width="2"/>
-      </svg>
-      <div style="display:flex; gap:14px; margin-top:8px;">
-        <div style="font-size:10.5px; color:var(--text-faint);"><span style="color:var(--petrol);">●</span> Jambes</div>
-        <div style="font-size:10.5px; color:var(--text-faint);"><span style="color:var(--amber);">●</span> Haut du corps</div>
-        <div style="font-size:10.5px; color:var(--text-faint);"><span style="color:var(--green);">●</span> Tronc</div>
-      </div>
-    </div>
+    <h2 class="section-title">Évolution du volume par catégorie</h2>
+    <div id="weekly-volume-charts"><!-- généré par renderWeeklyVolumeCharts() --></div>
   </section>
 
 
@@ -562,6 +571,7 @@
     jambes: {
       Quadriceps: { target:14, done:0, lastTrained:99, lastSetsCount:0, minRecovery:2 },
       Ischios:    { target:16, done:0, lastTrained:99, lastSetsCount:0, minRecovery:2 },
+      Fessiers:   { target:10, done:0, lastTrained:99, lastSetsCount:0, minRecovery:1 },
       Mollets:    { target:16, done:0, lastTrained:99, lastSetsCount:0, minRecovery:1 },
       Adducteurs: { target:8,  done:0, lastTrained:99, lastSetsCount:0, minRecovery:2 },
       Abducteurs: { target:14, done:0, lastTrained:99, lastSetsCount:0, minRecovery:1 }
@@ -578,7 +588,6 @@
       Abdos:      { target:10, done:0, lastTrained:99, lastSetsCount:0, minRecovery:0 },
       Gainage:    { target:12, done:0, lastTrained:99, lastSetsCount:0, minRecovery:0 },
       Obliques:   { target:8,  done:0, lastTrained:99, lastSetsCount:0, minRecovery:0 },
-      Fessiers:   { target:10, done:0, lastTrained:99, lastSetsCount:0, minRecovery:1 },
       Lombaires:  { target:8,  done:0, lastTrained:99, lastSetsCount:0, minRecovery:1 }
     }
   };
@@ -629,6 +638,8 @@
         lastKnownWeek: lastKnownWeek,
         volState: volState,
         exerciseLog: exerciseLog,
+        savedSessions: savedSessions,
+        weeklyTotalsHistory: weeklyTotalsHistory,
         savedAt: new Date().toISOString()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -671,6 +682,8 @@
       if(typeof state.lastKnownWeek === 'number') lastKnownWeek = state.lastKnownWeek;
       if(state.volState) Object.assign(volState, state.volState);
       if(Array.isArray(state.exerciseLog)) exerciseLog = state.exerciseLog;
+      if(Array.isArray(state.savedSessions)) savedSessions = state.savedSessions;
+      if(Array.isArray(state.weeklyTotalsHistory)) weeklyTotalsHistory = state.weeklyTotalsHistory;
 
       return true;
     } catch(e) {
@@ -726,11 +739,11 @@
   // (1,0 = principal, 0,5 = secondaire — cf. pondération musculaire.xlsx). Les pools par
   // muscle sont dérivés automatiquement plus bas, avec badge Principal/Secondaire affiché.
   const EXERCISE_DEFS = {
-    'Squat': { equip:[], instr:"Amplitude complète, tempo contrôlé — à main libre ou avec haltères tenues au niveau des épaules.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
+    'Squat': { equip:[], instr:"Amplitude complète, tempo contrôlé — à main libre ou avec haltères tenues au niveau des épaules.", unilateral:false, recSets:3, compound:true, restSec:75, controlledTempo:true, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
       detail:{ position:"Pieds largeur épaules, pointes légèrement vers l'extérieur. Mains libres devant pour l'équilibre, ou une haltère dans chaque main au niveau des épaules.", mouvement:"Descendre en poussant les hanches vers l'arrière et en pliant les genoux, jusqu'à cuisses parallèles au sol si possible. Genoux alignés avec les orteils.", tempo:"3s descente, 1s pause en bas, 2s remontée.", repRange:"12-20 reps à main libre ; 10-15 reps avec haltères selon la charge.", vigilance:"Talons qui restent au sol, dos neutre (pas arrondi). Réduire l'amplitude si douleur au genou plutôt que forcer." } },
-    'Squat élastique': { equip:["elastic_light", "elastic_strong"], instr:"Élastique tendu en position basse, genoux qui ne rentrent pas vers l\'intérieur.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
+    'Squat élastique': { equip:["elastic_light", "elastic_strong"], instr:"Élastique tendu en position basse, genoux qui ne rentrent pas vers l\'intérieur.", unilateral:false, recSets:3, compound:true, restSec:75, controlledTempo:true, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
       detail:{ position:"Élastique sous les pieds, tenu au niveau des épaules, pieds largeur épaules.", mouvement:"Même trajectoire que le squat classique — la résistance de l\'élastique augmente en fin de mouvement (remontée).", tempo:"3s descente, 1s pause, 2s remontée contre la résistance.", repRange:"12-15 reps.", vigilance:"Les genoux ne doivent pas partir vers l\'intérieur sous la tension de l\'élastique — piège classique de cet exercice." } },
-    'Squat bulgare': { equip:["db3", "db5"], instr:"Pied arrière juste posé, tronc vertical, descente lente (tempo 3s).", unilateral:true, recSets:3, compound:true, restSec:105, muscles:{'Fessiers':0.5, 'Quadriceps':1.0},
+    'Squat bulgare': { equip:["db3", "db5"], instr:"Pied arrière juste posé, tronc vertical, descente lente (tempo 3s).", unilateral:true, recSets:3, compound:true, restSec:105, controlledTempo:true, muscles:{'Fessiers':0.5, 'Quadriceps':1.0},
       detail:{
         position:"Pied arrière posé sur une chaise ou un banc (juste les orteils, pas tout le pied), pied avant à 60-70cm devant, orienté légèrement en dedans pour la stabilité.",
         mouvement:"Descendre en pliant le genou avant jusqu'à ~90°, le genou reste aligné avec les orteils (ne part pas vers l'intérieur). Buste vertical ou légèrement penché en avant, pas de cambrure excessive du dos.",
@@ -744,13 +757,13 @@
       detail:{ position:"Face à un support stable (chaise/step), pied posé dessus.", mouvement:"Pousser à travers le talon du pied sur le support pour monter tout le corps, sans élan de la jambe au sol.", tempo:"2s montée, 2s descente contrôlée.", repRange:"10-12 reps par jambe.", vigilance:"Éviter de sauter en poussant sur la jambe au sol — le travail doit venir de la jambe en haut." } },
     'Squat isométrique dos au mur': { equip:[], instr:"Dos au mur, cuisses à 90°, tenue statique — le plus doux pour le genou.", unilateral:false, recSets:2, compound:false, restSec:45, isHold:true, muscles:{'Quadriceps':1.0} ,
       detail:{ position:"Dos au mur, pieds à ~40cm du mur, glisser vers le bas jusqu\'à cuisses à 90° (ou l\'angle max supportable).", mouvement:"Tenue statique, poids réparti sur toute la plante des pieds.", tempo:"Isométrique — pas de mouvement.", repRange:"20-45s de tenue (progresser en durée, pas en reps).", vigilance:"Les genoux ne doivent pas dépasser les orteils ; arrêter si douleur au genou (pas juste fatigue musculaire normale)." } },
-    'Demi-squat guidé (salle)': { equip:["gym"], instr:"Trajectoire guidée, amplitude complète, contrôle du tempo à la descente.", unilateral:false, recSets:3, compound:true, restSec:105, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
+    'Demi-squat guidé (salle)': { equip:["gym"], instr:"Trajectoire guidée, amplitude complète, contrôle du tempo à la descente.", unilateral:false, recSets:3, compound:true, restSec:105, controlledTempo:true, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
       detail:{ position:"Sous la barre guidée, pieds légèrement devant l\'axe pour un bon alignement.", mouvement:"Même trajectoire qu\'un squat classique, la machine guide le trajet.", tempo:"3s descente, 2s remontée.", repRange:"8-12 reps.", vigilance:"Ne pas descendre plus bas que ce que la mobilité de hanche permet sans que le bas du dos s\'arrondisse." } },
-    'Presse à cuisses (salle)': { equip:["gym"], instr:"Amplitude complète contrôlée, ne pas verrouiller les genoux en extension.", unilateral:true, recSets:3, compound:true, restSec:105, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
+    'Presse à cuisses (salle)': { equip:["gym"], instr:"Amplitude complète contrôlée, ne pas verrouiller les genoux en extension.", unilateral:true, recSets:3, compound:true, restSec:105, controlledTempo:true, muscles:{'Fessiers':0.5, 'Quadriceps':1.0} ,
       detail:{ position:"Assis, dos plaqué au dossier, pieds largeur épaules sur la plateforme.", mouvement:"Plier les genoux en amenant la plateforme vers soi, puis pousser sans verrouiller complètement les genoux.", tempo:"3s descente, 2s poussée.", repRange:"10-12 reps.", vigilance:"Ne jamais verrouiller les genoux en extension complète — garder une légère flexion pour protéger l\'articulation." } },
-    'Squat sumo': { equip:[], instr:"Pieds larges, pointes vers l\'extérieur, buste vertical.", unilateral:false, recSets:3, compound:true, restSec:75, muscles:{'Fessiers':0.5, 'Adducteurs':1.0, 'Quadriceps':0.5} ,
+    'Squat sumo': { equip:[], instr:"Pieds larges, pointes vers l\'extérieur, buste vertical.", unilateral:false, recSets:3, compound:true, restSec:75, controlledTempo:true, muscles:{'Fessiers':0.5, 'Adducteurs':1.0, 'Quadriceps':0.5} ,
       detail:{ position:"Pieds bien plus larges que les épaules, pointes vers l\'extérieur (~45°).", mouvement:"Descendre en gardant le buste vertical, les genoux suivent la direction des pointes de pieds.", tempo:"3s descente, 2s remontée.", repRange:"12-15 reps.", vigilance:"Ne pas laisser les genoux rentrer vers l\'intérieur — ils restent dans l\'axe des pieds tout du long." } },
-    'RDL haltères': { equip:["db3", "db5"], instr:"Dos plat, hanches reculent en premier, haltères proches des jambes.", unilateral:false, recSets:3, compound:true, restSec:105, muscles:{'Lombaires':0.5, 'Fessiers':1.0, 'Ischios':1.0},
+    'RDL haltères': { equip:["db3", "db5"], instr:"Dos plat, hanches reculent en premier, haltères proches des jambes.", unilateral:false, recSets:3, compound:true, restSec:105, controlledTempo:true, muscles:{'Lombaires':0.5, 'Fessiers':1.0, 'Ischios':1.0},
       detail:{
         position:"Pieds largeur hanches, haltères devant les cuisses, genoux à peine fléchis (pas verrouillés, pas pliés — juste dégagés).",
         mouvement:"Les hanches reculent en premier — ce n'est PAS un squat, les genoux bougent très peu. Dos plat tout du long, haltères qui glissent le long des jambes en descendant, jusqu'à sentir l'étirement des ischios (pas besoin de toucher le sol). Remontée en poussant les hanches vers l'avant, contraction des fessiers en haut.",
@@ -876,7 +889,7 @@
       detail:{ position:"Avant-bras posé sur la cuisse ou un support, poignet libre au bout, haltère en main.", mouvement:"Fléchir le poignet vers le haut, amplitude au poignet uniquement.", tempo:"2s montée, 1s pause, 2s descente.", repRange:"12-15 reps.", vigilance:"Seul le poignet bouge — l\'avant-bras reste immobile sur l\'appui tout du long." } },
     'Suspension à la barre': { equip:["pullbar"], instr:"Suspension passive, omoplates légèrement engagées, pas de balancement.", unilateral:false, recSets:2, compound:true, restSec:45, isHold:true, muscles:{'Épaules':0.5, 'Avant-bras':1.0, 'Dos':0.5} ,
       detail:{ position:"Suspendu à la barre, bras tendus, prise en pronation.", mouvement:"Suspension passive, épaules légèrement engagées (pas complètement relâchées).", tempo:"Isométrique.", repRange:"15-30s de tenue.", vigilance:"Pas de balancement — suspension stable et contrôlée." } },
-    'RDL élastique': { equip:["elastic_strong"], instr:"Élastique sous les pieds, dos plat, hanches reculent en premier.", unilateral:false, recSets:3, compound:true, restSec:90, muscles:{'Lombaires':0.5, 'Fessiers':1.0, 'Ischios':1.0} ,
+    'RDL élastique': { equip:["elastic_strong"], instr:"Élastique sous les pieds, dos plat, hanches reculent en premier.", unilateral:false, recSets:3, compound:true, restSec:90, controlledTempo:true, muscles:{'Lombaires':0.5, 'Fessiers':1.0, 'Ischios':1.0} ,
       detail:{ position:"Élastique fort sous les pieds, extrémités tenues à deux mains devant les cuisses.", mouvement:"Même trajectoire que le RDL haltères — hanches reculent en premier, dos plat.", tempo:"3s descente, 2-3s remontée contre la résistance croissante.", repRange:"12-15 reps.", vigilance:"Le dos ne doit jamais s\'arrondir ; contrôler la remontée sans à-coup malgré la résistance croissante." } },
     'Traction pronation (pull-up)': { equip:["pullbar"], instr:"Mains écartées, paumes vers l\'avant — dos et lats en priorité, moins de biceps.", unilateral:false, recSets:3, compound:true, restSec:105, muscles:{'Dos':1.0, 'Biceps':0.5, 'Avant-bras':0.5} ,
       detail:{ position:"Suspendu à la barre, mains écartées largeur épaules, paumes vers l\'avant.", mouvement:"Tirer le corps vers le haut jusqu\'à ce que le menton dépasse la barre.", tempo:"2s montée, 3s descente contrôlée (la partie la plus formatrice).", repRange:"Max reps propres (viser 5-8 à terme).", vigilance:"Pas de balancement pour prendre de l\'élan — utiliser l\'assistance élastique plutôt que de dégrader la forme." } },
@@ -1226,6 +1239,7 @@
     document.getElementById('renfo-options').style.display = m==='renfo' ? 'block':'none';
     document.getElementById('yoga-options').style.display = m==='yoga' ? 'block':'none';
     document.getElementById('cardio-options').style.display = m==='cardio' ? 'block':'none';
+    document.querySelectorAll('.cardio-only-time').forEach(el=> el.style.display = m==='cardio' ? '' : 'none');
 
     const titleMap = {renfo:'Composer — Renfo', yoga:'Composer — Étirements / Yoga', cardio:'Composer — Cardio'};
     document.getElementById('gen-title').textContent = titleMap[m];
@@ -1431,7 +1445,7 @@
       sets = Math.max(1, Math.min(3, Math.round(remainingBudget/cycleTime)));
     }
     const t = blockTimeMin(sets, ex);
-    return { name:ex.name, sets, instr:ex.instr, unilateral:ex.unilateral, est:t, compound:ex.compound, restSec:ex.restSec, equip:ex.equip, isHold:ex.isHold, muscles:ex.muscles, role:ex.role, focusNote:ex.focusNote, detail:ex.detail };
+    return { name:ex.name, sets, instr:ex.instr, unilateral:ex.unilateral, est:t, compound:ex.compound, restSec:ex.restSec, equip:ex.equip, isHold:ex.isHold, muscles:ex.muscles, role:ex.role, focusNote:ex.focusNote, detail:ex.detail, controlledTempo:ex.controlledTempo };
   }
 
   let includeClosingStretch = true;
@@ -1446,6 +1460,21 @@
 
   // Choisit des étirements en tournante SUR LES MUSCLES SÉLECTIONNÉS (1 par muscle avant de répéter),
   // pour ne pas se retrouver avec 2x le même muscle si plusieurs ont été travaillés. 30s flat/étirement.
+  // Pousse un étirement dans la queue — si per:true (étirement unilatéral), pousse VRAIMENT deux
+  // entrées (Gauche puis Droite), chacune avec sa propre tenue chronométrée, plutôt qu'une seule
+  // entrée étiquetée "2×" qui ne faisait en réalité qu'un seul côté.
+  function pushStretchItem(queue, p, extra, baseName){
+    extra = extra || {};
+    const name = baseName || p.classic;
+    if(p.per){
+      ['Gauche','Droite'].forEach(side=>{
+        queue.push(Object.assign({type:'hold', pattern:'Étirements', name:name+' — '+side, holdSeconds:p.hold, per:false, instr:p.instr, detail:p.detail, muscle:p.muscle}, extra));
+      });
+    } else {
+      queue.push(Object.assign({type:'hold', pattern:'Étirements', name:name, holdSeconds:p.hold, per:false, instr:p.instr, detail:p.detail, muscle:p.muscle}, extra));
+    }
+  }
+
   function pickClosingStretches(musclesWorked, stretchBudgetSec){
     const STRETCH_HOLD = 30;
     const byMuscle = {};
@@ -1470,7 +1499,7 @@
       const pool = byMuscle[m];
       if(pool && pool.length){
         const p = pool[cursors[m] % pool.length];
-        picked.push(Object.assign({}, p, { hold: STRETCH_HOLD, per:false })); // durée simplifiée flat 30s
+        picked.push(Object.assign({}, p, { hold: STRETCH_HOLD })); // durée simplifiée flat 30s, mais per préservé
         used += STRETCH_HOLD;
         cursors[m]++;
       }
@@ -1514,7 +1543,7 @@
         if(!block) continue;
         if(cursor.blocks>0 && block.est > remaining) continue;
         const queueItem = {type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
-          restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail};
+          restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail, controlledTempo:block.controlledTempo};
         queue.push(queueItem);
         resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound, queueRef:queueItem});
         totalUsed += block.est;
@@ -1536,11 +1565,22 @@
       const stretchBudgetSec = Math.round((totalUsed - warmup) * 60 * 0.10);
       const { picked, used } = pickClosingStretches(muscles, stretchBudgetSec);
       picked.forEach(p=>{
-        queue.push({type:'hold', pattern:'Étirements', name:p.classic, holdSeconds:p.hold, per:p.per, instr:p.instr, targetSets:1, currentSet:1, detail:p.detail});
-        stretchLines.push({name:p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
+        pushStretchItem(queue, p, {targetSets:1, currentSet:1});
+        stretchLines.push({name:p.per ? p.classic+' (2 côtés)' : p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
       });
       stretchUsedSec = used;
       totalUsed += used/60;
+    }
+
+    // En circuit, le rythme (~40s de travail serré) pousse à accélérer les répétitions — mauvais
+    // pour les mouvements qui ont besoin d'un tempo lent et contrôlé (RDL, Squat). On les sort donc
+    // du circuit et on les place en tête (bloc séquentiel, vrai repos, rythme libre), le reste
+    // continue en circuit pour l'efficacité. N'a d'effet que si la séance est bien en circuit —
+    // en mode groupe, tout est déjà séquentiel donc rien à changer.
+    if(sessionFormat==='circuit'){
+      const controlled = queue.filter(q => q.controlledTempo);
+      const rest = queue.filter(q => !q.controlledTempo);
+      if(controlled.length) queue = [...controlled, ...rest];
     }
 
     // L'échauffement était compté dans le budget temps (variable warmup) mais jamais généré comme
@@ -1607,7 +1647,10 @@
     html += circuitNote + setsRuleNote;
     html += '<div id="preview-stretch-rows"></div>';
     html += '</div><div style="font-size:11px;color:var(--text-faint);margin-top:8px;">Règle : 3 séries max par exercice — au-delà, 2 exercices pour varier.</div>';
-    html += '<button class="gen-btn primary" onclick="startSession()">✓ Démarrer la séance</button>';
+    html += '<div style="display:flex; gap:8px; margin-top:4px;">'+
+      '<button class="gen-btn primary" style="flex:1;" onclick="startSession()">✓ Démarrer la séance</button>'+
+      '<button class="sec-btn" style="flex:0 0 auto; padding:0 16px;" onclick="saveCurrentSession()" title="Sauvegarder pour plus tard">💾</button>'+
+      '</div>';
     previewResultLines = resultLines;
     previewStretchLines = stretchLines;
     previewSessionFormat = sessionFormat;
@@ -1684,10 +1727,106 @@
       const stretchBudgetSec = Math.round((previewTotalUsedBeforeStretch - previewWarmup) * 60 * 0.10);
       const { picked } = pickClosingStretches(previewMuscles, stretchBudgetSec);
       picked.forEach(p=>{
-        lastGeneratedQueue.push({type:'hold', pattern:'Étirements', name:p.classic, holdSeconds:p.hold, per:p.per, instr:p.instr, targetSets:1, currentSet:1, detail:p.detail});
-        previewStretchLines.push({name:p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
+        pushStretchItem(lastGeneratedQueue, p, {targetSets:1, currentSet:1});
+        previewStretchLines.push({name:p.per ? p.classic+' (2 côtés)' : p.classic, hold:p.hold, per:p.per, muscle:p.muscle});
       });
     }
+    renderPreviewStretchRows();
+  }
+
+  /* ---- Séances sauvegardées : préparer à l'avance, retrouver sans reconfigurer ---- */
+  let savedSessions = [
+    { id:'preset-bas1', name:"Bas1 (Lundi)", createdAt:'2026-09-04', sessionFormat:'circuit', queue:[{"type": "strength", "pattern": "Quadriceps", "patternKey": "Quadriceps", "name": "Demi-squat guidé (salle)", "targetSets": 4, "currentSet": 1, "instr": "Trajectoire guidée, amplitude complète, contrôle du tempo à la descente.", "unilateral": false, "restSec": 105, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Fessiers": 0.5, "Quadriceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sous la barre guidée, pieds légèrement devant l'axe pour un bon alignement.", "mouvement": "Même trajectoire qu'un squat classique, la machine guide le trajet.", "tempo": "3s descente, 2s remontée.", "repRange": "8-12 reps.", "vigilance": "Ne pas descendre plus bas que ce que la mobilité de hanche permet sans que le bas du dos s'arrondisse."}, "controlledTempo": true}, {"type": "strength", "pattern": "Quadriceps", "patternKey": "Quadriceps", "name": "Squat", "targetSets": 3, "currentSet": 1, "instr": "Amplitude complète, tempo contrôlé — à main libre ou avec haltères tenues au niveau des épaules.", "unilateral": false, "restSec": 75, "compound": true, "equip": [], "isHold": false, "muscles": {"Fessiers": 0.5, "Quadriceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Pieds largeur épaules, pointes légèrement vers l'extérieur. Mains libres devant pour l'équilibre, ou une haltère dans chaque main au niveau des épaules.", "mouvement": "Descendre en poussant les hanches vers l'arrière et en pliant les genoux, jusqu'à cuisses parallèles au sol si possible. Genoux alignés avec les orteils.", "tempo": "3s descente, 1s pause en bas, 2s remontée.", "repRange": "12-20 reps à main libre ; 10-15 reps avec haltères selon la charge.", "vigilance": "Talons qui restent au sol, dos neutre (pas arrondi). Réduire l'amplitude si douleur au genou plutôt que forcer."}, "controlledTempo": true}, {"type": "strength", "pattern": "Ischios", "patternKey": "Ischios", "name": "RDL élastique", "targetSets": 4, "currentSet": 1, "instr": "Élastique sous les pieds, dos plat, hanches reculent en premier.", "unilateral": false, "restSec": 90, "compound": true, "equip": ["elastic_strong"], "isHold": false, "muscles": {"Lombaires": 0.5, "Fessiers": 1, "Ischios": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique fort sous les pieds, extrémités tenues à deux mains devant les cuisses.", "mouvement": "Même trajectoire que le RDL haltères — hanches reculent en premier, dos plat.", "tempo": "3s descente, 2-3s remontée contre la résistance croissante.", "repRange": "12-15 reps.", "vigilance": "Le dos ne doit jamais s'arrondir ; contrôler la remontée sans à-coup malgré la résistance croissante."}, "controlledTempo": true}, {"type": "strength", "pattern": "Ischios", "patternKey": "Ischios", "name": "Leg curl machine (salle)", "targetSets": 4, "currentSet": 1, "instr": "Flexion du genou contrôlée, pas d'à-coup à la remontée.", "unilateral": false, "restSec": 60, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Ischios": 1, "Mollets": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé face contre le rembourrage, chevilles sous le rouleau.", "mouvement": "Fléchir les genoux pour amener les talons vers les fesses.", "tempo": "2s flexion, 1s pause, 3s retour contrôlé.", "repRange": "10-12 reps.", "vigilance": "Ne pas cambrer le bas du dos pour aider le mouvement — le bassin reste au contact du banc."}}, {"type": "strength", "pattern": "Adducteurs", "patternKey": "Adducteurs", "name": "Planche Copenhague", "targetSets": 4, "currentSet": 1, "instr": "Jambe du dessus posée sur un appui surélevé, bassin qui reste aligné.", "unilateral": true, "restSec": 50, "compound": true, "equip": ["chair"], "isHold": false, "muscles": {"Obliques": 0.5, "Adducteurs": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sur le côté, jambe du dessus posée sur un appui surélevé (chaise), appui sur l'avant-bras.", "mouvement": "Tenue statique, bassin aligné, corps qui ne s'affaisse pas.", "tempo": "Isométrique.", "repRange": "15-25s de tenue par côté.", "vigilance": "Exercice exigeant — commencer avec des tenues courtes, réduire la hauteur de l'appui si trop difficile."}}, {"type": "strength", "pattern": "Mollets", "patternKey": "Mollets", "name": "Montée sur pointes assise", "targetSets": 3, "currentSet": 1, "instr": "Genoux fléchis à 90°, amplitude complète — accent soléaire.", "unilateral": false, "restSec": 45, "compound": false, "equip": ["chair"], "isHold": false, "muscles": {"Mollets": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Assis, genoux fléchis à 90°, talons au sol, éventuellement du poids sur les genoux.", "mouvement": "Monter sur la pointe des pieds, puis redescendre.", "tempo": "2s montée, 1s pause, 2s descente.", "repRange": "15-20 reps.", "vigilance": "Version assise cible plutôt le soléaire — amplitude complète comme pour la version debout."}}, {"type": "strength", "pattern": "Abducteurs", "patternKey": "Abducteurs", "name": "Marche latérale élastique", "targetSets": 4, "currentSet": 1, "instr": "Élastique aux chevilles, pas latéraux, genoux légèrement fléchis.", "unilateral": true, "restSec": 50, "compound": false, "equip": ["elastic_light"], "isHold": false, "muscles": {"Fessiers": 0.5, "Abducteurs": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique autour des chevilles, légère flexion des genoux, position mi-squat.", "mouvement": "Pas latéraux, en maintenant la tension de l'élastique tout du long.", "tempo": "Rythme contrôlé, pas de précipitation.", "repRange": "10-12 pas par direction.", "vigilance": "Rester en position mi-squat tout du long — ne pas se redresser entre les pas."}}, {"type": "strength", "pattern": "Gainage", "patternKey": "Gainage", "name": "Planche", "targetSets": 4, "currentSet": 1, "instr": "Corps aligné tête-bassin-talons.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": true, "muscles": {"Épaules": 0.5, "Gainage": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Avant-bras au sol, coudes juste sous les épaules, corps aligné tête-bassin-talons, comme une planche rigide.", "mouvement": "Tenue statique — mais pas passive : contracter activement les abdos et les fessiers pendant toute la durée, pas juste \"tenir la position\".", "tempo": "Isométrique (pas de mouvement) — respiration régulière, ne pas bloquer sa respiration.", "repRange": "30-60s de tenue.", "vigilance": "Le bassin ne doit ni s'affaisser (creuser le bas du dos) ni remonter en pyramide — ligne droite du corps tout du long. Si les hanches commencent à trembler et s'affaisser, c'est le signal pour arrêter la série."}}, {"type": "strength", "pattern": "Lombaires", "patternKey": "Lombaires", "name": "Superman", "targetSets": 2, "currentSet": 1, "instr": "Montée modérée, pas d'à-coup.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": false, "muscles": {"Lombaires": 1, "Fessiers": 0.5, "Ischios": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le ventre, bras tendus devant, jambes tendues.", "mouvement": "Lever simultanément bras et jambes du sol, contraction du bas du dos et des fessiers.", "tempo": "2s montée, 1s pause, 2s descente.", "repRange": "10-12 reps.", "vigilance": "Montée modérée, pas d'à-coup — l'objectif est de contrôler le mouvement, pas de monter le plus haut possible."}}], resultLines:[{"pattern": "Quadriceps", "name": "Demi-squat guidé (salle)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Quadriceps", "name": "Squat", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}, {"pattern": "Ischios", "name": "RDL élastique", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Ischios", "name": "Leg curl machine (salle)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Adducteurs", "name": "Planche Copenhague", "sets": 4, "estSec": 340, "unilateral": true, "compound": true}, {"pattern": "Mollets", "name": "Montée sur pointes assise", "sets": 3, "estSec": 140, "unilateral": false, "compound": false}, {"pattern": "Abducteurs", "name": "Marche latérale élastique", "sets": 4, "estSec": 340, "unilateral": true, "compound": false}, {"pattern": "Gainage", "name": "Planche", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Lombaires", "name": "Superman", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}], stretchLines:[] },
+    { id:'preset-haut1', name:"Haut1 (Mardi)", createdAt:'2026-09-04', sessionFormat:'circuit', queue:[{"type": "strength", "pattern": "Dos", "patternKey": "Dos", "name": "Rowing machine (salle)", "targetSets": 4, "currentSet": 1, "instr": "Buste fixe, tirer les coudes vers les hanches, pas d'élan.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Biceps": 0.5, "Dos": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Assis, poitrine contre le support si disponible, poignées tenues bras tendus.", "mouvement": "Tirer les coudes vers l'arrière, omoplates rapprochées, puis retour contrôlé.", "tempo": "2s tirage, 1s pause, 3s retour.", "repRange": "10-12 reps.", "vigilance": "Pas d'élan du buste pour aider le tirage — le dos travaille seul."}}, {"type": "strength", "pattern": "Dos", "patternKey": "Dos", "name": "Tirage assisté à la barre", "targetSets": 3, "currentSet": 1, "instr": "Élastique en assistance sous les pieds ou genoux, tirage complet jusqu'au menton.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["pullbar", "elastic_strong"], "isHold": false, "muscles": {"Biceps": 0.5, "Dos": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, élastique fort en boucle sous un pied ou un genou pour l'assistance.", "mouvement": "Tirer le corps vers le haut jusqu'à ce que le menton dépasse la barre.", "tempo": "2s montée, 3s descente contrôlée (la partie la plus importante).", "repRange": "5-8 reps.", "vigilance": "Ne pas se balancer pour prendre de l'élan — le mouvement doit venir du dos et des bras."}}, {"type": "strength", "pattern": "Pectoraux", "patternKey": "Pectoraux", "name": "Chest press élastique", "targetSets": 4, "currentSet": 1, "instr": "Élastique ancré à hauteur de poitrine.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["elastic_light", "door"], "isHold": false, "muscles": {"Pectoraux": 1, "Épaules": 0.5, "Triceps": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique ancré derrière (porte), une extrémité dans chaque main, à hauteur de poitrine.", "mouvement": "Pousser les mains vers l'avant jusqu'à extension des bras, puis retour contrôlé.", "tempo": "2s poussée, 3s retour.", "repRange": "12-15 reps.", "vigilance": "Garder les omoplates stables — ne pas les laisser partir vers l'avant en fin de mouvement."}}, {"type": "strength", "pattern": "Pectoraux", "patternKey": "Pectoraux", "name": "Pompes classiques", "targetSets": 2, "currentSet": 1, "instr": "Corps aligné, coudes à ~45° du buste.", "unilateral": false, "restSec": 75, "compound": true, "equip": [], "isHold": false, "muscles": {"Pectoraux": 1, "Épaules": 0.5, "Triceps": 0.5, "Abdos": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Mains légèrement plus larges que les épaules, corps aligné tête-bassin-talons (comme une planche), gainage actif dès le départ.", "mouvement": "Descente en pliant les coudes à ~45° du buste (pas complètement écartés à 90°), poitrine qui se rapproche du sol. Remontée en poussant le sol.", "tempo": "2-3s de descente, 1s de pause en bas, remontée contrôlée (pas besoin d'explosif au début).", "repRange": "8-20 reps (double progression : ajouter du lest une fois 20 reps propres atteintes).", "vigilance": "Le bassin ne doit ni s'affaisser (dos qui creuse) ni remonter en pyramide — corps toujours droit. Si la forme complète est trop difficile, faire sur les genoux plutôt que de dégrader la ligne du corps."}}, {"type": "strength", "pattern": "Épaules", "patternKey": "Épaules", "name": "Développé épaules haltères", "targetSets": 2, "currentSet": 1, "instr": "Pousser à la verticale sans cambrer le bas du dos.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["db3", "db5"], "isHold": false, "muscles": {"Épaules": 1, "Triceps": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Assis ou debout, haltères au niveau des épaules, paumes vers l'avant.", "mouvement": "Pousser les haltères au-dessus de la tête jusqu'à extension quasi complète des bras, sans cambrer le bas du dos.", "tempo": "2s poussée, 1s pause en haut, 3s descente contrôlée.", "repRange": "10-12 reps.", "vigilance": "Ne pas cambrer excessivement le bas du dos pour compenser un manque d'amplitude d'épaule — gainer les abdos."}}, {"type": "strength", "pattern": "Biceps", "patternKey": "Biceps", "name": "Curl biceps haltères", "targetSets": 2, "currentSet": 1, "instr": "Coudes fixes proches du buste, pas d'élan.", "unilateral": false, "restSec": 50, "compound": false, "equip": ["db3", "db5"], "isHold": false, "muscles": {"Biceps": 1, "Avant-bras": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Debout, haltères le long du corps, paumes vers l'avant.", "mouvement": "Plier les coudes pour amener les haltères vers les épaules, coudes fixes proches du buste.", "tempo": "2s montée, 1s pause, 3s descente contrôlée.", "repRange": "10-15 reps.", "vigilance": "Pas d'élan du buste ou des épaules pour aider la montée — seul le coude bouge."}}, {"type": "strength", "pattern": "Triceps", "patternKey": "Triceps", "name": "Dips sur chaise", "targetSets": 1, "currentSet": 1, "instr": "Descente contrôlée, coudes proches du corps, pas de douleur à l'épaule.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["chair"], "isHold": false, "muscles": {"Pectoraux": 0.5, "Épaules": 0.5, "Triceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Mains sur le bord de la chaise, jambes tendues devant, fesses juste devant le bord.", "mouvement": "Descendre en pliant les coudes vers l'arrière, puis pousser pour remonter.", "tempo": "2s descente, 2s remontée.", "repRange": "10-15 reps.", "vigilance": "Arrêter la descente si douleur à l'épaule ; garder les coudes proches du corps plutôt qu'écartés."}}, {"type": "strength", "pattern": "Avant-bras", "patternKey": "Avant-bras", "name": "Suspension à la barre", "targetSets": 3, "currentSet": 1, "instr": "Suspension passive, omoplates légèrement engagées, pas de balancement.", "unilateral": false, "restSec": 45, "compound": true, "equip": ["pullbar"], "isHold": true, "muscles": {"Épaules": 0.5, "Avant-bras": 1, "Dos": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, bras tendus, prise en pronation.", "mouvement": "Suspension passive, épaules légèrement engagées (pas complètement relâchées).", "tempo": "Isométrique.", "repRange": "15-30s de tenue.", "vigilance": "Pas de balancement — suspension stable et contrôlée."}}, {"type": "strength", "pattern": "Gainage", "patternKey": "Gainage", "name": "Planche dynamique", "targetSets": 3, "currentSet": 1, "instr": "Depuis la planche, toucher l'épaule opposée sans faire bouger le bassin.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": false, "muscles": {"Épaules": 0.5, "Gainage": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Position de planche classique (avant-bras ou mains au sol).", "mouvement": "Toucher l'épaule opposée avec une main sans faire bouger le bassin.", "tempo": "Mouvement lent et contrôlé.", "repRange": "8-10 reps par côté.", "vigilance": "Le bassin ne doit pas se balancer d'un côté à l'autre — c'est le vrai test de cet exercice."}}, {"type": "strength", "pattern": "Abdos", "patternKey": "Abdos", "name": "Abdos suspendu (relevé de jambes à la barre)", "targetSets": 4, "currentSet": 1, "instr": "Suspendu, jambes tendues ou fléchies, remontée contrôlée sans élan — pas de balancement.", "unilateral": false, "restSec": 60, "compound": true, "equip": ["pullbar"], "isHold": false, "muscles": {"Abdos": 1, "Avant-bras": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, jambes tendues ou légèrement fléchies.", "mouvement": "Remonter les jambes vers la poitrine (ou horizontal si tendu) sans élan.", "tempo": "2s montée, 1s pause, 3s descente contrôlée.", "repRange": "6-10 reps.", "vigilance": "Pas de balancement du corps pour créer de l'élan — le mouvement doit venir des abdos."}}, {"type": "strength", "pattern": "Obliques", "patternKey": "Obliques", "name": "Planche latérale", "targetSets": 2, "currentSet": 1, "instr": "Hanches ne s'affaissent pas vers le sol.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": true, "muscles": {"Épaules": 0.5, "Obliques": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sur le côté, appui sur l'avant-bras, corps aligné des pieds à la tête.", "mouvement": "Tenue statique, hanches qui ne s'affaissent pas vers le sol.", "tempo": "Isométrique.", "repRange": "20-40s de tenue par côté.", "vigilance": "Les hanches ne doivent pas s'affaisser vers le sol — signal que la position n'est plus tenue correctement."}}], resultLines:[{"pattern": "Dos", "name": "Rowing machine (salle)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Dos", "name": "Tirage assisté à la barre", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}, {"pattern": "Pectoraux", "name": "Chest press élastique", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Pectoraux", "name": "Pompes classiques", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Épaules", "name": "Développé épaules haltères", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Biceps", "name": "Curl biceps haltères", "sets": 2, "estSec": 100, "unilateral": false, "compound": false}, {"pattern": "Triceps", "name": "Dips sur chaise", "sets": 1, "estSec": 60, "unilateral": false, "compound": true}, {"pattern": "Avant-bras", "name": "Suspension à la barre", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}, {"pattern": "Gainage", "name": "Planche dynamique", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}, {"pattern": "Abdos", "name": "Abdos suspendu (relevé de jambes à la barre)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Obliques", "name": "Planche latérale", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}], stretchLines:[] },
+    { id:'preset-bas2-leger', name:"Bas2 léger (Jeudi)", createdAt:'2026-09-04', sessionFormat:'circuit', queue:[{"type": "strength", "pattern": "Mollets", "patternKey": "Mollets", "name": "Montée sur pointes assise", "targetSets": 4, "currentSet": 1, "instr": "Genoux fléchis à 90°, amplitude complète — accent soléaire.", "unilateral": false, "restSec": 45, "compound": false, "equip": ["chair"], "isHold": false, "muscles": {"Mollets": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Assis, genoux fléchis à 90°, talons au sol, éventuellement du poids sur les genoux.", "mouvement": "Monter sur la pointe des pieds, puis redescendre.", "tempo": "2s montée, 1s pause, 2s descente.", "repRange": "15-20 reps.", "vigilance": "Version assise cible plutôt le soléaire — amplitude complète comme pour la version debout."}}, {"type": "strength", "pattern": "Mollets", "patternKey": "Mollets", "name": "Montée sur pointes debout", "targetSets": 2, "currentSet": 1, "instr": "Amplitude complète, montée lente, pas de rebond.", "unilateral": false, "restSec": 45, "compound": false, "equip": [], "isHold": false, "muscles": {"Mollets": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Debout, pieds légèrement écartés, appui possible sur un mur/chaise pour l'équilibre.", "mouvement": "Monter sur la pointe des pieds le plus haut possible, puis redescendre.", "tempo": "2s montée, 1s pause en haut, 2s descente.", "repRange": "15-20 reps.", "vigilance": "Amplitude complète — descendre vraiment jusqu'en bas, pas de petits mouvements limités."}}, {"type": "strength", "pattern": "Abducteurs", "patternKey": "Abducteurs", "name": "Clamshell élastique (coquillage)", "targetSets": 4, "currentSet": 1, "instr": "Allongé sur le côté, genoux fléchis, ouverture du genou du dessus contre la résistance.", "unilateral": true, "restSec": 50, "compound": false, "equip": ["elastic_light"], "isHold": false, "muscles": {"Abducteurs": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le côté, genoux pliés à ~90°, élastique au-dessus des genoux.", "mouvement": "Ouvrir le genou du dessus vers le haut en gardant les pieds collés, puis retour contrôlé.", "tempo": "2s ouverture, 1s pause, 2s fermeture.", "repRange": "15-20 reps par côté.", "vigilance": "Le bassin ne doit pas rouler vers l'arrière pour aider l'ouverture — le mouvement vient uniquement de la hanche."}}, {"type": "strength", "pattern": "Abducteurs", "patternKey": "Abducteurs", "name": "Marche latérale élastique", "targetSets": 2, "currentSet": 1, "instr": "Élastique aux chevilles, pas latéraux, genoux légèrement fléchis.", "unilateral": true, "restSec": 50, "compound": false, "equip": ["elastic_light"], "isHold": false, "muscles": {"Fessiers": 0.5, "Abducteurs": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique autour des chevilles, légère flexion des genoux, position mi-squat.", "mouvement": "Pas latéraux, en maintenant la tension de l'élastique tout du long.", "tempo": "Rythme contrôlé, pas de précipitation.", "repRange": "10-12 pas par direction.", "vigilance": "Rester en position mi-squat tout du long — ne pas se redresser entre les pas."}}, {"type": "strength", "pattern": "Gainage", "patternKey": "Gainage", "name": "Planche", "targetSets": 3, "currentSet": 1, "instr": "Corps aligné tête-bassin-talons.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": true, "muscles": {"Épaules": 0.5, "Gainage": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Avant-bras au sol, coudes juste sous les épaules, corps aligné tête-bassin-talons, comme une planche rigide.", "mouvement": "Tenue statique — mais pas passive : contracter activement les abdos et les fessiers pendant toute la durée, pas juste \"tenir la position\".", "tempo": "Isométrique (pas de mouvement) — respiration régulière, ne pas bloquer sa respiration.", "repRange": "30-60s de tenue.", "vigilance": "Le bassin ne doit ni s'affaisser (creuser le bas du dos) ni remonter en pyramide — ligne droite du corps tout du long. Si les hanches commencent à trembler et s'affaisser, c'est le signal pour arrêter la série."}}], resultLines:[{"pattern": "Mollets", "name": "Montée sur pointes assise", "sets": 4, "estSec": 180, "unilateral": false, "compound": false}, {"pattern": "Mollets", "name": "Montée sur pointes debout", "sets": 2, "estSec": 100, "unilateral": false, "compound": false}, {"pattern": "Abducteurs", "name": "Clamshell élastique (coquillage)", "sets": 4, "estSec": 340, "unilateral": true, "compound": false}, {"pattern": "Abducteurs", "name": "Marche latérale élastique", "sets": 2, "estSec": 180, "unilateral": true, "compound": false}, {"pattern": "Gainage", "name": "Planche", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}], stretchLines:[] },
+    { id:'preset-haut2', name:"Haut2 (Vendredi)", createdAt:'2026-09-04', sessionFormat:'circuit', queue:[{"type": "strength", "pattern": "Dos", "patternKey": "Dos", "name": "Traction pronation (pull-up)", "targetSets": 4, "currentSet": 1, "instr": "Mains écartées, paumes vers l'avant — dos et lats en priorité, moins de biceps.", "unilateral": false, "restSec": 105, "compound": true, "equip": ["pullbar"], "isHold": false, "muscles": {"Dos": 1, "Biceps": 0.5, "Avant-bras": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, mains écartées largeur épaules, paumes vers l'avant.", "mouvement": "Tirer le corps vers le haut jusqu'à ce que le menton dépasse la barre.", "tempo": "2s montée, 3s descente contrôlée (la partie la plus formatrice).", "repRange": "Max reps propres (viser 5-8 à terme).", "vigilance": "Pas de balancement pour prendre de l'élan — utiliser l'assistance élastique plutôt que de dégrader la forme."}}, {"type": "strength", "pattern": "Dos", "patternKey": "Dos", "name": "Rowing unilatéral haltère", "targetSets": 3, "currentSet": 1, "instr": "Genou et main opposés en appui, dos plat.", "unilateral": true, "restSec": 75, "compound": true, "equip": ["db3", "db5", "chair"], "isHold": false, "muscles": {"Biceps": 0.5, "Dos": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Genou et main opposés en appui sur une chaise, dos plat parallèle au sol, haltère dans l'autre main.", "mouvement": "Tirer le coude vers l'arrière et le haut, jusqu'à ce que l'haltère touche presque les côtes.", "tempo": "2s tirage, 1s pause, 3s descente contrôlée.", "repRange": "10-12 reps par côté.", "vigilance": "Le dos ne doit pas tourner pendant le tirage — le buste reste stable et parallèle au sol."}}, {"type": "strength", "pattern": "Pectoraux", "patternKey": "Pectoraux", "name": "Développé couché à la barre (salle)", "targetSets": 4, "currentSet": 1, "instr": "Trajectoire verticale, omoplates serrées et fixées sur le banc.", "unilateral": false, "restSec": 105, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Pectoraux": 1, "Épaules": 0.5, "Triceps": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le banc, barre au-dessus de la poitrine, prise un peu plus large que les épaules.", "mouvement": "Descendre la barre vers la poitrine de façon contrôlée, puis pousser vers le haut.", "tempo": "3s descente, 2s poussée.", "repRange": "6-10 reps.", "vigilance": "Omoplates serrées et fixées sur le banc tout du long ; ne jamais rebondir la barre sur la poitrine."}}, {"type": "strength", "pattern": "Pectoraux", "patternKey": "Pectoraux", "name": "Chest press élastique", "targetSets": 2, "currentSet": 1, "instr": "Élastique ancré à hauteur de poitrine.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["elastic_light", "door"], "isHold": false, "muscles": {"Pectoraux": 1, "Épaules": 0.5, "Triceps": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique ancré derrière (porte), une extrémité dans chaque main, à hauteur de poitrine.", "mouvement": "Pousser les mains vers l'avant jusqu'à extension des bras, puis retour contrôlé.", "tempo": "2s poussée, 3s retour.", "repRange": "12-15 reps.", "vigilance": "Garder les omoplates stables — ne pas les laisser partir vers l'avant en fin de mouvement."}}, {"type": "strength", "pattern": "Épaules", "patternKey": "Épaules", "name": "Face pull élastique", "targetSets": 2, "currentSet": 1, "instr": "Élastique ancré à hauteur de visage, tirer vers le visage coudes hauts.", "unilateral": false, "restSec": 50, "compound": true, "equip": ["elastic_light", "door"], "isHold": false, "muscles": {"Épaules": 1, "Dos": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique ancré à hauteur du visage, tirer vers le visage.", "mouvement": "Tirer l'élastique vers le visage en écartant les coudes vers l'extérieur, mains qui finissent proches des oreilles.", "tempo": "2s tirage, 1s pause, 2s retour.", "repRange": "15 reps.", "vigilance": "Les coudes doivent rester hauts tout du long — s'ils descendent, la charge est trop lourde."}}, {"type": "strength", "pattern": "Biceps", "patternKey": "Biceps", "name": "Curl biceps haltères", "targetSets": 2, "currentSet": 1, "instr": "Coudes fixes proches du buste, pas d'élan.", "unilateral": false, "restSec": 50, "compound": false, "equip": ["db3", "db5"], "isHold": false, "muscles": {"Biceps": 1, "Avant-bras": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Debout, haltères le long du corps, paumes vers l'avant.", "mouvement": "Plier les coudes pour amener les haltères vers les épaules, coudes fixes proches du buste.", "tempo": "2s montée, 1s pause, 3s descente contrôlée.", "repRange": "10-15 reps.", "vigilance": "Pas d'élan du buste ou des épaules pour aider la montée — seul le coude bouge."}}, {"type": "strength", "pattern": "Triceps", "patternKey": "Triceps", "name": "Dips sur chaise", "targetSets": 2, "currentSet": 1, "instr": "Descente contrôlée, coudes proches du corps, pas de douleur à l'épaule.", "unilateral": false, "restSec": 75, "compound": true, "equip": ["chair"], "isHold": false, "muscles": {"Pectoraux": 0.5, "Épaules": 0.5, "Triceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Mains sur le bord de la chaise, jambes tendues devant, fesses juste devant le bord.", "mouvement": "Descendre en pliant les coudes vers l'arrière, puis pousser pour remonter.", "tempo": "2s descente, 2s remontée.", "repRange": "10-15 reps.", "vigilance": "Arrêter la descente si douleur à l'épaule ; garder les coudes proches du corps plutôt qu'écartés."}}, {"type": "strength", "pattern": "Avant-bras", "patternKey": "Avant-bras", "name": "Suspension à la barre", "targetSets": 1, "currentSet": 1, "instr": "Suspension passive, omoplates légèrement engagées, pas de balancement.", "unilateral": false, "restSec": 45, "compound": true, "equip": ["pullbar"], "isHold": true, "muscles": {"Épaules": 0.5, "Avant-bras": 1, "Dos": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, bras tendus, prise en pronation.", "mouvement": "Suspension passive, épaules légèrement engagées (pas complètement relâchées).", "tempo": "Isométrique.", "repRange": "15-30s de tenue.", "vigilance": "Pas de balancement — suspension stable et contrôlée."}}, {"type": "strength", "pattern": "Gainage", "patternKey": "Gainage", "name": "Dead bug", "targetSets": 2, "currentSet": 1, "instr": "Bas du dos plaqué au sol, mouvement lent.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": false, "muscles": {"Gainage": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le dos, bras tendus vers le plafond, genoux pliés à 90° au-dessus des hanches.", "mouvement": "Étendre un bras vers l'arrière et la jambe opposée vers l'avant simultanément, bas du dos plaqué au sol.", "tempo": "3s extension, 2s retour, alterner les côtés.", "repRange": "8-10 reps par côté.", "vigilance": "Le bas du dos ne doit jamais décoller du sol — si ça arrive, réduire l'amplitude."}}, {"type": "strength", "pattern": "Abdos", "patternKey": "Abdos", "name": "Abdos suspendu (relevé de jambes à la barre)", "targetSets": 4, "currentSet": 1, "instr": "Suspendu, jambes tendues ou fléchies, remontée contrôlée sans élan — pas de balancement.", "unilateral": false, "restSec": 60, "compound": true, "equip": ["pullbar"], "isHold": false, "muscles": {"Abdos": 1, "Avant-bras": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Suspendu à la barre, jambes tendues ou légèrement fléchies.", "mouvement": "Remonter les jambes vers la poitrine (ou horizontal si tendu) sans élan.", "tempo": "2s montée, 1s pause, 3s descente contrôlée.", "repRange": "6-10 reps.", "vigilance": "Pas de balancement du corps pour créer de l'élan — le mouvement doit venir des abdos."}}, {"type": "strength", "pattern": "Abdos", "patternKey": "Abdos", "name": "Crunch classique", "targetSets": 1, "currentSet": 1, "instr": "Menton décollé, mouvement court, pas de tirage sur la nuque.", "unilateral": false, "restSec": 50, "compound": false, "equip": [], "isHold": false, "muscles": {"Abdos": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le dos, genoux pliés, mains derrière ou croisées sur la poitrine.", "mouvement": "Décoller les omoplates du sol en contractant les abdos, mouvement court.", "tempo": "2s montée, 1s pause, 2s descente.", "repRange": "15-20 reps.", "vigilance": "Pas de tirage sur la nuque avec les mains — ce sont les abdos qui travaillent, pas les bras."}}, {"type": "strength", "pattern": "Obliques", "patternKey": "Obliques", "name": "Planche latérale", "targetSets": 2, "currentSet": 1, "instr": "Hanches ne s'affaissent pas vers le sol.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": true, "muscles": {"Épaules": 0.5, "Obliques": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sur le côté, appui sur l'avant-bras, corps aligné des pieds à la tête.", "mouvement": "Tenue statique, hanches qui ne s'affaissent pas vers le sol.", "tempo": "Isométrique.", "repRange": "20-40s de tenue par côté.", "vigilance": "Les hanches ne doivent pas s'affaisser vers le sol — signal que la position n'est plus tenue correctement."}}], resultLines:[{"pattern": "Dos", "name": "Traction pronation (pull-up)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Dos", "name": "Rowing unilatéral haltère", "sets": 3, "estSec": 260, "unilateral": true, "compound": true}, {"pattern": "Pectoraux", "name": "Développé couché à la barre (salle)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Pectoraux", "name": "Chest press élastique", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Épaules", "name": "Face pull élastique", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Biceps", "name": "Curl biceps haltères", "sets": 2, "estSec": 100, "unilateral": false, "compound": false}, {"pattern": "Triceps", "name": "Dips sur chaise", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Avant-bras", "name": "Suspension à la barre", "sets": 1, "estSec": 60, "unilateral": false, "compound": true}, {"pattern": "Gainage", "name": "Dead bug", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Abdos", "name": "Abdos suspendu (relevé de jambes à la barre)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Abdos", "name": "Crunch classique", "sets": 1, "estSec": 60, "unilateral": false, "compound": false}, {"pattern": "Obliques", "name": "Planche latérale", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}], stretchLines:[] },
+    { id:'preset-bas3', name:"Bas3 (Samedi)", createdAt:'2026-09-04', sessionFormat:'circuit', queue:[{"type": "strength", "pattern": "Quadriceps", "patternKey": "Quadriceps", "name": "Squat bulgare", "targetSets": 4, "currentSet": 1, "instr": "Pied arrière juste posé, tronc vertical, descente lente (tempo 3s).", "unilateral": true, "restSec": 105, "compound": true, "equip": ["db3", "db5"], "isHold": false, "muscles": {"Fessiers": 0.5, "Quadriceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Pied arrière posé sur une chaise ou un banc (juste les orteils, pas tout le pied), pied avant à 60-70cm devant, orienté légèrement en dedans pour la stabilité.", "mouvement": "Descendre en pliant le genou avant jusqu'à ~90°, le genou reste aligné avec les orteils (ne part pas vers l'intérieur). Buste vertical ou légèrement penché en avant, pas de cambrure excessive du dos.", "tempo": "3s à la descente, 1s de pause en bas, 1-2s à la remontée — volontairement lent pour un genou sensible.", "repRange": "8-12 reps par jambe.", "vigilance": "Le genou avant ne doit jamais partir vers l'intérieur de façon incontrôlée. En cas de douleur au genou, réduire l'amplitude (ne pas descendre aussi bas) plutôt que forcer à travers la douleur."}, "controlledTempo": true}, {"type": "strength", "pattern": "Quadriceps", "patternKey": "Quadriceps", "name": "Demi-squat guidé (salle)", "targetSets": 3, "currentSet": 1, "instr": "Trajectoire guidée, amplitude complète, contrôle du tempo à la descente.", "unilateral": false, "restSec": 105, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Fessiers": 0.5, "Quadriceps": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sous la barre guidée, pieds légèrement devant l'axe pour un bon alignement.", "mouvement": "Même trajectoire qu'un squat classique, la machine guide le trajet.", "tempo": "3s descente, 2s remontée.", "repRange": "8-12 reps.", "vigilance": "Ne pas descendre plus bas que ce que la mobilité de hanche permet sans que le bas du dos s'arrondisse."}, "controlledTempo": true}, {"type": "strength", "pattern": "Fessiers", "patternKey": "Fessiers", "name": "RDL élastique", "targetSets": 2, "currentSet": 1, "instr": "Élastique sous les pieds, dos plat, hanches reculent en premier.", "unilateral": false, "restSec": 90, "compound": true, "equip": ["elastic_strong"], "isHold": false, "muscles": {"Lombaires": 0.5, "Fessiers": 1, "Ischios": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique fort sous les pieds, extrémités tenues à deux mains devant les cuisses.", "mouvement": "Même trajectoire que le RDL haltères — hanches reculent en premier, dos plat.", "tempo": "3s descente, 2-3s remontée contre la résistance croissante.", "repRange": "12-15 reps.", "vigilance": "Le dos ne doit jamais s'arrondir ; contrôler la remontée sans à-coup malgré la résistance croissante."}, "controlledTempo": true}, {"type": "strength", "pattern": "Adducteurs", "patternKey": "Adducteurs", "name": "Squat sumo", "targetSets": 4, "currentSet": 1, "instr": "Pieds larges, pointes vers l'extérieur, buste vertical.", "unilateral": false, "restSec": 75, "compound": true, "equip": [], "isHold": false, "muscles": {"Fessiers": 0.5, "Adducteurs": 1, "Quadriceps": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Pieds bien plus larges que les épaules, pointes vers l'extérieur (~45°).", "mouvement": "Descendre en gardant le buste vertical, les genoux suivent la direction des pointes de pieds.", "tempo": "3s descente, 2s remontée.", "repRange": "12-15 reps.", "vigilance": "Ne pas laisser les genoux rentrer vers l'intérieur — ils restent dans l'axe des pieds tout du long."}, "controlledTempo": true}, {"type": "strength", "pattern": "Ischios", "patternKey": "Ischios", "name": "Leg curl machine (salle)", "targetSets": 4, "currentSet": 1, "instr": "Flexion du genou contrôlée, pas d'à-coup à la remontée.", "unilateral": false, "restSec": 60, "compound": true, "equip": ["gym"], "isHold": false, "muscles": {"Ischios": 1, "Mollets": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé face contre le rembourrage, chevilles sous le rouleau.", "mouvement": "Fléchir les genoux pour amener les talons vers les fesses.", "tempo": "2s flexion, 1s pause, 3s retour contrôlé.", "repRange": "10-12 reps.", "vigilance": "Ne pas cambrer le bas du dos pour aider le mouvement — le bassin reste au contact du banc."}}, {"type": "strength", "pattern": "Ischios", "patternKey": "Ischios", "name": "Leg curl élastique au sol", "targetSets": 4, "currentSet": 1, "instr": "Allongé sur le ventre, élastique à la cheville, flexion contrôlée du genou.", "unilateral": true, "restSec": 50, "compound": true, "equip": ["elastic_light"], "isHold": false, "muscles": {"Ischios": 1, "Mollets": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le ventre, élastique fixé à la cheville et ancré devant.", "mouvement": "Fléchir le genou pour amener le talon vers la fesse, contre la résistance de l'élastique.", "tempo": "2s flexion, 1s pause, 2s retour contrôlé.", "repRange": "12-15 reps par jambe.", "vigilance": "Le bassin doit rester plaqué au sol — pas de bascule ni de compensation par le bas du dos."}}, {"type": "strength", "pattern": "Mollets", "patternKey": "Mollets", "name": "Éverseurs de cheville élastique", "targetSets": 1, "currentSet": 1, "instr": "Assis, élastique autour de l'avant-pied ancré sur l'autre pied ou un meuble fixe. Pousser le pied vers l'extérieur contre la résistance, retour contrôlé.", "unilateral": true, "restSec": 45, "compound": false, "equip": ["elastic_light"], "isHold": false, "muscles": {"Mollets": 1}, "role": "primary", "focusNote": "🎯 Priorité jambe droite (cheville) — cible les muscles qui protègent contre une nouvelle entorse", "detail": {"position": "Assis, élastique autour de l'avant-pied, ancré sur l'autre pied ou un meuble fixe.", "mouvement": "Pousser le pied vers l'extérieur contre la résistance, puis retour contrôlé.", "tempo": "2s poussée, 1s pause, 2s retour.", "repRange": "15-20 reps par cheville.", "vigilance": "Mouvement qui vient de la cheville uniquement, pas du genou ou de la hanche."}}, {"type": "strength", "pattern": "Abducteurs", "patternKey": "Abducteurs", "name": "Marche latérale élastique", "targetSets": 4, "currentSet": 1, "instr": "Élastique aux chevilles, pas latéraux, genoux légèrement fléchis.", "unilateral": true, "restSec": 50, "compound": false, "equip": ["elastic_light"], "isHold": false, "muscles": {"Fessiers": 0.5, "Abducteurs": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Élastique autour des chevilles, légère flexion des genoux, position mi-squat.", "mouvement": "Pas latéraux, en maintenant la tension de l'élastique tout du long.", "tempo": "Rythme contrôlé, pas de précipitation.", "repRange": "10-12 pas par direction.", "vigilance": "Rester en position mi-squat tout du long — ne pas se redresser entre les pas."}}, {"type": "strength", "pattern": "Obliques", "patternKey": "Obliques", "name": "Planche latérale", "targetSets": 4, "currentSet": 1, "instr": "Hanches ne s'affaissent pas vers le sol.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": true, "muscles": {"Épaules": 0.5, "Obliques": 1}, "role": "primary", "focusNote": null, "detail": {"position": "Sur le côté, appui sur l'avant-bras, corps aligné des pieds à la tête.", "mouvement": "Tenue statique, hanches qui ne s'affaissent pas vers le sol.", "tempo": "Isométrique.", "repRange": "20-40s de tenue par côté.", "vigilance": "Les hanches ne doivent pas s'affaisser vers le sol — signal que la position n'est plus tenue correctement."}}, {"type": "strength", "pattern": "Lombaires", "patternKey": "Lombaires", "name": "Superman", "targetSets": 3, "currentSet": 1, "instr": "Montée modérée, pas d'à-coup.", "unilateral": false, "restSec": 50, "compound": true, "equip": [], "isHold": false, "muscles": {"Lombaires": 1, "Fessiers": 0.5, "Ischios": 0.5}, "role": "primary", "focusNote": null, "detail": {"position": "Allongé sur le ventre, bras tendus devant, jambes tendues.", "mouvement": "Lever simultanément bras et jambes du sol, contraction du bas du dos et des fessiers.", "tempo": "2s montée, 1s pause, 2s descente.", "repRange": "10-12 reps.", "vigilance": "Montée modérée, pas d'à-coup — l'objectif est de contrôler le mouvement, pas de monter le plus haut possible."}}], resultLines:[{"pattern": "Quadriceps", "name": "Squat bulgare", "sets": 4, "estSec": 340, "unilateral": true, "compound": true}, {"pattern": "Quadriceps", "name": "Demi-squat guidé (salle)", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}, {"pattern": "Fessiers", "name": "RDL élastique", "sets": 2, "estSec": 100, "unilateral": false, "compound": true}, {"pattern": "Adducteurs", "name": "Squat sumo", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Ischios", "name": "Leg curl machine (salle)", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Ischios", "name": "Leg curl élastique au sol", "sets": 4, "estSec": 340, "unilateral": true, "compound": true}, {"pattern": "Mollets", "name": "Éverseurs de cheville élastique", "sets": 1, "estSec": 100, "unilateral": true, "compound": false}, {"pattern": "Abducteurs", "name": "Marche latérale élastique", "sets": 4, "estSec": 340, "unilateral": true, "compound": false}, {"pattern": "Obliques", "name": "Planche latérale", "sets": 4, "estSec": 180, "unilateral": false, "compound": true}, {"pattern": "Lombaires", "name": "Superman", "sets": 3, "estSec": 140, "unilateral": false, "compound": true}], stretchLines:[] }
+  ];
+  function updateSavedCount(){
+    const el = document.getElementById('saved-count');
+    if(el) el.textContent = savedSessions.length;
+  }
+  function saveCurrentSession(){
+    if(!previewResultLines.length){ return; }
+    const name = prompt('Nom de cette séance sauvegardée (ex. "Renfo voyage élastique") :', '');
+    if(!name || !name.trim()) return;
+    const cleanResultLines = previewResultLines.map(l=>({pattern:l.pattern, name:l.name, sets:l.sets, estSec:l.estSec, unilateral:l.unilateral, compound:l.compound}));
+    savedSessions.push({
+      id: Date.now()+'-'+Math.random().toString(36).slice(2,8),
+      name: name.trim(),
+      createdAt: todayISO(),
+      sessionFormat: previewSessionFormat,
+      queue: JSON.parse(JSON.stringify(lastGeneratedQueue)),
+      resultLines: cleanResultLines,
+      stretchLines: JSON.parse(JSON.stringify(previewStretchLines))
+    });
+    updateSavedCount();
+    if(typeof saveState==='function') saveState();
+    showSection('seances-sauvegardees', null);
+    renderSavedSessions();
+  }
+  function renderSavedSessions(){
+    updateSavedCount();
+    const wrap = document.getElementById('saved-sessions-list');
+    if(!wrap) return;
+    if(savedSessions.length===0){
+      wrap.innerHTML = '<div style="font-size:12px; color:var(--text-faint); text-align:center; padding:24px 0;">Aucune séance sauvegardée pour l\'instant — prépares-en une depuis l\'écran Composer.</div>';
+      return;
+    }
+    let html = '';
+    savedSessions.forEach(s=>{
+      const nEx = s.resultLines.length;
+      const nStretch = s.stretchLines.length;
+      html += '<div class="saved-session-row">'+
+        '<div class="ssn-main" onclick="loadSavedSession(\''+s.id+'\')">'+
+        '<div class="ssn-name">'+s.name+'</div>'+
+        '<div class="ssn-meta">'+nEx+' exercice'+(nEx>1?'s':'')+(nStretch?' · '+nStretch+' étirement'+(nStretch>1?'s':''):'')+' · '+fmtDateFr(s.createdAt)+'</div>'+
+        '</div>'+
+        '<button class="ssn-icon-btn" onclick="renameSavedSession(\''+s.id+'\')" title="Renommer">✏️</button>'+
+        '<button class="ssn-icon-btn" onclick="deleteSavedSession(\''+s.id+'\')" title="Supprimer">🗑</button>'+
+        '</div>';
+    });
+    wrap.innerHTML = html;
+  }
+  function renameSavedSession(id){
+    const s = savedSessions.find(x=>x.id===id);
+    if(!s) return;
+    const newName = prompt('Nouveau nom :', s.name);
+    if(!newName || !newName.trim()) return;
+    s.name = newName.trim();
+    if(typeof saveState==='function') saveState();
+    renderSavedSessions();
+  }
+  function deleteSavedSession(id){
+    if(!confirm('Supprimer cette séance sauvegardée ? Cette action est irréversible.')) return;
+    savedSessions = savedSessions.filter(x=>x.id!==id);
+    if(typeof saveState==='function') saveState();
+    renderSavedSessions();
+  }
+  function loadSavedSession(id){
+    const s = savedSessions.find(x=>x.id===id);
+    if(!s) return;
+    lastGeneratedQueue = JSON.parse(JSON.stringify(s.queue));
+    sessionFormat = s.sessionFormat;
+    previewSessionFormat = s.sessionFormat;
+    // Reconstruit resultLines avec un vrai queueRef pointant vers les items de la queue rechargée
+    // (le JSON perd les références d'objets, donc on les relie à nouveau par ordre).
+    const strengthItems = lastGeneratedQueue.filter(q=>q.type==='strength');
+    previewResultLines = s.resultLines.map((l,i)=> Object.assign({}, l, {queueRef: strengthItems[i]}));
+    previewStretchLines = JSON.parse(JSON.stringify(s.stretchLines));
+    showSection('generateur', null);
+    document.getElementById('renfo-options').style.display = 'none';
+    document.getElementById('yoga-options').style.display = 'none';
+    document.getElementById('cardio-options').style.display = 'none';
+    document.getElementById('gen-title').textContent = 'Séance sauvegardée';
+    const pill = document.getElementById('gen-pill');
+    if(pill){ pill.className = 'mode-pill renfo'; pill.textContent = '💾 '+s.name; }
+    let html = '<div class="result-card"><div class="result-total"><div><div class="l">Séance chargée</div><div class="n">'+previewResultLines.length+' exercice'+(previewResultLines.length>1?'s':'')+'</div></div></div>';
+    html += '<div id="preview-exercise-rows"></div>';
+    html += '<div id="preview-stretch-rows"></div>';
+    html += '</div><button class="gen-btn primary" style="margin-top:10px;" onclick="startSession()">✓ Démarrer la séance</button>';
+    document.getElementById('result-zone').innerHTML = html;
+    renderPreviewRows();
     renderPreviewStretchRows();
   }
 
@@ -1707,7 +1846,7 @@
     Object.assign(l.queueRef, {
       name: next.name, instr: next.instr, unilateral: next.unilateral, restSec: next.restSec,
       compound: next.compound, equip: next.equip, isHold: next.isHold, muscles: next.muscles,
-      role: next.role, focusNote: next.focusNote, detail: next.detail
+      role: next.role, focusNote: next.focusNote, detail: next.detail, controlledTempo: next.controlledTempo
     });
     renderPreviewRows();
   }
@@ -1738,7 +1877,7 @@
       const p = withoutClosing[idx % withoutClosing.length];
       const dur = p.hold*(p.per?2:1);
       if(used > 0 && used+dur > workBudget*1.15) { guard++; idx++; continue; } // évite un gros dépassement en fin de liste
-      queue.push({type:'hold', pattern:'Étirements', name:displayName(p), holdSeconds:p.hold, per:p.per, instr:p.instr, detail:p.detail});
+      pushStretchItem(queue, p, null, displayName(p));
       used += dur;
       idx++;
       guard++;
@@ -1796,9 +1935,14 @@
     // Cardio = surtout une recommandation à suivre sur son propre appareil (montre/home trainer/Garmin) —
     // le plus utile ici est de pouvoir logger le temps fait, pas forcément lancer un timer guidé dans l'appli.
     html += '<div class="field-label" style="margin-top:16px;">Combien de temps as-tu fait (ou prévois-tu) ?</div>'+
-      '<div class="chip-row" id="cardio-log-chips">'+
-      [15,20,30,45,60].map(v=>'<div class="chip'+(v===estimatedMin?' sel cardio':'')+'" onclick="selectCardioLogTime(this,'+v+')">'+v+' min</div>').join('')+
+      '<div class="cardio-log-adjust">'+
+      '<button class="stepper-btn" onclick="adjustCardioLogValue(-10)">−10</button>'+
+      '<button class="stepper-btn" onclick="adjustCardioLogValue(-5)">−5</button>'+
+      '<input type="number" id="cardio-log-input" class="cardio-log-num" value="'+estimatedMin+'" min="1" inputmode="numeric" oninput="setCardioLogValue(this.value)">'+
+      '<button class="stepper-btn" onclick="adjustCardioLogValue(5)">+5</button>'+
+      '<button class="stepper-btn" onclick="adjustCardioLogValue(10)">+10</button>'+
       '</div>'+
+      '<div style="text-align:center; font-size:11px; color:var(--text-faint); margin-top:2px;">minutes</div>'+
       '<button class="gen-btn primary" style="background:var(--coral); color:#2a1210; margin-top:12px;" onclick="logCardioTime()">✓ Logger ce temps</button>';
 
     html += '<button class="gen-btn" onclick="startSession()">Ou lancer un timer guidé dans l\'appli →</button>';
@@ -1808,10 +1952,14 @@
   }
   let cardioLogValue = 30;
   let cardioLogIntensity = 'faible';
-  function selectCardioLogTime(el, v){
-    document.querySelectorAll('#cardio-log-chips .chip').forEach(c=>c.classList.remove('sel','cardio'));
-    el.classList.add('sel','cardio');
-    cardioLogValue = v;
+  function adjustCardioLogValue(delta){
+    cardioLogValue = Math.max(1, cardioLogValue + delta);
+    const el = document.getElementById('cardio-log-input');
+    if(el) el.value = cardioLogValue;
+  }
+  function setCardioLogValue(v){
+    const n = parseInt(v, 10);
+    if(!isNaN(n) && n > 0) cardioLogValue = n;
   }
   function logCardioTime(){
     // Enregistre directement le temps fait, sans passer par la séance guidée.
@@ -1835,14 +1983,21 @@
   function startSession(){
     if(!lastGeneratedQueue || !lastGeneratedQueue.length) return;
     // Le format "visé" (circuit ou groupe) est déterminé sur le premier vrai exercice, en ignorant
-    // un éventuel échauffement en tête — mais la séance démarre TOUJOURS en séquentiel pendant
-    // l'échauffement, puis bascule vers le format visé une fois l'échauffement terminé.
-    const firstReal = lastGeneratedQueue.find(q => q.type !== 'warmup');
+    // l'échauffement et le bloc tempo contrôlé (Hinge/Squat) en tête — mais la séance démarre
+    // TOUJOURS en séquentiel pendant cette phase forcée, puis bascule vers le format visé une fois
+    // qu'elle est terminée.
+    const firstReal = lastGeneratedQueue.find(q => q.type !== 'warmup' && !q.controlledTempo);
     const intendedFormat = (firstReal && (firstReal.type==='strength' || firstReal.type==='hiit')) ? sessionFormat : 'groupe';
-    const startsWithWarmup = lastGeneratedQueue[0] && lastGeneratedQueue[0].type==='warmup';
+    // Compte les items en tête de queue qui doivent forcément passer en séquentiel avant le circuit.
+    let groupePhaseEndIndex = 0;
+    while(groupePhaseEndIndex < lastGeneratedQueue.length &&
+          (lastGeneratedQueue[groupePhaseEndIndex].type==='warmup' || lastGeneratedQueue[groupePhaseEndIndex].controlledTempo)){
+      groupePhaseEndIndex++;
+    }
+    const startsInGroupe = groupePhaseEndIndex > 0;
     session = { queue: lastGeneratedQueue.map(q=>Object.assign({}, q, {currentSet:1, state:'active'})), index:0,
       elapsed:0, doneCount:0, skipped:[], timerInterval:null, restInterval:null, repIndex:1,
-      format: startsWithWarmup ? 'groupe' : intendedFormat, intendedFormat: intendedFormat,
+      format: startsInGroupe ? 'groupe' : intendedFormat, intendedFormat: intendedFormat, groupePhaseEndIndex: groupePhaseEndIndex,
       circuitIdx:0, round:1, finished:false, stretchSecondsDone:0 };
     showSection('seance-active', null);
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -1929,6 +2084,7 @@
     let html = '<div class="illu-box">'+iconFor(ex.pattern)+'</div>';
     html += '<div class="'+badgeClass+'">'+ex.pattern+'</div>';
     html += '<div class="sess-exname">'+ex.name+(ex.unilateral?' <span style="font-size:12px; color:var(--amber); font-family:var(--font-data);">×2 côtés</span>':'')+'</div>';
+    if(ex.type==='hold' && ex.muscle) html += '<div style="font-size:11px; color:var(--lav); font-weight:600; margin-bottom:6px;">🎯 Muscle étiré : '+ex.muscle+'</div>';
     html += '<div class="sess-instructions">'+ex.instr+(ex.caution?'<br><span style="color:var(--red);">'+ex.caution+'</span>':'')+(ex.focusNote?'<br><span style="color:var(--petrol);">'+ex.focusNote+'</span>':'')+'</div>';
     if(ex.detail){
       if(detailShownFor !== ex.name) showExerciseDetail = false;
@@ -2079,7 +2235,9 @@
     ex.role = found ? found.role : ex.role;
     ex.focusNote = found ? found.focusNote : null;
     ex.detail = found ? found.detail : null;
-    ex.currentSet = 1;
+    // currentSet volontairement PAS réinitialisé — si 2 des 4 séries étaient déjà faites sur
+    // l'ancien exercice, le nouveau reprend à la série 3, pas à zéro (sinon on refait des séries
+    // en trop et le récap oublie ce qui avait déjà été validé).
     currentInputFor = null; // force le rechargement de la dernière valeur loggée pour ce nouvel exercice
     renderCard();
   }
@@ -2100,6 +2258,22 @@
   // chiffres d'exemple codés en dur dans renderGroupOverview, jamais mis à jour). Maintenant du vrai
   // état, crédité à la fin de chaque séance cardio/étirement (temps réellement passé, pas l'estimation).
   const weeklyProgress = { cardioLeger:0, cardioHiit:0, etirement:0 };
+  // Historique des totaux par catégorie, un instantané par semaine terminée — alimente le
+  // graphique d'évolution. weekNumForLabel permet d'étiqueter chaque point sans dépendre de la
+  // position dans le tableau (utile si des semaines sont un jour sautées/rejouées).
+  let weeklyTotalsHistory = [];
+  function computeCurrentWeekTotals(weekNumForLabel){
+    let jambes=0, haut=0, tronc=0;
+    Object.keys(musclesData.jambes).forEach(m=>{ jambes += musclesData.jambes[m].done; });
+    Object.keys(musclesData.haut).forEach(m=>{ haut += musclesData.haut[m].done; });
+    Object.keys(musclesData.tronc).forEach(m=>{ tronc += musclesData.tronc[m].done; });
+    return {
+      weekNum: weekNumForLabel != null ? weekNumForLabel : lastKnownWeek,
+      jambes: Math.round(jambes*10)/10, haut: Math.round(haut*10)/10, tronc: Math.round(tronc*10)/10,
+      cardioLeger: Math.round(weeklyProgress.cardioLeger), cardioHiit: Math.round(weeklyProgress.cardioHiit),
+      etirement: Math.round(weeklyProgress.etirement)
+    };
+  }
 
   // Semaine du programme — calculée depuis la vraie date, incrémente automatiquement tous les 7
   // jours depuis le 1er septembre 2026. Si la semaine calculée diffère de la dernière connue
@@ -2129,6 +2303,9 @@
   function checkWeekRollover(){
     const info = computeWeekInfo();
     if(info.weekNum !== lastKnownWeek){
+      // Capture les totaux de la semaine qui se termine AVANT de tout remettre à zéro — c'est ce
+      // qui alimente le graphique d'évolution hebdomadaire par catégorie.
+      weeklyTotalsHistory.push(computeCurrentWeekTotals(lastKnownWeek));
       // Nouvelle semaine détectée depuis la dernière ouverture -> reset auto de la progression hebdo.
       Object.keys(musclesData).forEach(g=>{
         Object.keys(musclesData[g]).forEach(m=>{
@@ -2372,6 +2549,7 @@
     renderBilan();
     renderHistorique();
     renderWeeklyLog();
+    renderWeeklyVolumeCharts();
     if(typeof saveState==='function') saveState();
   }
 
@@ -2421,6 +2599,55 @@
       html += '</div>';
     });
     box.innerHTML = html;
+  }
+
+  // Graphique multi-lignes générique : series = [{label, color, values:[...]}], un point par semaine.
+  function renderMultiLineChart(title, sub, series, unitSuffix){
+    const W = 320, H = 90, padX = 10, padY = 15;
+    const n = series[0] ? series[0].values.length : 0;
+    if(n === 0){
+      return '<div class="chart-card"><div class="chart-title">'+title+'</div><div class="chart-sub">Aucune donnée pour l\'instant — reviens après ta première semaine complète.</div></div>';
+    }
+    const allVals = series.flatMap(s=>s.values);
+    const min = 0, max = Math.max(1, ...allVals);
+    const range = Math.max(1, max-min);
+    const y = v => H-padY - ((v-min)/range)*(H-2*padY);
+    const x = i => n===1 ? padX : padX + (i/(n-1))*(W-2*padX);
+    let svg = '<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+    series.forEach(s=>{
+      if(n===1){
+        svg += '<circle cx="'+padX+'" cy="'+y(s.values[0])+'" r="4" fill="'+s.color+'"/>';
+      } else {
+        svg += '<polyline points="'+s.values.map((v,i)=>x(i)+','+y(v)).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.5"/>';
+        s.values.forEach((v,i)=>{ svg += '<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3" fill="'+s.color+'"/>'; });
+      }
+    });
+    svg += '</svg>';
+    const legend = series.map(s=>'<div style="font-size:10.5px; color:var(--text-faint);"><span style="color:'+s.color+';">●</span> '+s.label+' <span style="font-family:var(--font-data);">('+s.values[s.values.length-1]+(unitSuffix||'')+')</span></div>').join('');
+    return '<div class="chart-card"><div class="chart-title">'+title+'</div><div class="chart-sub">'+sub+'</div>'+svg+
+      '<div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">'+legend+'</div></div>';
+  }
+
+  function renderWeeklyVolumeCharts(){
+    const wrap = document.getElementById('weekly-volume-charts');
+    if(!wrap) return;
+    // La semaine en cours (pas encore dans l'historique) est ajoutée en direct pour que le
+    // graphique reflète aussi la progression du moment, pas juste les semaines déjà bouclées.
+    const combined = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
+    const labels = combined.map(w=>'S'+w.weekNum);
+    const sub = labels.length>1 ? labels[0]+' → '+labels[labels.length-1]+' (dernière = en cours)' : labels[0]+' (en cours)';
+
+    let html = renderMultiLineChart('Renfo — séries par groupe', sub, [
+      { label:'Jambes', color:'var(--petrol)', values: combined.map(w=>w.jambes) },
+      { label:'Haut du corps', color:'var(--amber)', values: combined.map(w=>w.haut) },
+      { label:'Tronc', color:'var(--green)', values: combined.map(w=>w.tronc) }
+    ], '');
+    html += renderMultiLineChart('Cardio & étirement — minutes', sub, [
+      { label:'Cardio léger', color:'var(--petrol)', values: combined.map(w=>w.cardioLeger) },
+      { label:'Cardio HIIT', color:'var(--coral)', values: combined.map(w=>w.cardioHiit) },
+      { label:'Étirement', color:'var(--lav)', values: combined.map(w=>w.etirement) }
+    ], 'min');
+    wrap.innerHTML = html;
   }
 
   function renderHistorique(){
@@ -2763,7 +2990,9 @@
   renderBilan();
   renderHistorique();
   renderWeeklyLog();
+  renderWeeklyVolumeCharts();
   renderRemainingTime();
+  updateSavedCount();
 
   /* ---- sous-choix étirement / yoga ---- */
   let stretchSub = 'etirement';
@@ -3021,10 +3250,9 @@
     clearInterval(session.restInterval);
     const ex = session.queue[session.index];
     if(ex) ex.currentSet = ex.targetSets + 1; // marque explicitement comme complété (cohérent avec le mode circuit)
-    const wasWarmup = ex && ex.type==='warmup';
     session.doneCount++;
     session.index++;
-    if(wasWarmup && session.intendedFormat==='circuit'){
+    if(session.index === session.groupePhaseEndIndex && session.intendedFormat==='circuit'){
       session.format = 'circuit';
       session.circuitIdx = session.index;
     }
@@ -3049,11 +3277,10 @@
       session.circuitIdx = nextIdx;
       renderCard();
     } else {
-      const wasWarmup = session.queue[session.index] && session.queue[session.index].type==='warmup';
       session.queue[session.index].actualSetsDone = session.queue[session.index].currentSet - 1;
       session.skipped.push(session.index);
       session.index++;
-      if(wasWarmup && session.intendedFormat==='circuit'){
+      if(session.index === session.groupePhaseEndIndex && session.intendedFormat==='circuit'){
         session.format = 'circuit';
         session.circuitIdx = session.index;
       }
@@ -3163,6 +3390,7 @@
     renderBilan();
     renderHistorique();
     renderWeeklyLog();
+    renderWeeklyVolumeCharts();
     // Ces 3 chiffres sont normalement mis à jour directement par adjustVol() au clic, pas par un
     // render générique — après un rechargement, il faut les synchroniser manuellement une fois.
     ['etirements','cardioLeger','cardioHiit'].forEach(k=>{
@@ -3180,6 +3408,7 @@
   checkWeekRollover();
   renderWeekHeader();
   renderRemainingTime();
+  updateSavedCount();
   /* ================= FIN PERSISTANCE ================= */
 </script>
 
