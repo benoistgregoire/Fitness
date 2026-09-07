@@ -272,6 +272,7 @@
     <div id="remaining-time-box"><!-- généré par renderRemainingTime() --></div>
 
     <div id="week-recap" style="margin-top:14px;"><!-- généré par renderWeekRecap() --></div>
+    <div id="rampup-dash-badge"><!-- généré par renderRampUpDashBadge() --></div>
     <div id="readiness-widget" style="margin-top:14px;"><!-- généré par renderReadinessWidget() --></div>
     <div id="day-planner" style="margin-top:14px;"><!-- généré par renderDayPlanner() --></div>
 
@@ -317,6 +318,9 @@
     <div class="equip-row"><div class="label">Pince de préhension</div><div class="toggle" data-equip="gripper" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
     <div class="equip-row"><div class="label">Tapis</div><div class="toggle on" data-equip="mat" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
     <div class="equip-row"><div class="label">Salle de sport</div><div class="toggle" data-equip="gym" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
+
+    <h2 class="section-title" style="margin-top:24px;">Reprise progressive</h2>
+    <div id="rampup-content"><!-- généré par renderRampUpSettings() --></div>
 
     <h2 class="section-title" style="margin-top:24px;">Zone avancée</h2>
     <button class="sec-btn" style="width:100%;" id="test-mode-btn" onclick="toggleTestMode()">🧪 Activer le mode test</button>
@@ -757,6 +761,9 @@
         readinessLog: readinessLog,
         dayPlans: dayPlans,
         pendingWeekRecap: pendingWeekRecap,
+        rampUpActive: rampUpActive,
+        rampUpStartWeek: rampUpStartWeek,
+        rampUpFullTargets: rampUpFullTargets,
         savedSessions: savedSessions,
         weeklyTotalsHistory: weeklyTotalsHistory,
         muscleWeeklyHistory: muscleWeeklyHistory,
@@ -808,6 +815,9 @@
       if(Array.isArray(state.readinessLog)) readinessLog = state.readinessLog;
       if(state.dayPlans) dayPlans = state.dayPlans;
       if(state.pendingWeekRecap !== undefined) pendingWeekRecap = state.pendingWeekRecap;
+      if(state.rampUpActive !== undefined) rampUpActive = state.rampUpActive;
+      if(state.rampUpStartWeek !== undefined) rampUpStartWeek = state.rampUpStartWeek;
+      if(state.rampUpFullTargets !== undefined) rampUpFullTargets = state.rampUpFullTargets;
       if(Array.isArray(state.savedSessions)) savedSessions = state.savedSessions;
       if(Array.isArray(state.weeklyTotalsHistory)) weeklyTotalsHistory = state.weeklyTotalsHistory;
       if(Array.isArray(state.muscleWeeklyHistory)) muscleWeeklyHistory = state.muscleWeeklyHistory;
@@ -3178,7 +3188,91 @@
   /* ---- réglages volume ---- */
   // Séries uniquement pour le muscu (pas d'estimation temps fiable pour l'instant, comme demandé).
   // Étirements/Cardio restent en minutes (naturellement temporels, pas de conversion nécessaire).
-  const volState = { etirements:60, cardioLeger:45, cardioHiit:30 };
+  // Cible cardio établie : 500min/sem (8h20), répartis 80/20 Z2/Intense — mise à jour 2026-09
+  // suite à une disponibilité accrue, dans la fourchette basse "cycliste amateur sérieux"
+  // documentée (8-12h/sem, split 80/20 selon Seiler — la donnée la mieux établie en science de
+  // l'endurance).
+  const volState = { etirements:60, cardioLeger:400, cardioHiit:100 };
+
+  // Reprise progressive — réduit temporairement les objectifs (renfo + cardio) sur 7 semaines,
+  // avec remontée automatique jusqu'à 100%, plutôt que de viser le plein volume dès le départ
+  // après une base de conditionnement basse. Étirements exclus (bénéfice/risque très favorable).
+  // Le ratio Z2/intense évolue aussi en parallèle, plus prudent au début puis s'ouvrant vers la
+  // cible établie (80/20) — cohérent avec la littérature sur la progression <=10-15%/semaine et
+  // le principe de base aérobie avant intensité en début de bloc. Paliers resserrés en fin de
+  // progression (montée plus franche au début, plus fine en approchant du plein volume) — étendu
+  // sur 7 semaines (vs 4 initialement) suite à une cible cardio nettement plus élevée (500min/sem).
+  const RAMP_STEPS = [
+    { renfoFactor: 0.60, cardioFactor: 0.55, z2Share: 0.95 }, // semaine 1 du ramp
+    { renfoFactor: 0.70, cardioFactor: 0.65, z2Share: 0.92 }, // semaine 2
+    { renfoFactor: 0.78, cardioFactor: 0.75, z2Share: 0.89 }, // semaine 3
+    { renfoFactor: 0.85, cardioFactor: 0.82, z2Share: 0.86 }, // semaine 4
+    { renfoFactor: 0.91, cardioFactor: 0.89, z2Share: 0.83 }, // semaine 5
+    { renfoFactor: 0.96, cardioFactor: 0.95, z2Share: 0.81 }, // semaine 6
+    { renfoFactor: 1.00, cardioFactor: 1.00, z2Share: 0.80 }  // semaine 7 — retour aux vraies cibles
+  ];
+  let rampUpActive = false;
+  let rampUpStartWeek = null; // dernière semaine AVANT le ramp (le ramp démarre à startWeek+1)
+  let rampUpFullTargets = null; // sauvegarde des vraies cibles avant réduction
+  function applyRampUpStep(stepIdx){
+    const step = RAMP_STEPS[Math.min(stepIdx, RAMP_STEPS.length-1)];
+    ['jambes','haut','tronc'].forEach(g=>{
+      Object.keys(musclesData[g]).forEach(m=>{
+        const full = rampUpFullTargets.muscles[m];
+        const scaled = Math.max(1, Math.round(full * step.renfoFactor));
+        musclesData[g][m].target = scaled;
+        if(musclesFlat[m]) musclesFlat[m].target = scaled;
+      });
+    });
+    const totalCardioFull = rampUpFullTargets.cardioLeger + rampUpFullTargets.cardioHiit;
+    const totalCardioScaled = Math.round(totalCardioFull * step.cardioFactor);
+    volState.cardioLeger = Math.round(totalCardioScaled * step.z2Share);
+    volState.cardioHiit = totalCardioScaled - volState.cardioLeger;
+    volState.etirements = rampUpFullTargets.etirements;
+  }
+  function activateRampUp(){
+    if(rampUpActive) return;
+    rampUpFullTargets = { muscles:{}, cardioLeger: volState.cardioLeger, cardioHiit: volState.cardioHiit, etirements: volState.etirements };
+    ['jambes','haut','tronc'].forEach(g=>{
+      Object.keys(musclesData[g]).forEach(m=>{ rampUpFullTargets.muscles[m] = musclesData[g][m].target; });
+    });
+    rampUpActive = true;
+    rampUpStartWeek = lastKnownWeek;
+    applyRampUpStep(0); // effet immédiat, dès maintenant — pas besoin d'attendre le prochain rollover
+    if(typeof saveState==='function') saveState();
+  }
+  function deactivateRampUp(){
+    if(rampUpFullTargets){
+      ['jambes','haut','tronc'].forEach(g=>{
+        Object.keys(musclesData[g]).forEach(m=>{
+          musclesData[g][m].target = rampUpFullTargets.muscles[m];
+          if(musclesFlat[m]) musclesFlat[m].target = rampUpFullTargets.muscles[m];
+        });
+      });
+      volState.cardioLeger = rampUpFullTargets.cardioLeger;
+      volState.cardioHiit = rampUpFullTargets.cardioHiit;
+      volState.etirements = rampUpFullTargets.etirements;
+    }
+    rampUpActive = false;
+    rampUpStartWeek = null;
+    rampUpFullTargets = null;
+    if(typeof saveState==='function') saveState();
+  }
+  // Avance le ramp d'une semaine — appelé depuis checkWeekRollover(). Retourne true si le ramp
+  // vient de se terminer ce rollover (pour informer l'utilisateur au moment du récap de semaine).
+  function advanceRampUpOnRollover(newWeekNum){
+    if(!rampUpActive) return false;
+    const weeksSinceStart = newWeekNum - rampUpStartWeek;
+    const stepIdx = weeksSinceStart - 1;
+    if(stepIdx >= RAMP_STEPS.length - 1){
+      // Semaine finale : restaure les VRAIES valeurs sauvegardées, pas un recalcul via factor/share
+      // (qui pourrait légèrement différer du ratio réellement établi par l'utilisateur).
+      deactivateRampUp();
+      return true;
+    }
+    applyRampUpStep(stepIdx);
+    return false;
+  }
   // Progression réelle de la semaine — était absent avant (cardioLegerDone/etirDone étaient des
   // chiffres d'exemple codés en dur dans renderGroupOverview, jamais mis à jour). Maintenant du vrai
   // état, crédité à la fin de chaque séance cardio/étirement (temps réellement passé, pas l'estimation).
@@ -3618,6 +3712,37 @@
     renderReadinessWidget();
     if(typeof saveState==='function') saveState();
   }
+  function renderRampUpDashBadge(){
+    const wrap = document.getElementById('rampup-dash-badge');
+    if(!wrap) return;
+    if(!rampUpActive){ wrap.innerHTML=''; return; }
+    const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
+    const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+    const step = RAMP_STEPS[stepIdx];
+    wrap.innerHTML = '<div style="margin-top:10px; padding:8px 12px; background:rgba(90,200,180,0.1); border:1px solid var(--petrol); border-radius:10px; font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">'+
+      '<span>🐢 Reprise progressive — semaine '+(stepIdx+1)+'/'+RAMP_STEPS.length+' ('+Math.round(step.renfoFactor*100)+'% renfo)</span>'+
+      '<button class="link-btn" style="font-size:11px; padding:0;" onclick="showSection(\'equipement\',\'dashboard\')">Détail →</button></div>';
+  }
+
+  function renderRampUpSettings(){
+    const wrap = document.getElementById('rampup-content');
+    if(!wrap) return;
+    let html = '';
+    if(rampUpActive){
+      const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
+      const stepIdx = Math.max(0, weeksSinceStart - 1);
+      const step = RAMP_STEPS[Math.min(stepIdx, RAMP_STEPS.length-1)];
+      html += '<div class="card" style="margin-bottom:12px;">'+
+        '<div style="font-size:13px; font-weight:600; margin-bottom:4px;">🐢 En cours — semaine '+(stepIdx+1)+'/'+RAMP_STEPS.length+'</div>'+
+        '<div style="font-size:12px; color:var(--text-dim);">Renfo à '+Math.round(step.renfoFactor*100)+'% · Cardio à '+Math.round(step.cardioFactor*100)+'% (Z2 '+Math.round(step.z2Share*100)+'%/Intense '+Math.round((1-step.z2Share)*100)+'%)</div></div>'+
+        '<button class="sec-btn" style="width:100%;" onclick="if(confirm(\'Revenir directement à 100% des objectifs ?\')) deactivateRampUp(); renderRampUpSettings(); renderGroupOverview(); renderDashMuscleChart(); renderSeancesList();">Arrêter et revenir à 100%</button>';
+    } else {
+      html += '<div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">Réduit temporairement tes objectifs (renfo + cardio) sur 4 semaines avec remontée automatique — utile après une base de conditionnement basse, pour limiter le risque de blessure/courbatures excessives. Étirements non concernés.</div>'+
+        '<button class="gen-btn primary" style="width:100%; background:var(--petrol);" onclick="activateRampUp(); renderRampUpSettings(); renderGroupOverview(); renderDashMuscleChart(); renderSeancesList();">🐢 Activer une reprise progressive</button>';
+    }
+    wrap.innerHTML = html;
+  }
+
   function renderReadinessWidget(){
     const wrap = document.getElementById('readiness-widget');
     if(!wrap) return;
@@ -3840,6 +3965,7 @@
     renderDayPlanner();
     renderPlanifDetail();
     renderWeekRecap();
+    renderRampUpDashBadge();
   }
 
   // Semaine du programme — calculée depuis la vraie date, incrémente automatiquement tous les 7
@@ -3925,6 +4051,8 @@
       });
       Object.keys(musclesData).forEach(g=>{ Object.keys(musclesData[g]).forEach(m=>{ musclesFlat[m] = {...musclesData[g][m], group:g}; }); });
       weeklyProgress.cardioLeger = 0; weeklyProgress.cardioHiit = 0; weeklyProgress.etirement = 0;
+      const rampJustFinished = advanceRampUpOnRollover(info.weekNum);
+      if(rampJustFinished) pendingWeekRecap.rampFinished = true;
       lastKnownWeek = info.weekNum;
       if(typeof saveState==='function') saveState();
     }
@@ -4769,6 +4897,7 @@
   renderVolumeSettings();
   renderSeancesList();
   renderBilan();
+  renderRampUpSettings();
   renderHistorique();
   renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
   
@@ -5195,6 +5324,7 @@
   renderGroupOverview();
   renderDashMuscleChart();
   renderSeancesList();
+  renderRampUpSettings();
   updateSavedCount();
   /* ================= FIN PERSISTANCE ================= */
 </script>
