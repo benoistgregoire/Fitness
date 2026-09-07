@@ -613,8 +613,6 @@
     <div id="histo-cardio-chart"><!-- généré par renderHistoCardioChart() --></div>
 
     <div style="text-align:center; margin:10px 0 4px;">
-      <button class="link-btn" onclick="showSection('cardio-sport-histo','historique')">📈 Tendance par sport dans le temps →</button>
-      <span style="color:var(--text-faint); padding:0 4px;">·</span>
       <button class="link-btn" onclick="showSection('cardio-quick-fill','historique')">✏️ Rattrapage rapide →</button>
     </div>
 
@@ -642,24 +640,6 @@
     <div class="detail-title">Rattrapage cardio</div>
     <div class="detail-sub">Reporte rapidement ce que tu as déjà dans une autre appli — une ligne par sport, datée aujourd'hui par défaut.</div>
     <div id="cardio-quick-fill-content"><!-- généré par renderCardioQuickFill() --></div>
-  </section>
-
-  <section id="cardio-sport-histo">
-    <button class="back-btn" onclick="showSection('historique','historique')">← Retour</button>
-    <div class="detail-title">Cardio par sport</div>
-    <div class="detail-sub">Distance, durée ou D+ par sport, semaine après semaine</div>
-    <div id="histo-sport-vignettes"><!-- généré par renderHistoSportVignettes() --></div>
-    <div id="histo-sport-chart"><!-- généré par renderHistoSportChart() --></div>
-    <h2 class="section-title">Affichage</h2>
-    <div class="chip-row" id="histo-sport-viewmode-chips" style="margin-bottom:6px;">
-      <div class="chip sel" data-viewmode="weekly" onclick="selectHistoViewMode(this)">Par semaine</div>
-      <div class="chip" data-viewmode="cumulative" onclick="selectHistoViewMode(this)">Cumul croissant</div>
-    </div>
-    <div class="chip-row" id="histo-sport-range-chips" style="margin-bottom:10px;">
-      <div class="chip" data-range="4" onclick="selectHistoRange(this)">4 dernières sem.</div>
-      <div class="chip" data-range="8" onclick="selectHistoRange(this)">8 dernières sem.</div>
-      <div class="chip sel" data-range="all" onclick="selectHistoRange(this)">Tout</div>
-    </div>
   </section>
 
 
@@ -3252,11 +3232,10 @@
   // d'œil — pas besoin de traverser tout le configurateur pour savoir quoi faire aujourd'hui.
   // Historique — 2 graphes toujours visibles simultanément (Renfo + Cardio, chacun focus sur un
   // seul sujet) plutôt qu'un seul graphe avec sélecteur de type à basculer. Réglages d'affichage
-  // (hebdo/cumulé, période) PARTAGÉS entre les deux. Cardio par sport reste un écran à part (ses
-  // sélecteurs sport+métrique ne suivent pas le même principe de vignettes multi-sélectionnables).
-  let histoCardioMode = 'pct'; // 'minutes' | 'pct' — % répartition Z2/Intense EN DÉFAUT (donnée la plus utile au quotidien selon retour utilisateur)
-  let histoSportKey = 'route_velo';
-  let histoSportMetric = 'minutes'; // 'minutes' | 'distanceKm' | 'elevationM'
+  // (hebdo/cumulé, période) PARTAGÉS entre les deux. Le graphe Cardio bascule lui-même entre "Par
+  // sport" (défaut — vélo/vélib/course en vignettes multi-sélectionnables) et "Par type" (Z2/
+  // Intense/Étirement, avec option % répartition).
+  let histoCardioMode = 'pct'; // 'minutes' | 'pct' — pour le sous-mode "Par type"
   let histoViewMode = 'weekly'; // 'weekly' | 'cumulative' — partagé entre tous les graphes
   let histoRange = 'all'; // '4' | '8' | 'all' — partagé entre tous les graphes
   let histoSelectedMuscles = new Set(['GROUP_jambes','GROUP_haut','GROUP_tronc']);
@@ -3270,12 +3249,37 @@
   function selectHistoViewMode(el){
     histoViewMode = el.dataset.viewmode;
     document.querySelectorAll('.chip[data-viewmode]').forEach(c=>c.classList.toggle('sel', c.dataset.viewmode===histoViewMode));
-    renderHistoRenfoChart(); renderHistoCardioChart(); renderHistoSportChart();
+    renderHistoRenfoChart(); renderHistoCardioChart();
   }
   function selectHistoRange(el){
     histoRange = el.dataset.range;
     document.querySelectorAll('.chip[data-range]').forEach(c=>c.classList.toggle('sel', c.dataset.range===histoRange));
-    renderHistoRenfoChart(); renderHistoCardioChart(); renderHistoSportChart();
+    renderHistoRenfoChart(); renderHistoCardioChart();
+  }
+  let histoCardioViewBy = 'sport'; // 'sport' | 'type' — Par sport en défaut, c'est la donnée la plus utile au quotidien
+  let histoSelectedSports = new Set(['route_velo', 'velib_vae', 'course']);
+  let histoSportsMetric = 'minutes'; // 'minutes' | 'distanceKm' | 'elevationM' — appliqué à tous les sports cochés
+  function selectHistoCardioViewBy(el){
+    histoCardioViewBy = el.dataset.viewby;
+    document.querySelectorAll('#histo-cardioviewby-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoCardioVignettes();
+    renderHistoCardioChart();
+  }
+  function toggleHistoSport(key){
+    if(histoSelectedSports.has(key)) histoSelectedSports.delete(key);
+    else {
+      if(histoSelectedSports.size >= MAX_HISTO_SERIES) return;
+      histoSelectedSports.add(key);
+    }
+    renderHistoCardioVignettes();
+    renderHistoCardioChart();
+  }
+  function selectHistoSportsMetric(el){
+    histoSportsMetric = el.dataset.metric;
+    document.querySelectorAll('#histo-sportsmetric-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoCardioChart();
   }
   function selectHistoCardioMode(el){
     histoCardioMode = el.dataset.cardiomode;
@@ -3283,18 +3287,6 @@
     el.classList.add('sel');
     renderHistoCardioVignettes();
     renderHistoCardioChart();
-  }
-  function selectHistoSport(el){
-    histoSportKey = el.dataset.sport;
-    document.querySelectorAll('#histo-sport-chips .chip').forEach(c=>c.classList.remove('sel'));
-    el.classList.add('sel');
-    renderHistoSportChart();
-  }
-  function selectHistoSportMetric(el){
-    histoSportMetric = el.dataset.metric;
-    document.querySelectorAll('#histo-sportmetric-chips .chip').forEach(c=>c.classList.remove('sel'));
-    el.classList.add('sel');
-    renderHistoSportChart();
   }
   function toggleHistoMuscle(name){
     if(histoSelectedMuscles.has(name)) histoSelectedMuscles.delete(name);
@@ -3339,6 +3331,19 @@
       byWeek[wn] = (byWeek[wn]||0) + (e[metric]||0);
     });
     return Object.keys(byWeek).map(Number).sort((a,b)=>a-b).map(wn=>({ weekNum:wn, val: Math.round(byWeek[wn]*10)/10 }));
+  }
+  // Valeur d'UN sport pour UNE semaine précise — sert à aligner plusieurs sports sur le même axe
+  // de semaines (un sport peut avoir des trous, ex. pas de course certaines semaines ; sans cet
+  // alignement les séries auraient des longueurs différentes et le graphe serait faux/illisible).
+  function computeSportValueForWeek(sportKey, metric, weekNum){
+    let total = 0;
+    cardioLog.forEach(e=>{
+      if(e.sport !== sportKey) return;
+      if(metric !== 'minutes' && !e[metric]) return;
+      const wn = computeWeekInfo(new Date(e.date+'T12:00:00')).weekNum;
+      if(wn === weekNum) total += (e[metric]||0);
+    });
+    return Math.round(total*10)/10;
   }
 
   // Résumé "répartition par sport" — prominent sur l'écran principal, pas juste dans un écran à
@@ -3411,35 +3416,38 @@
   function renderHistoCardioVignettes(){
     const wrap = document.getElementById('histo-cardio-vignettes');
     if(!wrap) return;
-    let html = '<div class="chip-row" id="histo-cardiomode-chips" style="margin-bottom:8px;">'+
-      '<div class="chip'+(histoCardioMode==='minutes'?' sel':'')+'" data-cardiomode="minutes" onclick="selectHistoCardioMode(this)">Minutes</div>'+
-      '<div class="chip'+(histoCardioMode==='pct'?' sel':'')+'" data-cardiomode="pct" onclick="selectHistoCardioMode(this)">% répartition Z2/Intense</div>'+
+    let html = '<div class="chip-row" id="histo-cardioviewby-chips" style="margin-bottom:8px;">'+
+      '<div class="chip'+(histoCardioViewBy==='sport'?' sel':'')+'" data-viewby="sport" onclick="selectHistoCardioViewBy(this)">Par sport</div>'+
+      '<div class="chip'+(histoCardioViewBy==='type'?' sel':'')+'" data-viewby="type" onclick="selectHistoCardioViewBy(this)">Par type (Z2/Intense)</div>'+
       '</div>';
-    if(histoCardioMode==='minutes'){
-      html += '<div class="chip-row" style="flex-wrap:wrap;">';
-      [['cardioLeger','Cardio Z2'],['cardioHiit','Cardio intense'],['etirement','Étirements']].forEach(([key,label])=>{
-        const sel = histoSelectedCardio.has(key);
-        html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoCardio(\''+key+'\')">'+label+'</div>';
+    if(histoCardioViewBy==='sport'){
+      html += '<div class="chip-row" style="flex-wrap:wrap; margin-bottom:8px;">';
+      Object.keys(cardioProtocols).forEach(key=>{
+        const sel = histoSelectedSports.has(key);
+        html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoSport(\''+key+'\')">'+cardioProtocols[key].label+'</div>';
       });
-      html += '</div>';
+      html += '</div><div class="chip-row" id="histo-sportsmetric-chips">'+
+        '<div class="chip'+(histoSportsMetric==='minutes'?' sel':'')+'" data-metric="minutes" onclick="selectHistoSportsMetric(this)">Durée</div>'+
+        '<div class="chip'+(histoSportsMetric==='distanceKm'?' sel':'')+'" data-metric="distanceKm" onclick="selectHistoSportsMetric(this)">Distance</div>'+
+        '<div class="chip'+(histoSportsMetric==='elevationM'?' sel':'')+'" data-metric="elevationM" onclick="selectHistoSportsMetric(this)">D+</div>'+
+        '</div>'+
+        '<div style="font-size:10.5px; color:var(--text-faint); margin-top:6px;">Durée = temps total, Z2+intense confondus. Jusqu\'à '+MAX_HISTO_SERIES+' sports à la fois.</div>';
     } else {
-      html += '<div style="font-size:10.5px; color:var(--text-faint); margin-bottom:6px;">Vise 80/20 Z2/intense en phase base — utile pour repérer si tu dérives d\'un modèle polarisé.</div>';
+      html += '<div class="chip-row" id="histo-cardiomode-chips" style="margin-bottom:8px;">'+
+        '<div class="chip'+(histoCardioMode==='minutes'?' sel':'')+'" data-cardiomode="minutes" onclick="selectHistoCardioMode(this)">Minutes</div>'+
+        '<div class="chip'+(histoCardioMode==='pct'?' sel':'')+'" data-cardiomode="pct" onclick="selectHistoCardioMode(this)">% répartition Z2/Intense</div>'+
+        '</div>';
+      if(histoCardioMode==='minutes'){
+        html += '<div class="chip-row" style="flex-wrap:wrap;">';
+        [['cardioLeger','Cardio Z2'],['cardioHiit','Cardio intense'],['etirement','Étirements']].forEach(([key,label])=>{
+          const sel = histoSelectedCardio.has(key);
+          html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoCardio(\''+key+'\')">'+label+'</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div style="font-size:10.5px; color:var(--text-faint); margin-bottom:6px;">Vise 80/20 Z2/intense en phase base — utile pour repérer si tu dérives d\'un modèle polarisé.</div>';
+      }
     }
-    wrap.innerHTML = html;
-  }
-  function renderHistoSportVignettes(){
-    const wrap = document.getElementById('histo-sport-vignettes');
-    if(!wrap) return;
-    const sportKeys = Object.keys(cardioProtocols);
-    let html = '<div class="field-label" style="margin-top:0;">Sport</div><div class="chip-row" id="histo-sport-chips" style="flex-wrap:wrap; margin-bottom:8px;">';
-    sportKeys.forEach(key=>{
-      html += '<div class="chip'+(histoSportKey===key?' sel':'')+'" data-sport="'+key+'" onclick="selectHistoSport(this)">'+cardioProtocols[key].label+'</div>';
-    });
-    html += '</div><div class="field-label">Donnée</div><div class="chip-row" id="histo-sportmetric-chips">'+
-      '<div class="chip'+(histoSportMetric==='minutes'?' sel':'')+'" data-metric="minutes" onclick="selectHistoSportMetric(this)">Durée</div>'+
-      '<div class="chip'+(histoSportMetric==='distanceKm'?' sel':'')+'" data-metric="distanceKm" onclick="selectHistoSportMetric(this)">Distance</div>'+
-      '<div class="chip'+(histoSportMetric==='elevationM'?' sel':'')+'" data-metric="elevationM" onclick="selectHistoSportMetric(this)">D+</div>'+
-      '</div>';
     wrap.innerHTML = html;
   }
 
@@ -3475,6 +3483,26 @@
     const wrap = document.getElementById('histo-cardio-chart');
     if(!wrap) return;
     const modeNote = histoViewMode==='cumulative' ? ' (cumul croissant)' : '';
+    if(histoCardioViewBy==='sport'){
+      if(histoSelectedSports.size===0){ wrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-faint);">Choisis au moins un sport ci-dessus.</div>'; return; }
+      // Semaines de référence communes à TOUS les sports (union historique + semaine en cours) —
+      // garantit que chaque série a la même longueur même si un sport a des semaines sans donnée.
+      const masterWeeks = [...weeklyTotalsHistory.map(w=>w.weekNum), lastKnownWeek];
+      const METRIC_LABELS = { minutes:'Durée', distanceKm:'Distance', elevationM:'D+' };
+      const METRIC_UNITS = { minutes:'min', distanceKm:'km', elevationM:'m' };
+      const series = [];
+      let colorIdx = 0, labelsRef = null;
+      histoSelectedSports.forEach(sportKey=>{
+        const rawCombined = masterWeeks.map(wn=>({ weekNum:wn, val: computeSportValueForWeek(sportKey, histoSportsMetric, wn) }));
+        const applied = applyHistoRangeAndMode(rawCombined, w=>w.val);
+        if(!labelsRef) labelsRef = applied.map(w=>'S'+w.weekNum);
+        series.push({ label: cardioProtocols[sportKey].label, color: HISTO_COLORS[colorIdx % HISTO_COLORS.length], values: applied.map(w=>w.val) });
+        colorIdx++;
+      });
+      const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
+      wrap.innerHTML = renderMultiLineChart('Cardio — '+METRIC_LABELS[histoSportsMetric]+' par sport', sub, series, METRIC_UNITS[histoSportsMetric]);
+      return;
+    }
     if(histoCardioMode==='pct'){
       let combined = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
       if(histoRange !== 'all'){ const n = parseInt(histoRange,10); combined = combined.slice(-n); }
@@ -3501,21 +3529,6 @@
     });
     const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
     wrap.innerHTML = renderMultiLineChart('Cardio — minutes', sub, series, 'min');
-  }
-  function renderHistoSportChart(){
-    const wrap = document.getElementById('histo-sport-chart');
-    if(!wrap) return;
-    const modeNote = histoViewMode==='cumulative' ? ' (cumul croissant)' : '';
-    const rawCombined = computeSportWeeklyHistory(histoSportKey, histoSportMetric);
-    if(rawCombined.length===0){ wrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-faint);">Aucune donnée pour ce sport/cette donnée pour l\'instant.</div>'; return; }
-    const applied = applyHistoRangeAndMode(rawCombined, w => w.val);
-    const labelsRef = applied.map(w=>'S'+w.weekNum);
-    const METRIC_LABELS = { minutes:'Durée', distanceKm:'Distance', elevationM:'D+' };
-    const METRIC_UNITS = { minutes:'min', distanceKm:'km', elevationM:'m' };
-    const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
-    wrap.innerHTML = renderMultiLineChart(cardioProtocols[histoSportKey].label+' — '+METRIC_LABELS[histoSportMetric], sub, [
-      { label: METRIC_LABELS[histoSportMetric], color: HISTO_COLORS[0], values: applied.map(w=>w.val) }
-    ], METRIC_UNITS[histoSportMetric]);
   }
 
   // Rattrapage cardio rapide — pour reporter en une fois ce qu'il a déjà ailleurs (autre appli),
@@ -4107,7 +4120,7 @@
     bilanEntryOpen = null;
     renderBilan();
     renderHistorique();
-    renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderHistoSportVignettes(); renderHistoSportChart(); renderCardioQuickFill();
+    renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
     
     if(typeof saveState==='function') saveState();
   }
@@ -4702,7 +4715,7 @@
   renderSeancesList();
   renderBilan();
   renderHistorique();
-  renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderHistoSportVignettes(); renderHistoSportChart(); renderCardioQuickFill();
+  renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
   
   renderRemainingTime();
   updateSavedCount();
@@ -5105,7 +5118,7 @@
     renderSeancesList();
     renderBilan();
     renderHistorique();
-    renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderHistoSportVignettes(); renderHistoSportChart(); renderCardioQuickFill();
+    renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
     
     // Ces 3 chiffres sont normalement mis à jour directement par adjustVol() au clic, pas par un
     // render générique — après un rechargement, il faut les synchroniser manuellement une fois.
