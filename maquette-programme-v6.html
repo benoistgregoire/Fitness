@@ -271,6 +271,12 @@
   <section id="dashboard" class="active">
     <div id="remaining-time-box"><!-- généré par renderRemainingTime() --></div>
 
+    <div id="week-recap" style="margin-top:14px;"><!-- généré par renderWeekRecap() --></div>
+    <div id="readiness-widget" style="margin-top:14px;"><!-- généré par renderReadinessWidget() --></div>
+    <div id="day-planner" style="margin-top:14px;"><!-- généré par renderDayPlanner() --></div>
+
+    <div id="today-suggestion" style="margin-top:14px;"><!-- généré par renderTodaySuggestion() --></div>
+
     <div style="text-align:center; margin-top:8px;">
       <button class="link-btn" onclick="showSection('reglages-volume','dashboard')">Ajuster mes volumes par muscle →</button>
     </div>
@@ -281,21 +287,14 @@
     </div>
 
     <h2 class="section-title">Répartition par groupe</h2>
-    <div class="chip-row" id="dash-period-chips" style="margin-bottom:2px;">
-      <div class="chip sel" data-period="week" onclick="selectDashPeriod(this)">Cette semaine</div>
-      <div class="chip" data-period="rolling" onclick="selectDashPeriod(this)">7 derniers jours</div>
-    </div>
     <div id="dash-muscle-chart"><!-- généré par renderDashMuscleChart() --></div>
-
-    <h2 class="section-title">Composer ma séance</h2>
-    <button class="cta-generate" style="background:var(--petrol);" onclick="goToGenerator('renfo')">💪 Renfo</button>
-    <button class="cta-generate" style="background:var(--lav); color:#181330;" onclick="goToGenerator('yoga')">🧘 Étirements / Yoga</button>
-    <button class="cta-generate" style="background:var(--coral); color:#2a1210;" onclick="goToGenerator('cardio')">🏃 Cardio</button>
   </section>
 
   <!-- ============ SÉANCES ============ -->
   <section id="seances">
-    <button class="cta-generate" style="background:var(--petrol); margin-bottom:18px;" onclick="goToGenerator('renfo','seances')">💪 Composer ma séance</button>
+    <button class="cta-generate" style="background:var(--petrol);" onclick="goToGenerator('renfo','seances')">💪 Renfo</button>
+    <button class="cta-generate" style="background:var(--lav); color:#181330;" onclick="goToGenerator('yoga','seances')">🧘 Étirements / Yoga</button>
+    <button class="cta-generate" style="background:var(--coral); color:#2a1210; margin-bottom:18px;" onclick="goToGenerator('cardio','seances')">🏃 Cardio</button>
     <h2 class="section-title">Volume hebdo par muscle</h2>
     <div id="seances-list"><!-- généré par renderSeancesList() --></div>
     <div style="font-size:11.5px; color:var(--text-faint); margin:-2px 0 18px; text-align:center;">Tape un muscle pour voir ses exercices</div>
@@ -323,7 +322,9 @@
     <button class="sec-btn" style="width:100%;" id="test-mode-btn" onclick="toggleTestMode()">🧪 Activer le mode test</button>
     <div style="font-size:11px; color:var(--text-faint); margin-top:6px; margin-bottom:16px; line-height:1.5;">Utilise vraiment l'appli (séries, séances complètes...) sans rien sauvegarder — idéal pour tester le vrai site déployé sans polluer tes données. Recharge la page pour tout effacer et sortir du mode test.</div>
     <button class="sec-btn danger" style="width:100%;" onclick="resetWeekProgress()">↺ Réinitialiser la progression de la semaine</button>
-    <div style="font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.5;">Remet à zéro les séries comptabilisées pour tous les muscles. N'efface pas ton Bilan/Historique ni les charges mémorisées par exercice.</div>
+    <div style="font-size:11px; color:var(--text-faint); margin-top:6px; margin-bottom:16px; line-height:1.5;">Remet à zéro les séries comptabilisées pour tous les muscles. N'efface pas ton Bilan/Historique ni les charges mémorisées par exercice.</div>
+    <button class="sec-btn danger" style="width:100%;" onclick="resetAllData()">🗑️ Tout effacer et repartir de zéro</button>
+    <div style="font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.5;">Efface TOUT (progression, Bilan, Historique, cardio loggé, charges mémorisées) — utile pour repartir d'un état propre avant un vrai déploiement, après avoir testé l'appli.</div>
   </section>
 
   <!-- ============ DÉTAIL EXERCICES — GÉNÉRIQUE PAR MUSCLE ============ -->
@@ -332,6 +333,30 @@
     <div class="detail-title" id="muscle-detail-title">Muscle</div>
     <div class="detail-sub" id="muscle-detail-sub">— séries cette semaine</div>
     <div id="muscle-detail-list"><!-- généré par openMuscleDetail() --></div>
+  </section>
+
+  <!-- ============ DÉTAIL CARDIO ============ -->
+  <!-- ============ PLANIF (détail calendrier) ============ -->
+  <section id="planif">
+    <button class="back-btn" onclick="showSection('dashboard','dashboard')">← Retour</button>
+    <div class="detail-title">Planif</div>
+    <div class="detail-sub">Lieu prévu et contraintes sur les 7 prochains jours</div>
+    <div id="planif-content"><!-- généré par renderPlanifDetail() --></div>
+  </section>
+
+  <section id="cardio-detail">
+    <button class="back-btn" onclick="showSection('seances','seances')">← Retour</button>
+    <div class="detail-title" id="cardio-detail-title">Cardio</div>
+    <div class="detail-sub" id="cardio-detail-sub">— cette semaine</div>
+    <div id="cardio-detail-content"><!-- généré par openCardioDetail() --></div>
+  </section>
+
+  <!-- ============ DÉTAIL ÉTIREMENTS ============ -->
+  <section id="etirements-detail">
+    <button class="back-btn" onclick="showSection('seances','seances')">← Retour</button>
+    <div class="detail-title">Étirements</div>
+    <div class="detail-sub">Objectif et log rapide</div>
+    <div id="etirements-detail-content"><!-- généré par openEtirementsDetail() --></div>
   </section>
 
   <!-- ============ SÉANCES SAUVEGARDÉES ============ -->
@@ -486,6 +511,7 @@
         <div class="chip-row" id="sport-chips">
           <div class="chip sel cardio" data-sport="ht_velo" onclick="selectSport(this)">HT vélo</div>
           <div class="chip" data-sport="route_velo" onclick="selectSport(this)">Vélo route</div>
+          <div class="chip" data-sport="velib_vae" onclick="selectSport(this)">Vélib/VAE</div>
           <div class="chip" data-sport="course" onclick="selectSport(this)">Course à pied</div>
           <div class="chip" data-sport="rameur" onclick="selectSport(this)">Rameur</div>
           <div class="chip" data-sport="natation" onclick="selectSport(this)">Natation</div>
@@ -569,16 +595,35 @@
 
   <!-- ============ BILAN ============ -->
   <section id="bilan">
+    <button class="back-btn" onclick="showSection('historique','historique')">← Retour</button>
     <div id="bilan-content"><!-- généré par renderBilan() --></div>
     <div class="next-retest">🔁 Prochain bilan complet suggéré : <b>fin novembre</b> (tous les 2-3 mois)</div>
+    <h2 class="section-title">Tendance par test</h2>
+    <div id="historique-content"><!-- généré par renderHistorique() --></div>
   </section>
 
   <section id="historique">
-    <div id="weekly-log-content"><!-- généré par renderWeeklyLog() --></div>
-    <div id="historique-content"><!-- généré par renderHistorique() --></div>
+    <h2 class="section-title">Évolution</h2>
+    <div class="chip-row" id="histo-type-chips" style="margin-bottom:10px;">
+      <div class="chip sel" data-histotype="muscle" onclick="selectHistoType(this)">Renfo</div>
+      <div class="chip" data-histotype="cardio" onclick="selectHistoType(this)">Cardio global</div>
+      <div class="chip" data-histotype="cardio_sport" onclick="selectHistoType(this)">Cardio par sport</div>
+    </div>
+    <div id="histo-vignettes"><!-- généré par renderHistoVignettes() --></div>
+    <div class="chip-row" id="histo-viewmode-chips" style="margin:10px 0 6px;">
+      <div class="chip sel" data-viewmode="weekly" onclick="selectHistoViewMode(this)">Par semaine</div>
+      <div class="chip" data-viewmode="cumulative" onclick="selectHistoViewMode(this)">Cumul croissant</div>
+    </div>
+    <div class="chip-row" id="histo-range-chips" style="margin-bottom:10px;">
+      <div class="chip" data-range="4" onclick="selectHistoRange(this)">4 dernières sem.</div>
+      <div class="chip" data-range="8" onclick="selectHistoRange(this)">8 dernières sem.</div>
+      <div class="chip sel" data-range="all" onclick="selectHistoRange(this)">Tout</div>
+    </div>
+    <div id="histo-chart"><!-- généré par renderHistoChart2() --></div>
 
-    <h2 class="section-title">Évolution du volume par catégorie</h2>
-    <div id="weekly-volume-charts"><!-- généré par renderWeeklyVolumeCharts() --></div>
+    <div style="text-align:center; margin:18px 0 24px;">
+      <button class="link-btn" onclick="showSection('bilan','historique')">📏 Voir mon Bilan (tests de référence) →</button>
+    </div>
   </section>
 
 
@@ -592,10 +637,6 @@
   <button class="nav-btn" data-target="seances">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/></svg>
     Séances
-  </button>
-  <button class="nav-btn" data-target="bilan">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    Bilan
   </button>
   <button class="nav-btn" data-target="historique">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>
@@ -695,8 +736,13 @@
         lastKnownWeek: lastKnownWeek,
         volState: volState,
         exerciseLog: exerciseLog,
+        cardioLog: cardioLog,
+        readinessLog: readinessLog,
+        dayPlans: dayPlans,
+        pendingWeekRecap: pendingWeekRecap,
         savedSessions: savedSessions,
         weeklyTotalsHistory: weeklyTotalsHistory,
+        muscleWeeklyHistory: muscleWeeklyHistory,
         locationProfiles: locationProfiles,
         activeProfile: activeProfile,
         savedAt: new Date().toISOString()
@@ -741,8 +787,13 @@
       if(typeof state.lastKnownWeek === 'number') lastKnownWeek = state.lastKnownWeek;
       if(state.volState) Object.assign(volState, state.volState);
       if(Array.isArray(state.exerciseLog)) exerciseLog = state.exerciseLog;
+      if(Array.isArray(state.cardioLog)) cardioLog = state.cardioLog;
+      if(Array.isArray(state.readinessLog)) readinessLog = state.readinessLog;
+      if(state.dayPlans) dayPlans = state.dayPlans;
+      if(state.pendingWeekRecap !== undefined) pendingWeekRecap = state.pendingWeekRecap;
       if(Array.isArray(state.savedSessions)) savedSessions = state.savedSessions;
       if(Array.isArray(state.weeklyTotalsHistory)) weeklyTotalsHistory = state.weeklyTotalsHistory;
+      if(Array.isArray(state.muscleWeeklyHistory)) muscleWeeklyHistory = state.muscleWeeklyHistory;
       if(state.locationProfiles) locationProfiles = state.locationProfiles;
       if(state.activeProfile) activeProfile = state.activeProfile;
 
@@ -772,6 +823,8 @@
     { key:'Rowing élastique', unit:'reps', type:'single', category:'force', proto:'Max reps, résistance donnée' },
     { key:'Planche', unit:'s', type:'single', category:'force', proto:'Temps de tenue, forme stricte' },
     { key:'Planche latérale', unit:'s', type:'lr', category:'force', proto:'Temps de tenue par côté' },
+    { key:'Traction supination', unit:'reps', type:'single', category:'force', proto:'Max reps propres, prise supination' },
+    { key:'Suspension à la barre', unit:'s', type:'single', category:'force', proto:'Temps de tenue, prise pronation' },
     { key:'Tour de cuisse', unit:'cm', type:'lr', category:'mesure', proto:'Mesure ruban, au repère (grain de beauté)' }
   ];
   const BILAN_CATEGORY_LABELS = { corps:'Suivi corporel', cardio:'Cardio', force:'Force', mesure:'Mesures' };
@@ -787,6 +840,8 @@
     'Rowing élastique':   [{ date:'2026-09-01', value:20, note:'élastique trop léger — plafond, pas un vrai max' }],
     'Planche':            [{ date:'2026-09-01', value:80, note:'tremblements légers en fin' }],
     'Planche latérale':   [{ date:'2026-09-01', valueL:50, valueR:60 }],
+    'Traction supination': [{ date:'2026-09-06', value:5 }],
+    'Suspension à la barre': [{ date:'2026-09-06', value:40 }],
     'Tour de cuisse':     [{ date:'2026-09-01', valueL:50, valueR:49, note:'au repère (grain de beauté) — max G56/D55' }]
   };
   function todayISO(){ return new Date().toISOString().slice(0,10); }
@@ -1106,6 +1161,114 @@
   // Journal de toutes les séries faites (pas juste la dernière valeur) — pour le récap hebdo et,
   // à terme, une consultation dans l'Historique. Chaque entrée : date + exercice + poids/reps.
   let exerciseLog = [];
+  // Journal cardio par entrée (date, sport, intensité, minutes) — permet à terme de suivre la
+  // charge et la répartition par sport, chose que weeklyProgress.cardioLeger/cardioHiit ne
+  // capturait pas (juste un total agrégé, sans savoir quel sport avait contribué quoi).
+  let cardioLog = [];
+  // Fraîcheur perçue — un seul curseur 1-5, facultatif, jamais bloquant. La littérature montre
+  // qu'une mesure à une seule question capture déjà l'essentiel (fatigue/stress/humeur sont assez
+  // corrélés entre eux pour ne pas avoir besoin d'un questionnaire complet). Comparé à sa propre
+  // moyenne récente, pas à une norme absolue.
+  let readinessLog = [];
+  // Calendrier — widget compact sur Dashboard (lecture rapide) + écran "Planif" pour le détail
+  // (lieu prévu par jour, en plus des 2 marqueurs facultatifs). Le lieu réutilise directement les
+  // profils déjà construits (mêmes icônes), donc pas de nouvelle notion à apprendre.
+  let dayPlans = {}; // { 'YYYY-MM-DD': { location:'maison'|'exterieur'|'salle'|'hotel'|null, busy:bool, bigRide:bool } }
+  function getDayPlan(dateStr){
+    if(!dayPlans[dateStr]) dayPlans[dateStr] = { location:null, busy:false, bigRide:false };
+    return dayPlans[dateStr];
+  }
+  function setDayLocation(dateStr, loc){
+    const p = getDayPlan(dateStr);
+    p.location = (p.location === loc) ? null : loc; // re-tap pour désélectionner
+    renderDayPlanner();
+    renderPlanifDetail();
+    renderTodaySuggestion();
+    if(typeof saveState==='function') saveState();
+  }
+  function toggleDayFlag(dateStr, flag){
+    const p = getDayPlan(dateStr);
+    p[flag] = !p[flag];
+    renderDayPlanner();
+    renderPlanifDetail();
+    renderTodaySuggestion();
+    if(typeof saveState==='function') saveState();
+  }
+  const PLANIF_LOCATION_ICONS = { maison:'🏠', exterieur:'🌳', salle:'🏋️', hotel:'🧳' };
+  const PLANIF_LOCATION_NOTES = {
+    maison: 'Équilibré, tout est possible',
+    exterieur: 'Bon jour pour le haut du corps (tractions)',
+    salle: 'Bon jour pour les jambes lourdes',
+    hotel: 'Limité — plutôt léger ou étirements'
+  };
+  // Widget compact Dashboard — lecture rapide des 3 prochains jours + lien vers le détail complet.
+  function renderDayPlanner(){
+    const wrap = document.getElementById('day-planner');
+    if(!wrap) return;
+    const dayNames = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    let html = '<div class="chart-card">'+
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">'+
+      '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint);">Prochains jours</div>'+
+      '<button class="link-btn" style="font-size:11px; padding:0;" onclick="showSection(\'planif\',\'dashboard\')">Planifier en détail →</button></div>';
+    for(let i=0; i<3; i++){
+      const d = new Date(); d.setDate(d.getDate()+i);
+      const dateStr = d.toISOString().slice(0,10);
+      const label = i===0 ? "Aujourd'hui" : dayNames[d.getDay()]+' '+d.getDate();
+      const p = dayPlans[dateStr];
+      const tags = [];
+      if(p && p.location) tags.push(PLANIF_LOCATION_ICONS[p.location]);
+      if(p && p.busy) tags.push('🚫');
+      if(p && p.bigRide) tags.push('🚴');
+      html += '<div style="display:flex; justify-content:space-between; padding:5px 0; font-size:12.5px;">'+
+        '<span style="color:var(--text-dim);">'+label+'</span><span>'+(tags.length?tags.join(' '):'<span style="color:var(--text-faint);">—</span>')+'</span></div>';
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+  // Écran détaillé "Planif" — lieu prévu + les 2 marqueurs, sur 7 jours, avec note explicative.
+  function renderPlanifDetail(){
+    const wrap = document.getElementById('planif-content');
+    if(!wrap) return;
+    const dayNames = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    let html = '';
+    for(let i=0; i<7; i++){
+      const d = new Date(); d.setDate(d.getDate()+i);
+      const dateStr = d.toISOString().slice(0,10);
+      const label = i===0 ? "Aujourd'hui" : dayNames[d.getDay()]+' '+d.getDate();
+      const p = dayPlans[dateStr] || { location:null, busy:false, bigRide:false };
+      html += '<div class="chart-card" style="margin-bottom:10px;">'+
+        '<div style="font-weight:600; font-size:13.5px; margin-bottom:8px;">'+label+'</div>'+
+        '<div class="field-label" style="margin-top:0; font-size:11px;">Lieu prévu</div>'+
+        '<div class="chip-row" style="margin-bottom:8px;">';
+      ['maison','exterieur','salle','hotel'].forEach(loc=>{
+        html += '<div class="chip'+(p.location===loc?' sel':'')+'" onclick="setDayLocation(\''+dateStr+'\',\''+loc+'\')">'+PLANIF_LOCATION_ICONS[loc]+' '+loc.charAt(0).toUpperCase()+loc.slice(1)+'</div>';
+      });
+      html += '</div>';
+      if(p.location){
+        html += '<div style="font-size:11px; color:var(--petrol); margin-bottom:8px;">'+PLANIF_LOCATION_ICONS[p.location]+' '+PLANIF_LOCATION_NOTES[p.location]+'</div>';
+      }
+      html += '<div class="chip-row">'+
+        '<div class="chip'+(p.busy?' sel':'')+'" onclick="toggleDayFlag(\''+dateStr+'\',\'busy\')">🚫 Indispo</div>'+
+        '<div class="chip'+(p.bigRide?' sel':'')+'" onclick="toggleDayFlag(\''+dateStr+'\',\'bigRide\')">🚴 Grosse sortie</div>'+
+        '</div></div>';
+    }
+    wrap.innerHTML = html;
+  }
+  // Retard qui s'accumule — pas de nouvelle saisie, juste regarder depuis quand renfo/cardio n'ont
+  // plus été loggés. Seuils volontairement peu sensibles (3j renfo, 4j cardio) pour ne signaler
+  // qu'un vrai relâchement, pas une simple journée de repos normale.
+  function computeLagSignal(){
+    const lastRenfoDate = exerciseLog.length ? exerciseLog.map(e=>e.date).sort().pop() : null;
+    const lastCardioDate = cardioLog.length ? cardioLog.map(e=>e.date).sort().pop() : null;
+    const today = new Date();
+    const daysSince = (dateStr) => dateStr ? Math.floor((today - new Date(dateStr+'T12:00:00')) / MS_PER_DAY) : null;
+    const renfoGap = daysSince(lastRenfoDate);
+    const cardioGap = daysSince(lastCardioDate);
+    const flags = [];
+    if(renfoGap != null && renfoGap >= 3) flags.push({ type:'renfo', gap:renfoGap });
+    if(cardioGap != null && cardioGap >= 4) flags.push({ type:'cardio', gap:cardioGap });
+    return flags;
+  }
   function logSet(exerciseName, inputData){
     const entry = { date: todayISO(), exercise: exerciseName };
     if(inputData.weight != null) entry.weight = inputData.weight;
@@ -1303,6 +1466,8 @@
                  intense:{label:'Intervalles norvégiens', work:240, rest:180, desc:"4×4 min à ~95% FCmax, 3 min récupération active."} },
     route_velo:{ label:'Vélo route', faible:{label:'Z2 continu', desc:"Sortie longue allure conversationnelle."},
                  intense:{label:'30/30', work:30, rest:30, desc:"30s effort soutenu / 30s récupération, répété."} },
+    velib_vae: { label:'Vélib/VAE', faible:{label:'Trajet tranquille', desc:"Déplacement urbain, effort assisté, allure de balade."},
+                 intense:{label:'Trajet rythmé', work:60, rest:60, desc:"Portions plus rythmées (feux, côtes) alternant avec portions calmes."} },
     course:    { label:'Course à pied', faible:{label:'Footing Z2', desc:"Footing allure conversationnelle."},
                  intense:{label:'Sprint Interval', work:30, rest:150, desc:"30s sprint quasi maximal / 2-4 min récupération (marche/jog léger)."} },
     rameur:    { label:'Rameur', faible:{label:'Z2 continu', desc:"Rythme régulier, technique propre, effort continu."},
@@ -1331,7 +1496,7 @@
   // Mémorise l'écran de départ pour que le bouton retour de "Mon matériel" ramène au bon endroit,
   // plutôt que de toujours renvoyer vers Séances quelle que soit l'origine.
   let equipReturnTo = 'dashboard';
-  const EQUIP_NAV_MAP = { dashboard:'dashboard', seances:'seances', bilan:'bilan', historique:'historique' };
+  const EQUIP_NAV_MAP = { dashboard:'dashboard', seances:'seances', bilan:'historique', historique:'historique' };
   function openEquipement(){
     equipReturnTo = currentSectionId;
     showSection('equipement', null);
@@ -2658,15 +2823,32 @@
       '<button class="stepper-btn" onclick="adjustCardioLogValue(10)">+10</button>'+
       '</div>'+
       '<div style="text-align:center; font-size:11px; color:var(--text-faint); margin-top:2px;">minutes</div>'+
+      '<div style="display:flex; gap:10px; margin-top:12px;">'+
+      '<div style="flex:1;"><div class="field-label" style="margin-top:0;">Distance (facultatif)</div>'+
+      '<input type="number" id="cardio-log-distance" inputmode="decimal" step="0.1" min="0" placeholder="km" oninput="setCardioLogDistance(this.value)" style="width:100%; padding:8px 10px; background:var(--bg-card); color:var(--text); border:1px solid var(--line); border-radius:8px; font-size:14px;"></div>'+
+      '<div style="flex:1;"><div class="field-label" style="margin-top:0;">D+ (facultatif)</div>'+
+      '<input type="number" id="cardio-log-elevation" inputmode="numeric" min="0" placeholder="m" oninput="setCardioLogElevation(this.value)" style="width:100%; padding:8px 10px; background:var(--bg-card); color:var(--text); border:1px solid var(--line); border-radius:8px; font-size:14px;"></div>'+
+      '</div>'+
       '<button class="gen-btn primary" style="background:var(--coral); color:#2a1210; margin-top:12px;" onclick="logCardioTime()">✓ Logger ce temps</button>';
 
     html += '<button class="gen-btn" onclick="startSession()">Ou lancer un timer guidé dans l\'appli →</button>';
     document.getElementById('result-zone').innerHTML = html;
     cardioLogValue = estimatedMin;
     cardioLogIntensity = intensity;
+    cardioLogDistance = null; cardioLogElevation = null;
   }
   let cardioLogValue = 30;
   let cardioLogIntensity = 'faible';
+  let cardioLogDistance = null;
+  let cardioLogElevation = null;
+  function setCardioLogDistance(v){
+    const n = parseFloat(v);
+    cardioLogDistance = (!isNaN(n) && n > 0) ? n : null;
+  }
+  function setCardioLogElevation(v){
+    const n = parseInt(v, 10);
+    cardioLogElevation = (!isNaN(n) && n > 0) ? n : null;
+  }
   function adjustCardioLogValue(delta){
     cardioLogValue = Math.max(1, cardioLogValue + delta);
     const el = document.getElementById('cardio-log-input');
@@ -2680,6 +2862,14 @@
     // Enregistre directement le temps fait, sans passer par la séance guidée.
     if(cardioLogIntensity === 'intense') weeklyProgress.cardioHiit += cardioLogValue;
     else weeklyProgress.cardioLeger += cardioLogValue;
+    // Journal détaillé par sport — selectedSport reflète déjà le sport choisi dans les chips (ou
+    // 'route_velo' par défaut en mode auto), donc rien à redemander à l'utilisateur ici.
+    const sportKey = cardioAutoMode ? 'route_velo' : selectedSport;
+    const entry = { date: todayISO(), sport: sportKey, intensity: cardioLogIntensity, minutes: cardioLogValue };
+    if(cardioLogDistance != null) entry.distanceKm = cardioLogDistance;
+    if(cardioLogElevation != null) entry.elevationM = cardioLogElevation;
+    cardioLog.push(entry);
+    cardioLogDistance = null; cardioLogElevation = null;
     renderGroupOverview();
     renderDashMuscleChart();
     renderRemainingTime();
@@ -2687,7 +2877,7 @@
     document.getElementById('result-zone').innerHTML =
       '<div class="result-card" style="text-align:center; padding:24px 16px;">'+
       '<div style="font-size:32px; margin-bottom:8px;">✓</div>'+
-      '<div style="font-weight:700; margin-bottom:4px;">'+cardioLogValue+' min loggées</div>'+
+      '<div style="font-weight:700; margin-bottom:4px;">'+cardioLogValue+' min loggées'+(entry.distanceKm?' — '+entry.distanceKm+' km':'')+(entry.elevationM?' — '+entry.elevationM+' m D+':'')+'</div>'+
       '<div style="font-size:12px; color:var(--text-dim);">Ajouté à ton suivi cardio de la semaine</div>'+
       '<button class="gen-btn" style="margin-top:16px;" onclick="showSection(\'dashboard\',\'dashboard\')">Retour au dashboard</button>'+
       '</div>';
@@ -2979,7 +3169,16 @@
   // Historique des totaux par catégorie, un instantané par semaine terminée — alimente le
   // graphique d'évolution. weekNumForLabel permet d'étiqueter chaque point sans dépendre de la
   // position dans le tableau (utile si des semaines sont un jour sautées/rejouées).
+  // Vide par défaut — se remplit naturellement au fil des vraies semaines (voir le rollover plus
+  // bas). Volontairement PAS de données de démo pré-remplies ici : ce fichier peut être déployé
+  // tel quel (GitHub, Netlify...) pour un usage réel, et des fausses semaines dans l'état par
+  // défaut pollueraient le vrai suivi de quiconque l'utilise sans repartir d'un état propre.
   let weeklyTotalsHistory = [];
+  // Suivi long terme par muscle (16 muscles, pas juste les 3 grands groupes) — alimenté au même
+  // moment que weeklyTotalsHistory, à chaque rollover de semaine. Sert au graphe Historique
+  // "évolution par muscle" : un seul graphe avec sélecteur, plutôt qu'un journal hebdo qui ne fait
+  // que dupliquer ce que le Dashboard montre déjà pour la semaine en cours.
+  let muscleWeeklyHistory = [];
   function computeCurrentWeekTotals(weekNumForLabel){
     let jambes=0, haut=0, tronc=0;
     Object.keys(musclesData.jambes).forEach(m=>{ jambes += musclesData.jambes[m].done; });
@@ -2996,53 +3195,442 @@
   // Totaux glissants sur N jours (contrairement à "cette semaine" qui repart de zéro chaque lundi)
   // — reconstruit depuis exerciseLog puisque musclesData.done ne connaît que le compteur hebdo
   // courant, pas l'historique jour par jour.
-  function computeRollingTotals(days){
+  // Moyenne des 4 dernières semaines COMPLÈTES (weeklyTotalsHistory, pas la semaine en cours) —
+  // sert de référence pour voir si le rythme actuel accélère, stagne ou ralentit par rapport à
+  // l'habitude récente. Plus utile qu'un chevauchement "cette semaine vs 7 derniers jours", qui se
+  // recoupe presque toujours tôt dans la semaine et n'apporte pas de vrai signal différent.
+  function compute4WeekAverage(){
+    const recent = weeklyTotalsHistory.slice(-4);
+    if(recent.length === 0) return null;
+    const avg = { jambes:0, haut:0, tronc:0, cardioLeger:0, cardioHiit:0, etirement:0 };
+    recent.forEach(w=>{
+      avg.jambes+=w.jambes; avg.haut+=w.haut; avg.tronc+=w.tronc;
+      avg.cardioLeger+=w.cardioLeger; avg.cardioHiit+=w.cardioHiit; avg.etirement+=w.etirement;
+    });
+    ['jambes','haut','tronc','cardioLeger','cardioHiit','etirement'].forEach(k=> avg[k] = Math.round((avg[k]/recent.length)*10)/10);
+    avg.weeksUsed = recent.length;
+    return avg;
+  }
+  // Suggestion du jour : calcule EN DIRECT (sans naviguer) ce que le générateur proposerait
+  // maintenant, pour que le Dashboard affiche une vraie recommandation actionnable en un coup
+  // d'œil — pas besoin de traverser tout le configurateur pour savoir quoi faire aujourd'hui.
+  // Système consolidé Historique — un seul graphe flexible avec vignettes activables/désactivables
+  // (jusqu'à 4 séries à la fois), plutôt que plusieurs graphes fixes séparés. Deux modes : Muscles
+  // (groupes + muscles individuels, comparables entre eux) et Cardio & étirement.
+  function selectHistoViewMode(el){
+    histoViewMode = el.dataset.viewmode;
+    document.querySelectorAll('#histo-viewmode-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoChart2();
+  }
+  function selectHistoRange(el){
+    histoRange = el.dataset.range;
+    document.querySelectorAll('#histo-range-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoChart2();
+  }
+  // Applique le mode (cumul croissant ou brut) et la plage temporelle à une liste {weekNum,...}
+  // déjà combinée (historique + semaine en cours) — utilisé pour les deux modes Muscles/Cardio.
+  // Reconstruit un historique hebdomadaire pour UN sport + UNE métrique, directement depuis
+  // cardioLog (pas besoin d'une structure séparée à maintenir — cardioLog garde déjà tout).
+  function computeSportWeeklyHistory(sportKey, metric){
+    const byWeek = {};
+    cardioLog.forEach(e=>{
+      if(e.sport !== sportKey) return;
+      if(metric !== 'minutes' && !e[metric]) return; // distance/D+ pas toujours renseignés
+      const wn = computeWeekInfo(new Date(e.date+'T12:00:00')).weekNum;
+      byWeek[wn] = (byWeek[wn]||0) + (e[metric]||0);
+    });
+    return Object.keys(byWeek).map(Number).sort((a,b)=>a-b).map(wn=>({ weekNum:wn, val: Math.round(byWeek[wn]*10)/10 }));
+  }
+  function applyHistoRangeAndMode(combined, valueKeyFn){
+    let sliced = combined;
+    if(histoRange !== 'all'){
+      const n = parseInt(histoRange, 10);
+      sliced = combined.slice(-n);
+    }
+    if(histoViewMode === 'cumulative'){
+      let running = 0;
+      return sliced.map(w=>{ running += valueKeyFn(w); return { weekNum:w.weekNum, val:running }; });
+    }
+    return sliced.map(w=>({ weekNum:w.weekNum, val:valueKeyFn(w) }));
+  }
+  let histoType = 'muscle'; // 'muscle' | 'cardio' | 'cardio_sport'
+  let histoCardioMode = 'minutes'; // 'minutes' | 'pct' — % répartition Z2/Intense (polarisation)
+  let histoSportKey = 'route_velo';
+  let histoSportMetric = 'minutes'; // 'minutes' | 'distanceKm' | 'elevationM'
+  let histoViewMode = 'weekly'; // 'weekly' | 'cumulative'
+  let histoRange = 'all'; // '4' | '8' | 'all' — nombre de semaines à afficher
+  let histoSelectedMuscles = new Set(['Quadriceps']);
+  let histoSelectedCardio = new Set(['cardioLeger']);
+  const HISTO_COLORS = ['var(--petrol)', 'var(--amber)', 'var(--coral)', 'var(--lav)'];
+  const MAX_HISTO_SERIES = 4;
+
+  function selectHistoType(el){
+    histoType = el.dataset.histotype;
+    document.querySelectorAll('#histo-type-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoVignettes();
+    renderHistoChart2();
+  }
+  function selectHistoCardioMode(el){
+    histoCardioMode = el.dataset.cardiomode;
+    document.querySelectorAll('#histo-cardiomode-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoChart2();
+  }
+  function selectHistoSport(el){
+    histoSportKey = el.dataset.sport;
+    document.querySelectorAll('#histo-sport-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoChart2();
+  }
+  function selectHistoSportMetric(el){
+    histoSportMetric = el.dataset.metric;
+    document.querySelectorAll('#histo-sportmetric-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    renderHistoChart2();
+  }
+  function toggleHistoMuscle(name){
+    if(histoSelectedMuscles.has(name)) histoSelectedMuscles.delete(name);
+    else {
+      if(histoSelectedMuscles.size >= MAX_HISTO_SERIES) return; // limite pour rester lisible
+      histoSelectedMuscles.add(name);
+    }
+    renderHistoVignettes();
+    renderHistoChart2();
+  }
+  function toggleHistoCardio(key){
+    if(histoSelectedCardio.has(key)) histoSelectedCardio.delete(key);
+    else {
+      if(histoSelectedCardio.size >= MAX_HISTO_SERIES) return;
+      histoSelectedCardio.add(key);
+    }
+    renderHistoVignettes();
+    renderHistoChart2();
+  }
+  function renderHistoVignettes(){
+    const wrap = document.getElementById('histo-vignettes');
+    if(!wrap) return;
+    if(histoType==='muscle'){
+      let html = '<div class="chip-row" style="flex-wrap:wrap;">';
+      [['jambes','Jambes (total)'],['haut','Haut (total)'],['tronc','Tronc (total)']].forEach(([key,label])=>{
+        const sel = histoSelectedMuscles.has('GROUP_'+key);
+        html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoMuscle(\'GROUP_'+key+'\')">'+label+'</div>';
+      });
+      ['jambes','haut','tronc'].forEach(g=>{
+        Object.keys(musclesData[g]).forEach(m=>{
+          const sel = histoSelectedMuscles.has(m);
+          html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoMuscle(\''+m+'\')">'+m+'</div>';
+        });
+      });
+      html += '</div><div style="font-size:10.5px; color:var(--text-faint); margin:4px 0 10px;">Jusqu\'à '+MAX_HISTO_SERIES+' à la fois pour rester lisible.</div>';
+      wrap.innerHTML = html;
+    } else if(histoType==='cardio'){
+      let html = '<div class="chip-row" id="histo-cardiomode-chips" style="margin-bottom:8px;">'+
+        '<div class="chip'+(histoCardioMode==='minutes'?' sel':'')+'" data-cardiomode="minutes" onclick="selectHistoCardioMode(this)">Minutes</div>'+
+        '<div class="chip'+(histoCardioMode==='pct'?' sel':'')+'" data-cardiomode="pct" onclick="selectHistoCardioMode(this)">% répartition Z2/Intense</div>'+
+        '</div>';
+      if(histoCardioMode==='minutes'){
+        html += '<div class="chip-row" style="flex-wrap:wrap;">';
+        [['cardioLeger','Cardio Z2'],['cardioHiit','Cardio intense'],['etirement','Étirements']].forEach(([key,label])=>{
+          const sel = histoSelectedCardio.has(key);
+          html += '<div class="chip'+(sel?' sel':'')+'" onclick="toggleHistoCardio(\''+key+'\')">'+label+'</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div style="font-size:10.5px; color:var(--text-faint); margin-bottom:6px;">Vise 80/20 Z2/intense en phase base — utile pour repérer si tu dérives d\'un modèle polarisé.</div>';
+      }
+      wrap.innerHTML = html;
+    } else {
+      // cardio_sport : sport en premier (single-select), puis métrique
+      const sportKeys = Object.keys(cardioProtocols);
+      let html = '<div class="field-label" style="margin-top:0;">Sport</div><div class="chip-row" id="histo-sport-chips" style="flex-wrap:wrap; margin-bottom:8px;">';
+      sportKeys.forEach(key=>{
+        html += '<div class="chip'+(histoSportKey===key?' sel':'')+'" data-sport="'+key+'" onclick="selectHistoSport(this)">'+cardioProtocols[key].label+'</div>';
+      });
+      html += '</div><div class="field-label">Donnée</div><div class="chip-row" id="histo-sportmetric-chips">'+
+        '<div class="chip'+(histoSportMetric==='minutes'?' sel':'')+'" data-metric="minutes" onclick="selectHistoSportMetric(this)">Durée</div>'+
+        '<div class="chip'+(histoSportMetric==='distanceKm'?' sel':'')+'" data-metric="distanceKm" onclick="selectHistoSportMetric(this)">Distance</div>'+
+        '<div class="chip'+(histoSportMetric==='elevationM'?' sel':'')+'" data-metric="elevationM" onclick="selectHistoSportMetric(this)">D+</div>'+
+        '</div>';
+      wrap.innerHTML = html;
+    }
+  }
+  function renderHistoChart2(){
+    const wrap = document.getElementById('histo-chart');
+    if(!wrap) return;
+    const modeNote = histoViewMode==='cumulative' ? ' (cumul croissant)' : '';
+    if(histoType==='muscle'){
+      if(histoSelectedMuscles.size===0){ wrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-faint);">Choisis au moins un muscle ou un groupe ci-dessus.</div>'; return; }
+      const combinedGroupTotals = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
+      const series = [];
+      let colorIdx = 0, labelsRef = null;
+      histoSelectedMuscles.forEach(key=>{
+        let label, rawCombined, valueKeyFn;
+        if(key.startsWith('GROUP_')){
+          const g = key.replace('GROUP_','');
+          label = GROUP_LABELS[g];
+          rawCombined = combinedGroupTotals;
+          valueKeyFn = w => w[g];
+        } else {
+          label = key;
+          rawCombined = [...muscleWeeklyHistory.map(w=>({weekNum:w.weekNum, muscles:w.muscles})), {weekNum:lastKnownWeek, muscles:{[key]: musclesFlat[key]?musclesFlat[key].done:0}}];
+          valueKeyFn = w => w.muscles[key]||0;
+        }
+        const applied = applyHistoRangeAndMode(rawCombined, valueKeyFn);
+        if(!labelsRef) labelsRef = applied.map(w=>'S'+w.weekNum);
+        series.push({ label, color: HISTO_COLORS[colorIdx % HISTO_COLORS.length], values: applied.map(w=>w.val) });
+        colorIdx++;
+      });
+      const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
+      wrap.innerHTML = renderMultiLineChart('Évolution', sub, series, '');
+    } else if(histoType==='cardio'){
+      if(histoCardioMode==='pct'){
+        let combined = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
+        if(histoRange !== 'all'){ const n = parseInt(histoRange,10); combined = combined.slice(-n); }
+        const labelsRef = combined.map(w=>'S'+w.weekNum);
+        const z2pct = combined.map(w=>{ const tot=w.cardioLeger+w.cardioHiit; return tot>0 ? Math.round(100*w.cardioLeger/tot) : 0; });
+        const intensePct = combined.map(w=>{ const tot=w.cardioLeger+w.cardioHiit; return tot>0 ? Math.round(100*w.cardioHiit/tot) : 0; });
+        const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + ' — cible indicative 80/20';
+        wrap.innerHTML = renderMultiLineChart('Répartition Z2 / Intense', sub, [
+          { label:'% Z2', color: HISTO_COLORS[0], values: z2pct },
+          { label:'% Intense', color: HISTO_COLORS[2], values: intensePct }
+        ], '%');
+        return;
+      }
+      if(histoSelectedCardio.size===0){ wrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-faint);">Choisis au moins une série ci-dessus.</div>'; return; }
+      const combined = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
+      const CARDIO_LABELS = {cardioLeger:'Cardio Z2', cardioHiit:'Cardio intense', etirement:'Étirements'};
+      const series = [];
+      let colorIdx = 0, labelsRef = null;
+      histoSelectedCardio.forEach(key=>{
+        const applied = applyHistoRangeAndMode(combined, w => w[key]);
+        if(!labelsRef) labelsRef = applied.map(w=>'S'+w.weekNum);
+        series.push({ label: CARDIO_LABELS[key], color: HISTO_COLORS[colorIdx % HISTO_COLORS.length], values: applied.map(w=>w.val) });
+        colorIdx++;
+      });
+      const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
+      wrap.innerHTML = renderMultiLineChart('Évolution', sub, series, 'min');
+    } else {
+      // cardio_sport : une seule série (sport + métrique choisis), reconstruite depuis cardioLog.
+      const rawCombined = computeSportWeeklyHistory(histoSportKey, histoSportMetric);
+      if(rawCombined.length===0){ wrap.innerHTML = '<div style="font-size:12.5px; color:var(--text-faint);">Aucune donnée pour ce sport/cette donnée pour l\'instant.</div>'; return; }
+      const applied = applyHistoRangeAndMode(rawCombined, w => w.val);
+      const labelsRef = applied.map(w=>'S'+w.weekNum);
+      const METRIC_LABELS = { minutes:'Durée', distanceKm:'Distance', elevationM:'D+' };
+      const METRIC_UNITS = { minutes:'min', distanceKm:'km', elevationM:'m' };
+      const sub = (labelsRef.length>1 ? labelsRef[0]+' → '+labelsRef[labelsRef.length-1]+' (dernière = en cours)' : labelsRef[0]+' (en cours)') + modeNote;
+      wrap.innerHTML = renderMultiLineChart(cardioProtocols[histoSportKey].label+' — '+METRIC_LABELS[histoSportMetric], sub, [
+        { label: METRIC_LABELS[histoSportMetric], color: HISTO_COLORS[0], values: applied.map(w=>w.val) }
+      ], METRIC_UNITS[histoSportMetric]);
+    }
+  }
+
+  // Fraîcheur perçue — 1 tap, 1-5, jamais bloquant. Comparé à la moyenne des 14 derniers jours
+  // (traffic-light simple), pas à une norme absolue — cohérent avec la littérature sur les mesures
+  // à item unique pour le suivi de bien-être athlète.
+  function computeReadinessAverage(days){
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffStr = cutoff.toISOString().slice(0,10);
-    let jambes=0, haut=0, tronc=0;
-    exerciseLog.forEach(e=>{
-      if(e.date < cutoffStr) return;
-      const def = EXERCISE_DEFS[e.exercise];
-      if(!def || !def.muscles) return;
-      Object.entries(def.muscles).forEach(([m,w])=>{
-        const d = musclesFlat[m];
-        if(!d) return;
-        if(d.group==='jambes') jambes += w;
-        else if(d.group==='haut') haut += w;
-        else if(d.group==='tronc') tronc += w;
-      });
+    const recent = readinessLog.filter(e=>e.date >= cutoffStr);
+    if(recent.length === 0) return null;
+    return recent.reduce((s,e)=>s+e.value,0) / recent.length;
+  }
+  function logReadiness(value){
+    const today = todayISO();
+    const existing = readinessLog.find(e=>e.date===today);
+    if(existing) existing.value = value;
+    else readinessLog.push({ date: today, value });
+    renderReadinessWidget();
+    if(typeof saveState==='function') saveState();
+  }
+  function renderReadinessWidget(){
+    const wrap = document.getElementById('readiness-widget');
+    if(!wrap) return;
+    const today = todayISO();
+    const todayEntry = readinessLog.find(e=>e.date===today);
+    const avg = computeReadinessAverage(14);
+    let html = '<div class="chart-card">'+
+      '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Comment tu te sens aujourd\'hui ?</div>'+
+      '<div style="display:flex; gap:6px; justify-content:space-between;">';
+    [1,2,3,4,5].forEach(v=>{
+      const isSel = todayEntry && todayEntry.value===v;
+      html += '<button class="stepper-btn" style="flex:1; padding:10px 0; font-size:14px;'+(isSel?' background:var(--petrol); color:#fff; border-color:var(--petrol);':'')+'" onclick="logReadiness('+v+')">'+v+'</button>';
     });
-    return { jambes: Math.round(jambes*10)/10, haut: Math.round(haut*10)/10, tronc: Math.round(tronc*10)/10 };
+    html += '</div><div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); margin-top:3px;"><span>Fatigué</span><span>En forme</span></div>';
+    if(todayEntry && avg != null){
+      const diff = todayEntry.value - avg;
+      let indicator, color;
+      if(diff >= 0.5){ indicator = '🟢 Plutôt frais aujourd\'hui'; color = 'var(--green)'; }
+      else if(diff <= -0.5){ indicator = '🔴 Plutôt fatigué — vas-y doucement si besoin'; color = 'var(--coral)'; }
+      else { indicator = '🟡 Dans ta moyenne habituelle'; color = 'var(--amber)'; }
+      html += '<div style="font-size:11.5px; margin-top:8px; color:'+color+';">'+indicator+' <span style="color:var(--text-faint);">(moyenne 14j : '+(Math.round(avg*10)/10)+')</span></div>';
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
   }
 
-  let dashPeriod = 'week';
-  function selectDashPeriod(el){
-    dashPeriod = el.dataset.period;
-    document.querySelectorAll('#dash-period-chips .chip').forEach(c=>c.classList.remove('sel'));
-    el.classList.add('sel');
-    renderDashMuscleChart();
+  function computeRenfoSuggestion(){
+    const suggestedTime = 30; // durée par défaut raisonnable, ajustable une fois dans le générateur
+    // Si une grosse sortie est prévue DEMAIN, on évite de suggérer du renfo jambe aujourd'hui —
+    // cohérent avec la règle déjà établie (jamais de jambes lourdes dans les 24-48h avant une
+    // sortie intense). Priorité sur la préférence de lieu ci-dessous : la sécurité passe avant le
+    // confort d'organisation.
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+    const tomorrowPlan = dayPlans[tomorrow.toISOString().slice(0,10)];
+    const avoidLegsToday = !!(tomorrowPlan && tomorrowPlan.bigRide);
+    // Sinon, le lieu prévu AUJOURD'HUI peut orienter la catégorie — ex. Salle a le meilleur
+    // équipement jambes, Extérieur est plutôt tractions/haut du corps (cf. profils de lieu).
+    const todayPlan = dayPlans[todayISO()];
+    let locationBias = null;
+    if(todayPlan && todayPlan.location === 'salle') locationBias = 'jambes';
+    else if(todayPlan && todayPlan.location === 'exterieur') locationBias = 'haut';
+    const savedCategory = autoCategory;
+    if(avoidLegsToday) autoCategory = 'haut';
+    else if(locationBias) autoCategory = locationBias;
+    const nSlots = slotsForTime(suggestedTime);
+    const picks = pickAutoMuscles(nSlots);
+    autoCategory = savedCategory;
+    // pickAutoMuscles remplit toujours ses créneaux, même si plus personne n'a de vrai déficit —
+    // pour la suggestion spécifiquement, on ne veut proposer que ce qui a un besoin réel restant.
+    const chosen = picks.chosen.filter(m => musclesFlat[m] && (musclesFlat[m].target - musclesFlat[m].done) > 0.5);
+    return { muscles: chosen, time: suggestedTime, avoidedLegs: avoidLegsToday, locationBias: avoidLegsToday ? null : locationBias };
   }
+  function computeCardioSuggestion(){
+    const legerRemain = Math.max(0, volState.cardioLeger - weeklyProgress.cardioLeger);
+    const hiitRemain = Math.max(0, volState.cardioHiit - weeklyProgress.cardioHiit);
+    if(legerRemain <= 0 && hiitRemain <= 0) return null; // objectifs déjà atteints cette semaine
+    // Priorise l'intense seulement si son déficit relatif dépasse nettement celui du léger — évite
+    // de basculer sur l'intense pour un tout petit écart, le léger reste la base par défaut.
+    const legerRatio = volState.cardioLeger > 0 ? legerRemain / volState.cardioLeger : 0;
+    const hiitRatio = volState.cardioHiit > 0 ? hiitRemain / volState.cardioHiit : 0;
+    const preferIntense = hiitRatio > legerRatio * 1.2 && hiitRemain > 0;
+    return preferIntense ? { type:'intense', remain:hiitRemain } : { type:'faible', remain: legerRemain>0?legerRemain:hiitRemain };
+  }
+  // Détecte si une grosse séance vélo ET renfo ont déjà été faites aujourd'hui — dans ce cas,
+  // pousser encore une séance n'est pas dans l'intérêt de la récup, on suggère repos/récup active
+  // à la place. Seuils volontairement prudents (proches d'une vraie séance complète), pas
+  // déclenché par juste quelques séries loggées en passant.
+  function computeTodayLoad(){
+    const today = todayISO();
+    const setsToday = exerciseLog.filter(e=>e.date===today).length;
+    const cardioToday = cardioLog.filter(e=>e.date===today);
+    const cardioMinToday = cardioToday.reduce((s,e)=>s+e.minutes,0);
+    const hasIntenseCardioToday = cardioToday.some(e=>e.intensity==='intense');
+    const bigRenfoDone = setsToday >= 15;
+    const bigCardioDone = cardioMinToday >= 45 || hasIntenseCardioToday;
+    return { setsToday, cardioMinToday, bigRenfoDone, bigCardioDone, bothBig: bigRenfoDone && bigCardioDone };
+  }
+  function renderTodaySuggestion(){
+    const wrap = document.getElementById('today-suggestion');
+    if(!wrap) return;
+    const load = computeTodayLoad();
+    if(load.bothBig){
+      wrap.innerHTML = '<div class="chart-card">'+
+        '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;">🎯 Suggestion du jour</div>'+
+        '<div style="font-size:13px; margin-bottom:10px;">😌 Grosse séance vélo + renfo déjà faite aujourd\'hui — plutôt repos ou récup active qu\'une nouvelle séance poussée.</div>'+
+        '<button class="gen-btn" style="width:100%; background:var(--lav); color:#181330;" onclick="goToGenerator(\'yoga\',\'dashboard\')">🧘 Étirements légers (optionnel)</button>'+
+        '</div>';
+      return;
+    }
+    const renfoSugg = computeRenfoSuggestion();
+    const cardioSugg = computeCardioSuggestion();
+    const lagFlags = computeLagSignal();
+    let html = '<div class="chart-card">';
+    html += '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;">🎯 Suggestion du jour</div>';
+    if(renfoSugg.avoidedLegs){
+      html += '<div style="font-size:11px; color:var(--amber); margin-bottom:8px;">🚴 Grosse sortie prévue demain — jambes évitées aujourd\'hui.</div>';
+    } else if(renfoSugg.locationBias){
+      const locLabel = renfoSugg.locationBias==='jambes' ? 'Salle prévue — orienté jambes' : 'Extérieur prévu — orienté haut du corps';
+      html += '<div style="font-size:11px; color:var(--petrol); margin-bottom:8px;">📍 '+locLabel+'.</div>';
+    }
+    lagFlags.forEach(f=>{
+      const label = f.type==='renfo' ? 'renfo' : 'cardio';
+      html += '<div style="font-size:11px; color:var(--coral); margin-bottom:8px;">⏳ Pas de '+label+' loggé depuis '+f.gap+' jours.</div>';
+    });
+    if(renfoSugg.muscles.length){
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:'+(cardioSugg?'10px':'0')+';">'+
+        '<div style="font-size:13px;">💪 Renfo — '+renfoSugg.muscles.join(', ')+' <span style="color:var(--text-faint);">(~'+renfoSugg.time+'min)</span></div>'+
+        '<button class="gen-btn primary" style="padding:8px 14px; font-size:12.5px; white-space:nowrap;" onclick="quickStartRenfo()">Démarrer</button></div>';
+    }
+    if(cardioSugg){
+      const label = cardioSugg.type==='intense' ? 'Intense / HIIT' : 'Z2 continu';
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">'+
+        '<div style="font-size:13px;">🏃 Cardio — '+label+' <span style="color:var(--text-faint);">(encore '+cardioSugg.remain+'min visés)</span></div>'+
+        '<button class="gen-btn primary" style="padding:8px 14px; font-size:12.5px; white-space:nowrap; background:var(--coral); color:#2a1210;" onclick="quickStartCardio(\''+cardioSugg.type+'\')">Démarrer</button></div>';
+    }
+    if(!renfoSugg.muscles.length && !cardioSugg){
+      html += '<div style="font-size:12.5px; color:var(--text-dim);">Rien d\'urgent à suggérer là — tout est à jour ou en pause de récup. 👍</div>';
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+  function quickStartRenfo(returnTo){
+    const sugg = computeRenfoSuggestion();
+    goToGenerator('renfo', returnTo || 'dashboard');
+    autoMode = true; manualPatterns = [];
+    autoCategory = 'fullbody';
+    selectedTime = sugg.time;
+    document.querySelectorAll('#time-chips .chip').forEach(c=>c.classList.toggle('sel', parseInt(c.dataset.time)===sugg.time));
+    document.querySelectorAll('#auto-category-chips .chip').forEach(c=>c.classList.toggle('sel', c.dataset.cat==='fullbody'));
+    if(typeof renderAutoExplain==='function') renderAutoExplain();
+    if(typeof renderFormatExplain==='function') renderFormatExplain();
+    refreshPreview();
+  }
+  function quickStartCardio(intensityType, returnTo){
+    goToGenerator('cardio', returnTo || 'dashboard');
+    selectedIntensity = intensityType;
+    document.querySelectorAll('#cardio-options .chip.cardio').forEach(c=>c.classList.toggle('sel', c.dataset.intensity===intensityType));
+    refreshPreview();
+  }
+
   function renderDashMuscleChart(){
     const wrap = document.getElementById('dash-muscle-chart');
     if(!wrap) return;
-    const totals = dashPeriod==='rolling' ? computeRollingTotals(7) : computeCurrentWeekTotals();
-    const max = Math.max(1, totals.jambes, totals.haut, totals.tronc);
+    const totals = computeCurrentWeekTotals();
+    const avg = compute4WeekAverage();
+    const max = Math.max(1, totals.jambes, totals.haut, totals.tronc, avg ? Math.max(avg.jambes,avg.haut,avg.tronc) : 0);
     const rows = [
-      { label:'Jambes', val:totals.jambes, color:'var(--petrol)' },
-      { label:'Haut du corps', val:totals.haut, color:'var(--amber)' },
-      { label:'Tronc', val:totals.tronc, color:'var(--green)' }
+      { label:'Jambes', val:totals.jambes, avgVal: avg?avg.jambes:null, color:'var(--petrol)', max },
+      { label:'Haut du corps', val:totals.haut, avgVal: avg?avg.haut:null, color:'var(--amber)', max },
+      { label:'Tronc', val:totals.tronc, avgVal: avg?avg.tronc:null, color:'var(--green)', max }
     ];
+    // Cardio/étirement — minutes, donc échelle séparée du renfo (unités différentes), mais même
+    // principe de comparaison à la moyenne 4 semaines, tout dans le même graphe.
+    const cardioMax = Math.max(1, totals.cardioLeger, totals.cardioHiit, totals.etirement, avg ? Math.max(avg.cardioLeger,avg.cardioHiit,avg.etirement) : 0);
+    rows.push({ label:'Cardio Z2', val:totals.cardioLeger, avgVal: avg?avg.cardioLeger:null, color:'var(--coral)', max:cardioMax, unit:'min' });
+    rows.push({ label:'Cardio intense', val:totals.cardioHiit, avgVal: avg?avg.cardioHiit:null, color:'var(--coral)', max:cardioMax, unit:'min' });
+    rows.push({ label:'Étirements', val:totals.etirement, avgVal: avg?avg.etirement:null, color:'var(--lav)', max:cardioMax, unit:'min' });
     let html = '<div class="chart-card">';
-    rows.forEach(r=>{
-      const pct = Math.round(100*r.val/max);
-      html += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;">'+
+    rows.forEach((r,i)=>{
+      const pct = Math.round(100*r.val/r.max);
+      let deltaLabel = '';
+      if(r.avgVal != null && r.avgVal > 0){
+        const deltaPct = Math.round(100*(r.val-r.avgVal)/r.avgVal);
+        const sign = deltaPct > 0 ? '+' : '';
+        const deltaColor = deltaPct > 5 ? 'var(--green)' : (deltaPct < -5 ? 'var(--coral)' : 'var(--text-faint)');
+        deltaLabel = '<div style="font-size:10px; color:'+deltaColor+'; width:56px; text-align:right;">'+sign+deltaPct+'% vs moy.</div>';
+      }
+      const marginTop = i===3 ? 'margin-top:10px; padding-top:10px; border-top:1px solid var(--line);' : '';
+      html += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px; '+marginTop+'">'+
         '<div style="width:88px; color:var(--text-dim);">'+r.label+'</div>'+
         '<div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:'+pct+'%; background:'+r.color+';"></div></div>'+
-        '<div style="font-family:var(--font-data); font-size:12px; width:40px; text-align:right;">'+r.val+'</div></div>';
+        '<div style="font-family:var(--font-data); font-size:12px; width:40px; text-align:right;">'+r.val+(r.unit?r.unit:'')+'</div>'+deltaLabel+'</div>';
     });
     html += '</div>';
+    if(avg){
+      html += '<div style="font-size:10.5px; color:var(--text-faint); margin-top:2px;">Comparé à la moyenne des '+avg.weeksUsed+' dernière'+(avg.weeksUsed>1?'s':'')+' semaine'+(avg.weeksUsed>1?'s':'')+'.</div>';
+    } else {
+      html += '<div style="font-size:10.5px; color:var(--text-faint); margin-top:2px;">Pas encore assez de semaines pour comparer — reviens après ta 1ère semaine complète.</div>';
+    }
     wrap.innerHTML = html;
+    renderTodaySuggestion();
+    renderReadinessWidget();
+    renderDayPlanner();
+    renderPlanifDetail();
+    renderWeekRecap();
   }
 
   // Semaine du programme — calculée depuis la vraie date, incrémente automatiquement tous les 7
@@ -3070,12 +3658,54 @@
     if(document.getElementById('week-range-display')) document.getElementById('week-range-display').textContent = fmtWeekRange(info.weekStart, info.weekEnd);
     return info.weekNum;
   }
+  // Récap fin de semaine — capturé une fois au moment du rollover, affiché jusqu'à ce que
+  // l'utilisateur le ferme. Reprend simplement le delta % qu'on affiche déjà sur Dashboard, mais
+  // présenté UNE FOIS au bon moment plutôt qu'à aller chercher (principe ACWR : la comparaison à
+  // la moyenne des semaines précédentes est le signal le mieux validé en littérature).
+  let pendingWeekRecap = null;
+  function dismissWeekRecap(){
+    pendingWeekRecap = null;
+    renderWeekRecap();
+    if(typeof saveState==='function') saveState();
+  }
+  function renderWeekRecap(){
+    const wrap = document.getElementById('week-recap');
+    if(!wrap) return;
+    if(!pendingWeekRecap){ wrap.innerHTML = ''; return; }
+    const { weekNum, totals, avgBefore } = pendingWeekRecap;
+    let html = '<div class="chart-card" style="border:1px solid var(--petrol);">'+
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">'+
+      '<div style="font-weight:700; font-size:13.5px;">✅ Semaine '+weekNum+' terminée</div>'+
+      '<button class="sec-btn" style="padding:4px 10px; font-size:11px;" onclick="dismissWeekRecap()">✕</button></div>';
+    [['jambes','Jambes'],['haut','Haut du corps'],['tronc','Tronc']].forEach(([key,label])=>{
+      let deltaNote = '';
+      if(avgBefore && avgBefore[key] > 0){
+        const delta = Math.round(100*(totals[key]-avgBefore[key])/avgBefore[key]);
+        const sign = delta > 0 ? '+' : '';
+        const color = delta > 5 ? 'var(--green)' : (delta < -5 ? 'var(--coral)' : 'var(--text-faint)');
+        deltaNote = ' <span style="color:'+color+';">('+sign+delta+'% vs moy.)</span>';
+      }
+      html += '<div style="font-size:12.5px; margin-bottom:4px;">'+label+' : '+totals[key]+' séries'+deltaNote+'</div>';
+    });
+    html += '<div style="font-size:12.5px; margin-top:4px; color:var(--text-dim);">Cardio : '+totals.cardioLeger+'min Z2 · '+totals.cardioHiit+'min intense · '+totals.etirement+'min étirement</div>';
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
   function checkWeekRollover(){
     const info = computeWeekInfo();
     if(info.weekNum !== lastKnownWeek){
+      // Moyenne des 4 semaines qui PRÉCÈDENT celle qui vient de finir — calculée avant de pousser
+      // cette semaine dans l'historique, pour comparer "cette semaine" à l'habitude d'avant.
+      const avgBefore = compute4WeekAverage();
       // Capture les totaux de la semaine qui se termine AVANT de tout remettre à zéro — c'est ce
       // qui alimente le graphique d'évolution hebdomadaire par catégorie.
-      weeklyTotalsHistory.push(computeCurrentWeekTotals(lastKnownWeek));
+      const finishedWeekTotals = computeCurrentWeekTotals(lastKnownWeek);
+      weeklyTotalsHistory.push(finishedWeekTotals);
+      pendingWeekRecap = { weekNum: lastKnownWeek, totals: finishedWeekTotals, avgBefore };
+      // Snapshot des 16 muscles avant reset — alimente le graphe long terme par muscle.
+      const muscleSnapshot = { weekNum: lastKnownWeek, muscles:{} };
+      Object.keys(musclesFlat).forEach(m=>{ muscleSnapshot.muscles[m] = musclesFlat[m].done; });
+      muscleWeeklyHistory.push(muscleSnapshot);
       // Nouvelle semaine détectée depuis la dernière ouverture -> reset auto de la progression hebdo.
       Object.keys(musclesData).forEach(g=>{
         Object.keys(musclesData[g]).forEach(m=>{
@@ -3319,57 +3949,9 @@
     bilanEntryOpen = null;
     renderBilan();
     renderHistorique();
-    renderWeeklyLog();
-    renderWeeklyVolumeCharts();
+    renderHistoVignettes(); renderHistoChart2();
+    
     if(typeof saveState==='function') saveState();
-  }
-
-  /* ---- écran Historique : graphiques dynamiques générés depuis bilanHistory ---- */
-  /* ---- Journal hebdomadaire : toutes les séries loggées cette semaine, groupées par exercice ---- */
-  let weeklyLogExpanded = new Set();
-  function toggleWeeklyLogExercise(name){
-    if(weeklyLogExpanded.has(name)) weeklyLogExpanded.delete(name);
-    else weeklyLogExpanded.add(name);
-    renderWeeklyLog();
-  }
-  function fmtSetShort(entry){
-    const prefix = entry.weight!=null ? entry.weight+'kg × ' : (entry.difficulty!=null ? 'élastique '+entry.difficulty+'/5 × ' : '');
-    if(entry.repsL != null){
-      return prefix+'G '+entry.repsL+' · D '+entry.repsR;
-    }
-    return prefix + entry.reps + (entry.weight!=null || entry.difficulty!=null ? ' reps' : '');
-  }
-  function renderWeeklyLog(){
-    const box = document.getElementById('weekly-log-content');
-    if(!box) return;
-    const info = computeWeekInfo();
-    const weekEntries = exerciseLog.filter(e=>{
-      const d = new Date(e.date+'T12:00:00');
-      return d >= info.weekStart && d <= new Date(info.weekEnd.getTime()+MS_PER_DAY-1);
-    });
-    if(weekEntries.length===0){
-      box.innerHTML = '<h2 class="section-title">Journal de la semaine</h2>'+
-        '<div style="font-size:12px; color:var(--text-faint); margin-bottom:16px;">Aucune série loggée pour l\'instant cette semaine.</div>';
-      return;
-    }
-    const byExercise = {};
-    weekEntries.forEach(e=>{ (byExercise[e.exercise] = byExercise[e.exercise]||[]).push(e); });
-    let html = '<h2 class="section-title">Journal de la semaine ('+weekEntries.length+' séries)</h2>';
-    Object.keys(byExercise).forEach(name=>{
-      const entries = byExercise[name];
-      const isOpen = weeklyLogExpanded.has(name);
-      html += '<div class="sum-ex-row" style="cursor:pointer; flex-direction:column; align-items:stretch;" onclick="toggleWeeklyLogExercise(\''+name.replace(/'/g,"\\'")+'\')">'+
-        '<div style="display:flex; justify-content:space-between; width:100%;"><div class="name">'+name+'</div><div class="sets">'+entries.length+' série'+(entries.length>1?'s':'')+' '+(isOpen?'▾':'▸')+'</div></div>';
-      if(isOpen){
-        html += '<div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">';
-        entries.forEach(e=>{
-          html += '<div style="font-size:11px; color:var(--text-dim); font-family:var(--font-data);">'+fmtDateFr(e.date)+' — '+fmtSetShort(e)+'</div>';
-        });
-        html += '</div>';
-      }
-      html += '</div>';
-    });
-    box.innerHTML = html;
   }
 
   // Graphique multi-lignes générique : series = [{label, color, values:[...]}], un point par semaine.
@@ -3397,28 +3979,6 @@
     const legend = series.map(s=>'<div style="font-size:10.5px; color:var(--text-faint);"><span style="color:'+s.color+';">●</span> '+s.label+' <span style="font-family:var(--font-data);">('+s.values[s.values.length-1]+(unitSuffix||'')+')</span></div>').join('');
     return '<div class="chart-card"><div class="chart-title">'+title+'</div><div class="chart-sub">'+sub+'</div>'+svg+
       '<div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">'+legend+'</div></div>';
-  }
-
-  function renderWeeklyVolumeCharts(){
-    const wrap = document.getElementById('weekly-volume-charts');
-    if(!wrap) return;
-    // La semaine en cours (pas encore dans l'historique) est ajoutée en direct pour que le
-    // graphique reflète aussi la progression du moment, pas juste les semaines déjà bouclées.
-    const combined = [...weeklyTotalsHistory, computeCurrentWeekTotals()];
-    const labels = combined.map(w=>'S'+w.weekNum);
-    const sub = labels.length>1 ? labels[0]+' → '+labels[labels.length-1]+' (dernière = en cours)' : labels[0]+' (en cours)';
-
-    let html = renderMultiLineChart('Renfo — séries par groupe', sub, [
-      { label:'Jambes', color:'var(--petrol)', values: combined.map(w=>w.jambes) },
-      { label:'Haut du corps', color:'var(--amber)', values: combined.map(w=>w.haut) },
-      { label:'Tronc', color:'var(--green)', values: combined.map(w=>w.tronc) }
-    ], '');
-    html += renderMultiLineChart('Cardio & étirement — minutes', sub, [
-      { label:'Cardio léger', color:'var(--petrol)', values: combined.map(w=>w.cardioLeger) },
-      { label:'Cardio HIIT', color:'var(--coral)', values: combined.map(w=>w.cardioHiit) },
-      { label:'Étirement', color:'var(--lav)', values: combined.map(w=>w.etirement) }
-    ], 'min');
-    wrap.innerHTML = html;
   }
 
   function renderHistorique(){
@@ -3501,8 +4061,160 @@
       });
       html += '</div>';
     });
+    // Cardio Z2 / Intense / Étirements — sections distinctes (pas fusionnées), même pattern
+    // visuel que les groupes musculaires. Chacune ouvre sa propre vue détail.
+    html += '<h2 class="section-title">Cardio &amp; Étirements</h2><div class="card">';
+    const cardioRows = [
+      { label:'Cardio Z2', done:weeklyProgress.cardioLeger, target:volState.cardioLeger, action:"openCardioDetail('faible')" },
+      { label:'Cardio intense', done:weeklyProgress.cardioHiit, target:volState.cardioHiit, action:"openCardioDetail('intense')" },
+      { label:'Étirements', done:weeklyProgress.etirement, target:volState.etirements, action:'openEtirementsDetail()' }
+    ];
+    cardioRows.forEach((r,i)=>{
+      const pct = Math.round(100*r.done/r.target);
+      const isLast = i===cardioRows.length-1;
+      html += '<div style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:13px 0;'+(isLast?'':' border-bottom:1px solid var(--line);')+'" onclick="'+r.action+'">'+
+        '<div style="flex:1; margin-right:14px;"><div style="font-weight:600; font-size:14px;">'+r.label+' ›</div>'+
+        '<div class="bar-track" style="margin-top:4px;"><div class="bar-fill" style="width:'+Math.min(100,pct)+'%; background:'+pctColor(pct)+';"></div></div></div>'+
+        '<div style="font-family:var(--font-data); font-size:13px; color:var(--text-dim);">'+r.done+'/'+r.target+'min</div></div>';
+    });
+    html += '</div>';
     wrap.innerHTML = html;
   }
+
+  // Détail cardio par intensité (Z2 ou intense) — répartition PAR SPORT, symétrique à comment le
+  // détail d'un muscle liste ses exercices avec leurs totaux. Totaux de la semaine en cours.
+  let cardioDetailIntensity = 'faible';
+  let editingCardioEntryIndex = null;
+  function startEditCardioEntry(idx){
+    editingCardioEntryIndex = (editingCardioEntryIndex === idx) ? null : idx;
+    renderCardioDetail();
+  }
+  function saveCardioEntryEdit(idx){
+    const distEl = document.getElementById('edit-distance-'+idx);
+    const eleEl = document.getElementById('edit-elevation-'+idx);
+    const d = distEl ? parseFloat(distEl.value) : NaN;
+    const el = eleEl ? parseInt(eleEl.value, 10) : NaN;
+    if(!isNaN(d) && d > 0) cardioLog[idx].distanceKm = Math.round(d*10)/10; else delete cardioLog[idx].distanceKm;
+    if(!isNaN(el) && el > 0) cardioLog[idx].elevationM = el; else delete cardioLog[idx].elevationM;
+    editingCardioEntryIndex = null;
+    renderCardioDetail();
+    if(typeof saveState==='function') saveState();
+  }
+  function openCardioDetail(intensityType){
+    cardioDetailIntensity = intensityType;
+    renderCardioDetail();
+    showSection('cardio-detail', 'seances');
+  }
+  function computeCardioSportBreakdown(intensityType){
+    const info = computeWeekInfo();
+    const weekEntries = cardioLog.filter(e=>{
+      const d = new Date(e.date+'T12:00:00');
+      return d >= info.weekStart && d <= new Date(info.weekEnd.getTime()+MS_PER_DAY-1) && e.intensity===intensityType;
+    });
+    const bySport = {};
+    weekEntries.forEach(e=>{
+      if(!bySport[e.sport]) bySport[e.sport] = { minutes:0, distanceKm:0, elevationM:0 };
+      bySport[e.sport].minutes += e.minutes;
+      if(e.distanceKm) bySport[e.sport].distanceKm += e.distanceKm;
+      if(e.elevationM) bySport[e.sport].elevationM += e.elevationM;
+    });
+    return bySport;
+  }
+  function renderCardioDetail(){
+    const intensityType = cardioDetailIntensity;
+    const label = intensityType==='intense' ? 'Cardio intense' : 'Cardio Z2';
+    const done = intensityType==='intense' ? weeklyProgress.cardioHiit : weeklyProgress.cardioLeger;
+    const target = intensityType==='intense' ? volState.cardioHiit : volState.cardioLeger;
+    document.getElementById('cardio-detail-title').textContent = label;
+    document.getElementById('cardio-detail-sub').textContent = done+'/'+target+'min cette semaine';
+    const bySport = computeCardioSportBreakdown(intensityType);
+    let html = '<button class="gen-btn primary" style="width:100%; background:var(--coral); color:#2a1210; margin-bottom:18px;" onclick="quickStartCardio(\''+intensityType+'\',\'seances\')">+ Logger une séance</button>';
+    const sports = Object.keys(bySport);
+    if(!sports.length){
+      html += '<div style="font-size:12.5px; color:var(--text-faint);">Aucune séance '+label.toLowerCase()+' loggée pour l\'instant cette semaine.</div>';
+    } else {
+      html += '<div class="card">';
+      sports.forEach((sportKey,i)=>{
+        const sportLabel = (cardioProtocols[sportKey] && cardioProtocols[sportKey].label) || sportKey;
+        const s = bySport[sportKey];
+        let details = s.minutes+'min';
+        if(s.distanceKm) details += ' · '+Math.round(s.distanceKm*10)/10+'km';
+        if(s.elevationM) details += ' · '+Math.round(s.elevationM)+'m D+';
+        html += '<div style="padding:12px 0;'+(i===sports.length-1?'':' border-bottom:1px solid var(--line);')+'">'+
+          '<div style="font-weight:600; font-size:14px;">'+sportLabel+'</div>'+
+          '<div style="font-size:12.5px; color:var(--text-dim); margin-top:2px; font-family:var(--font-data);">'+details+'</div></div>';
+      });
+      html += '</div>';
+    }
+    // Liste des séances individuelles (pas limitée à la semaine en cours, pour pouvoir compléter
+    // distance/D+ sur d'anciennes séances) — édition en place, jamais de suppression/recréation.
+    const matchingIndices = [];
+    cardioLog.forEach((e,i)=>{ if(e.intensity===intensityType) matchingIndices.push(i); });
+    matchingIndices.sort((a,b)=> cardioLog[b].date.localeCompare(cardioLog[a].date));
+    html += '<h2 class="section-title" style="margin-top:18px;">Séances individuelles</h2>';
+    if(!matchingIndices.length){
+      html += '<div style="font-size:12px; color:var(--text-faint);">Aucune séance pour l\'instant.</div>';
+    } else {
+      html += '<div class="card">';
+      matchingIndices.forEach((idx,pos)=>{
+        const e = cardioLog[idx];
+        const sportLabel = (cardioProtocols[e.sport] && cardioProtocols[e.sport].label) || e.sport;
+        const isEditing = editingCardioEntryIndex === idx;
+        html += '<div style="padding:10px 0;'+(pos<matchingIndices.length-1?' border-bottom:1px solid var(--line);':'')+'">'+
+          '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">'+
+          '<div><div style="font-weight:600; font-size:13px;">'+sportLabel+' — '+e.minutes+'min</div>'+
+          '<div style="font-size:11px; color:var(--text-faint);">'+fmtDateFr(e.date)+(e.distanceKm?' · '+e.distanceKm+'km':'')+(e.elevationM?' · '+e.elevationM+'m D+':'')+'</div></div>'+
+          '<button class="sec-btn" style="padding:4px 10px; font-size:11px; flex-shrink:0;" onclick="startEditCardioEntry('+idx+')">'+(isEditing?'✕':'✏️')+'</button></div>';
+        if(isEditing){
+          html += '<div style="display:flex; gap:8px; margin-top:8px;">'+
+            '<input type="number" id="edit-distance-'+idx+'" placeholder="km" value="'+(e.distanceKm||'')+'" step="0.1" min="0" inputmode="decimal" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
+            '<input type="number" id="edit-elevation-'+idx+'" placeholder="m D+" value="'+(e.elevationM||'')+'" min="0" inputmode="numeric" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
+            '<button class="log-btn" style="padding:0 14px; flex-shrink:0;" onclick="saveCardioEntryEdit('+idx+')">💾</button></div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    document.getElementById('cardio-detail-content').innerHTML = html;
+  }
+
+  // Détail étirements — log rapide en minutes, sans passer par le générateur de séance complet.
+  let etirementQuickMin = 20;
+  function adjustEtirementQuick(delta){
+    etirementQuickMin = Math.max(5, etirementQuickMin + delta);
+    const el = document.getElementById('etirement-quick-val');
+    if(el) el.textContent = etirementQuickMin+' min';
+  }
+  function confirmEtirementQuick(){
+    weeklyProgress.etirement += etirementQuickMin;
+    renderEtirementsDetail();
+    renderSeancesList();
+    renderGroupOverview();
+    renderDashMuscleChart();
+    renderRemainingTime();
+    if(typeof saveState==='function') saveState();
+  }
+  function openEtirementsDetail(){
+    etirementQuickMin = 20;
+    renderEtirementsDetail();
+    showSection('etirements-detail', 'seances');
+  }
+  function renderEtirementsDetail(){
+    const pct = Math.round(100*weeklyProgress.etirement/volState.etirements);
+    let html = '<div class="card" style="margin-bottom:16px;">'+
+      '<div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:4px;"><span style="font-weight:600;">Étirements</span><span style="color:var(--text-dim); font-family:var(--font-data);">'+weeklyProgress.etirement+'/'+volState.etirements+'min</span></div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+Math.min(100,pct)+'%; background:'+pctColor(pct)+';"></div></div></div>';
+    html += '<div class="card" style="margin-bottom:12px;">'+
+      '<div style="font-size:12.5px; color:var(--text-dim); margin-bottom:8px;">Log rapide — pas besoin de composer une séance complète</div>'+
+      '<div style="display:flex; align-items:center; justify-content:space-between;">'+
+      '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustEtirementQuick(-5)">−</button>'+
+      '<div class="vol-val" id="etirement-quick-val">'+etirementQuickMin+' min</div>'+
+      '<button class="stepper-btn" onclick="adjustEtirementQuick(5)">+</button></div>'+
+      '<button class="log-btn" onclick="confirmEtirementQuick()">✓ Logger</button></div></div>';
+    html += '<button class="sec-btn" style="width:100%;" onclick="goToGenerator(\'yoga\',\'seances\')">Composer une vraie séance étirements/yoga →</button>';
+    document.getElementById('etirements-detail-content').innerHTML = html;
+  }
+
 
   let openMuscleContext = null; // muscle actuellement affiché, pour rafraîchir après un log
   let loggingExercise = null;   // nom de l'exercice en cours de saisie inline (ou null)
@@ -3613,8 +4325,14 @@
               '<div class="vol-val" id="log-reps">'+logInput.reps+'</div>'+
               '<button class="stepper-btn" onclick="adjustLogInput(\'reps\','+(isHold?5:1)+')">+</button></div></div>';
           }
+          html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px; padding-top:8px; border-top:1px solid var(--line);">'+
+            '<span style="font-size:12px; color:var(--text-dim);">Nombre de séries à logger</span>'+
+            '<div class="vol-stepper"><button class="stepper-btn" onclick="adjustLogInput(\'setsCount\',-1)">−</button>'+
+            '<div class="vol-val" id="log-setsCount">'+logInput.setsCount+'</div>'+
+            '<button class="stepper-btn" onclick="adjustLogInput(\'setsCount\',1)">+</button></div></div>'+
+            '<div style="font-size:10.5px; color:var(--text-faint); margin-top:-4px;">Utile pour rattraper des séries déjà faites hors appli (mêmes valeurs répétées).</div>';
           html += '<div style="display:flex; gap:8px; margin-top:4px;">'+
-            '<button class="log-btn" style="flex:1;" onclick="confirmLogSet(\''+ex.name.replace(/'/g,"\\'")+'\')">✓ Valider la série</button>'+
+            '<button class="log-btn" id="log-confirm-btn" style="flex:1;" onclick="confirmLogSet(\''+ex.name.replace(/'/g,"\\'")+'\')">✓ Valider '+(logInput.setsCount>1?'les '+logInput.setsCount+' séries':'la série')+'</button>'+
             '<button class="sec-btn" style="flex:0 0 auto; padding:0 14px;" onclick="cancelLogSet()">Annuler</button></div>';
           html += '</div>';
         } else {
@@ -3674,7 +4392,8 @@
     const defReps = isHold ? 20 : 10;
     logInput = {
       weight: isWeighted ? (last.weight != null ? last.weight : defWeight) : null,
-      difficulty: isElastic ? (last.difficulty != null ? last.difficulty : 3) : null
+      difficulty: isElastic ? (last.difficulty != null ? last.difficulty : 3) : null,
+      setsCount: 1
     };
     if(isUni){
       logInput.repsL = last.repsL != null ? last.repsL : defReps;
@@ -3688,23 +4407,31 @@
   function adjustLogInput(field, delta){
     const isWeight = field.startsWith('weight');
     const isDifficulty = field === 'difficulty';
+    const isSetsCount = field === 'setsCount';
     const min = isWeight ? 0 : 1;
     const max = isDifficulty ? 5 : Infinity;
     logInput[field] = Math.min(max, Math.max(min, logInput[field] + delta));
     const el = document.getElementById('log-'+field);
     if(el) el.textContent = isWeight ? (logInput[field]+' kg') : (isDifficulty ? logInput[field]+'/5' : logInput[field]);
+    if(isSetsCount){
+      const btn = document.getElementById('log-confirm-btn');
+      if(btn) btn.textContent = '✓ Valider '+(logInput.setsCount>1?'les '+logInput.setsCount+' séries':'la série');
+    }
   }
   function confirmLogSet(exerciseName){
     const entry = { weight: logInput.weight, difficulty: logInput.difficulty };
     if(logInput.repsL != null){ entry.repsL = logInput.repsL; entry.repsR = logInput.repsR; }
     else { entry.reps = logInput.reps; }
     lastLogged[exerciseName] = entry;
-    logSet(exerciseName, logInput);
-    // Crédite TOUS les muscles réels de l'exercice (pas seulement celui affiché sur cet écran) —
-    // cohérent avec ce qui se passe en séance guidée pour le même exercice.
     const def = EXERCISE_DEFS[exerciseName];
-    if(def && def.muscles) creditMuscles(def.muscles);
-    else { const d = musclesFlat[openMuscleContext]; d.done += 1; musclesData[d.group][openMuscleContext].done = d.done; }
+    const n = Math.max(1, logInput.setsCount || 1);
+    for(let i=0; i<n; i++){
+      logSet(exerciseName, logInput);
+      // Crédite TOUS les muscles réels de l'exercice (pas seulement celui affiché sur cet écran) —
+      // cohérent avec ce qui se passe en séance guidée pour le même exercice.
+      if(def && def.muscles) creditMuscles(def.muscles);
+      else { const d = musclesFlat[openMuscleContext]; d.done += 1; musclesData[d.group][openMuscleContext].done = d.done; }
+    }
     loggingExercise = null;
     renderMuscleDetail();
     renderSeancesList();
@@ -3817,8 +4544,8 @@
   renderSeancesList();
   renderBilan();
   renderHistorique();
-  renderWeeklyLog();
-  renderWeeklyVolumeCharts();
+  renderHistoVignettes(); renderHistoChart2();
+  
   renderRemainingTime();
   updateSavedCount();
 
@@ -4220,8 +4947,8 @@
     renderSeancesList();
     renderBilan();
     renderHistorique();
-    renderWeeklyLog();
-    renderWeeklyVolumeCharts();
+    renderHistoVignettes(); renderHistoChart2();
+    
     // Ces 3 chiffres sont normalement mis à jour directement par adjustVol() au clic, pas par un
     // render générique — après un rechargement, il faut les synchroniser manuellement une fois.
     ['etirements','cardioLeger','cardioHiit'].forEach(k=>{
@@ -4239,6 +4966,9 @@
   checkWeekRollover();
   renderWeekHeader();
   renderRemainingTime();
+  renderGroupOverview();
+  renderDashMuscleChart();
+  renderSeancesList();
   updateSavedCount();
   /* ================= FIN PERSISTANCE ================= */
 </script>
