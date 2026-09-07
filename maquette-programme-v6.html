@@ -385,6 +385,7 @@
       <div class="chip cardio-only-time" style="display:none;" data-time="90" onclick="selectTime(this)">90 min</div>
       <div class="chip cardio-only-time" style="display:none;" data-time="120" onclick="selectTime(this)">120 min</div>
     </div>
+    <div id="coverage-note"><!-- généré par renderCoverageNote() --></div>
 
     <div id="renfo-options">
       <div class="field-label">Où es-tu ?</div>
@@ -1555,7 +1556,7 @@
   }
 
   function refreshPreview(){
-    if(mode==='renfo') generateRenfo();
+    if(mode==='renfo'){ generateRenfo(); renderCoverageNote(); }
     else if(mode==='yoga') generateYoga();
     else if(mode==='cardio') generateCardio();
   }
@@ -3640,6 +3641,43 @@
       html += '<div style="font-size:11.5px; margin-top:8px; color:'+color+';">'+indicator+' <span style="color:var(--text-faint);">(moyenne 14j : '+(Math.round(avg*10)/10)+')</span></div>';
     }
     html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  // Note de couverture — pour la durée sélectionnée, montre où ça mènerait chaque muscle
+  // concerné par rapport à son objectif hebdo, et signale si une durée plus courte suffirait déjà
+  // (évite de lancer 45min si 30min atteint déjà les objectifs de la semaine).
+  function computeSessionCoverage(){
+    if(mode !== 'renfo' || !lastGeneratedQueue) return null;
+    const setsGained = {};
+    lastGeneratedQueue.forEach(ex=>{
+      if(ex.type !== 'strength' || !ex.muscles) return;
+      const sets = ex.targetSets || 1;
+      Object.entries(ex.muscles).forEach(([m,w])=>{
+        setsGained[m] = (setsGained[m]||0) + w*sets;
+      });
+    });
+    return Object.keys(setsGained).filter(m=>musclesFlat[m] && setsGained[m] >= 0.5).map(m=>{
+      const d = musclesFlat[m];
+      const projected = Math.min(d.target, d.done + setsGained[m]);
+      return { muscle:m, pct: d.target>0 ? Math.round(100*projected/d.target) : 0 };
+    });
+  }
+  function renderCoverageNote(){
+    const wrap = document.getElementById('coverage-note');
+    if(!wrap) return;
+    const rows = computeSessionCoverage();
+    if(!rows || !rows.length){ wrap.innerHTML=''; return; }
+    let html = '<div style="font-size:11px; color:var(--text-dim); margin:-2px 0 6px;">📊 Avec cette durée : '+
+      rows.map(r=>r.muscle+' '+r.pct+'%').join(' · ')+'</div>';
+    // Signal approximatif (pas une simulation exacte à chaque durée) : si tout ce qui est concerné
+    // est déjà quasi à l'objectif, une durée plus courte suffirait probablement.
+    const allNearFull = rows.every(r=>r.pct>=95);
+    const times = [15,30,45,60];
+    const idx = times.indexOf(selectedTime);
+    if(allNearFull && idx > 0){
+      html += '<div style="font-size:11px; color:var(--amber); margin-bottom:6px;">💡 Tout est déjà quasi couvert à cette durée — '+times[idx-1]+'min suffirait peut-être, essaie et compare.</div>';
+    }
     wrap.innerHTML = html;
   }
 
