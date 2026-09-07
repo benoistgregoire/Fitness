@@ -304,20 +304,11 @@
   <!-- ============ MATÉRIEL ============ -->
   <section id="equipement">
     <button class="back-btn" onclick="closeEquipement()">← Retour</button>
-    <div class="detail-title">Mon matériel</div>
-    <div class="detail-sub">Coche ce que tu as sous la main maintenant.</div>
-    <div class="equip-row"><div class="label">Haltères</div><div class="toggle on" data-equip="db3,db5" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Élastique</div><div class="toggle on" data-equip="elastic_light,elastic_strong" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Bande boucle (cuisse/genou)</div><div class="toggle on" data-equip="loop_band" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Machine de parc (si présente)</div><div class="toggle" data-equip="park_machine" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Kettlebell</div><div class="toggle" data-equip="kettlebell" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Chaise / tabouret</div><div class="toggle on" data-equip="chair" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Porte (cadre)</div><div class="toggle on" data-equip="door" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Table / banc bas</div><div class="toggle on" data-equip="table" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Barre de traction</div><div class="toggle" data-equip="pullbar" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Pince de préhension</div><div class="toggle" data-equip="gripper" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Tapis</div><div class="toggle on" data-equip="mat" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
-    <div class="equip-row"><div class="label">Salle de sport</div><div class="toggle" data-equip="gym" onclick="toggleEquip(this)"><div class="knob"></div></div></div>
+    <div class="detail-title">Réglages</div>
+    <div class="detail-sub">Zones FC, reprise progressive, options avancées.</div>
+
+    <h2 class="section-title" style="margin-top:0;">Zones de fréquence cardiaque</h2>
+    <div id="fc-zones-content"><!-- généré par renderFCZones() --></div>
 
     <h2 class="section-title" style="margin-top:24px;">Reprise progressive</h2>
     <div id="rampup-content"><!-- généré par renderRampUpSettings() --></div>
@@ -764,6 +755,7 @@
         rampUpActive: rampUpActive,
         rampUpStartWeek: rampUpStartWeek,
         rampUpFullTargets: rampUpFullTargets,
+        userFCmax: userFCmax,
         savedSessions: savedSessions,
         weeklyTotalsHistory: weeklyTotalsHistory,
         muscleWeeklyHistory: muscleWeeklyHistory,
@@ -818,6 +810,7 @@
       if(state.rampUpActive !== undefined) rampUpActive = state.rampUpActive;
       if(state.rampUpStartWeek !== undefined) rampUpStartWeek = state.rampUpStartWeek;
       if(state.rampUpFullTargets !== undefined) rampUpFullTargets = state.rampUpFullTargets;
+      if(state.userFCmax !== undefined) userFCmax = state.userFCmax;
       if(Array.isArray(state.savedSessions)) savedSessions = state.savedSessions;
       if(Array.isArray(state.weeklyTotalsHistory)) weeklyTotalsHistory = state.weeklyTotalsHistory;
       if(Array.isArray(state.muscleWeeklyHistory)) muscleWeeklyHistory = state.muscleWeeklyHistory;
@@ -3211,6 +3204,37 @@
     { renfoFactor: 0.96, cardioFactor: 0.95, z2Share: 0.81 }, // semaine 6
     { renfoFactor: 1.00, cardioFactor: 1.00, z2Share: 0.80 }  // semaine 7 — retour aux vraies cibles
   ];
+  // Zones FC — juste un aide-mémoire basé sur FCmax (%FCmax standard), pour ne plus avoir à s'en
+  // souvenir. Ne pilote aucun calcul ailleurs dans l'appli, purement informatif/consultable.
+  let userFCmax = 190;
+  function setFCmax(value){
+    const v = parseInt(value, 10);
+    userFCmax = (!isNaN(v) && v > 100 && v < 230) ? v : userFCmax;
+    renderFCZones();
+    if(typeof saveState==='function') saveState();
+  }
+  function renderFCZones(){
+    const wrap = document.getElementById('fc-zones-content');
+    if(!wrap) return;
+    const zones = [
+      { label:'Z1 — Récup', min:0.50, max:0.60, color:'var(--text-faint)' },
+      { label:'Z2 — Endurance', min:0.60, max:0.70, color:'var(--petrol)' },
+      { label:'Z3 — Tempo', min:0.70, max:0.80, color:'var(--amber)' },
+      { label:'Z4 — Seuil', min:0.80, max:0.90, color:'var(--coral)' },
+      { label:'Z5 — VO2max+', min:0.90, max:1.00, color:'var(--coral)' }
+    ];
+    let html = '<div class="field-label" style="margin-top:0;">FC max (bpm)</div>'+
+      '<input type="number" value="'+userFCmax+'" min="100" max="230" inputmode="numeric" oninput="setFCmax(this.value)" style="width:100%; padding:9px 10px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; margin-bottom:10px;">';
+    html += '<div class="card">';
+    zones.forEach((z,i)=>{
+      const lo = Math.round(userFCmax*z.min), hi = Math.round(userFCmax*z.max);
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:9px 0;'+(i<zones.length-1?' border-bottom:1px solid var(--line);':'')+' font-size:13px;">'+
+        '<span style="color:'+z.color+';">'+z.label+'</span>'+
+        '<span style="font-family:var(--font-data); color:var(--text-dim);">'+lo+'–'+hi+' bpm</span></div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
   let rampUpActive = false;
   let rampUpStartWeek = null; // dernière semaine AVANT le ramp (le ramp démarre à startWeek+1)
   let rampUpFullTargets = null; // sauvegarde des vraies cibles avant réduction
@@ -3238,7 +3262,8 @@
     });
     rampUpActive = true;
     rampUpStartWeek = lastKnownWeek;
-    applyRampUpStep(0); // effet immédiat, dès maintenant — pas besoin d'attendre le prochain rollover
+    applyRampUpStep(0); // effet immédiat, dès maintenant — sur demande, même si ça peut faire
+    // apparaître certains objectifs comme déjà dépassés si activé tard dans la semaine.
     if(typeof saveState==='function') saveState();
   }
   function deactivateRampUp(){
@@ -4147,7 +4172,25 @@
     return total;
   }
   function adjustVol(key, delta){
-    volState[key] = Math.max(0, volState[key]+delta);
+    if(rampUpActive && rampUpFullTargets && (key==='cardioLeger' || key==='cardioHiit' || key==='etirements')){
+      // Le ramp est actif : on ajuste la VRAIE cible (celle vers laquelle il progresse), pas
+      // juste la valeur affichée cette semaine — sinon un réglage manuel se ferait écraser dès le
+      // prochain palier hebdo, et le ramp ne saurait jamais qu'on a changé d'avis sur la cible.
+      if(key === 'etirements'){
+        rampUpFullTargets.etirements = Math.max(0, rampUpFullTargets.etirements + delta);
+      } else {
+        const totalFull = rampUpFullTargets.cardioLeger + rampUpFullTargets.cardioHiit;
+        const newTotalFull = Math.max(0, totalFull + delta);
+        const currentZ2Share = totalFull>0 ? rampUpFullTargets.cardioLeger/totalFull : 0.8;
+        rampUpFullTargets.cardioLeger = Math.round(newTotalFull * currentZ2Share);
+        rampUpFullTargets.cardioHiit = newTotalFull - rampUpFullTargets.cardioLeger;
+      }
+      const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
+      const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+      applyRampUpStep(stepIdx); // réapplique le palier ACTUEL du ramp à cette nouvelle cible pleine
+    } else {
+      volState[key] = Math.max(0, volState[key]+delta);
+    }
     document.getElementById('vol-'+key).textContent = volState[key];
     renderRemainingTime(); // couvre à la fois le dashboard (temps restant + jauge) et Réglages (temps total)
     if(typeof saveState==='function') saveState();
@@ -4155,6 +4198,17 @@
   function adjustMuscleTarget(group, muscle, delta){
     const m = musclesData[group][muscle];
     m.target = Math.max(0, m.target + delta);
+    if(rampUpActive && rampUpFullTargets && rampUpFullTargets.muscles[muscle] !== undefined){
+      // Même logique côté renfo : le réglage manuel devient la nouvelle vraie cible, le ramp
+      // réapplique juste son palier actuel dessus pour la valeur affichée cette semaine.
+      rampUpFullTargets.muscles[muscle] = m.target;
+      const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
+      const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+      const step = RAMP_STEPS[stepIdx];
+      const scaled = Math.max(1, Math.round(m.target * step.renfoFactor));
+      m.target = scaled;
+      if(musclesFlat[muscle]) musclesFlat[muscle].target = scaled;
+    }
     renderVolumeSettings();
     renderGroupOverview();
     renderDashMuscleChart();
@@ -4898,6 +4952,7 @@
   renderSeancesList();
   renderBilan();
   renderRampUpSettings();
+  renderFCZones();
   renderHistorique();
   renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
   
@@ -5325,6 +5380,7 @@
   renderDashMuscleChart();
   renderSeancesList();
   renderRampUpSettings();
+  renderFCZones();
   updateSavedCount();
   /* ================= FIN PERSISTANCE ================= */
 </script>
