@@ -3206,7 +3206,7 @@
   ];
   // Zones FC — juste un aide-mémoire basé sur FCmax (%FCmax standard), pour ne plus avoir à s'en
   // souvenir. Ne pilote aucun calcul ailleurs dans l'appli, purement informatif/consultable.
-  let userFCmax = 190;
+  let userFCmax = 203; // valeur détectée par Garmin (algorithmique sur données réelles), plus fiable que le 190 par défaut précédent
   function setFCmax(value){
     const v = parseInt(value, 10);
     userFCmax = (!isNaN(v) && v > 100 && v < 230) ? v : userFCmax;
@@ -3253,6 +3253,10 @@
     volState.cardioLeger = Math.round(totalCardioScaled * step.z2Share);
     volState.cardioHiit = totalCardioScaled - volState.cardioLeger;
     volState.etirements = rampUpFullTargets.etirements;
+    // Rafraîchit ICI (pas seulement chez l'appelant) — "temps restant / % fait" du Dashboard
+    // utilise ces mêmes cibles ; l'oublier laissait un calcul périmé (cibles d'avant le ramp)
+    // jusqu'au prochain rechargement complet de page.
+    if(typeof renderRemainingTime==='function') renderRemainingTime();
   }
   function activateRampUp(){
     if(rampUpActive) return;
@@ -3281,6 +3285,7 @@
     rampUpActive = false;
     rampUpStartWeek = null;
     rampUpFullTargets = null;
+    if(typeof renderRemainingTime==='function') renderRemainingTime();
     if(typeof saveState==='function') saveState();
   }
   // Avance le ramp d'une semaine — appelé depuis checkWeekRollover(). Retourne true si le ramp
@@ -4476,20 +4481,84 @@
   // détail d'un muscle liste ses exercices avec leurs totaux. Totaux de la semaine en cours.
   let cardioDetailIntensity = 'faible';
   let editingCardioEntryIndex = null;
+  let cardioEditDraft = null; // { sport, intensity } — brouillon tant que non enregistré, comme les autres champs
+  function isDateInCurrentWeek(dateStr){
+    const info = computeWeekInfo();
+    const d = new Date(dateStr+'T12:00:00');
+    return d >= info.weekStart && d <= new Date(info.weekEnd.getTime()+MS_PER_DAY-1);
+  }
+  // Rafraîchit TOUT ce qui peut afficher un résumé cardio — l'ancien code ne rafraîchissait que
+  // l'écran détail lui-même après une édition, laissant Séances/Historique/le temps restant
+  // périmés jusqu'au prochain rechargement complet.
+  function refreshAfterCardioLogChange(){
+    renderCardioDetail();
+    renderSeancesList();
+    if(typeof renderHistoSportSummary==='function') renderHistoSportSummary();
+    renderGroupOverview();
+    renderDashMuscleChart();
+    renderRemainingTime();
+    if(typeof saveState==='function') saveState();
+  }
   function startEditCardioEntry(idx){
-    editingCardioEntryIndex = (editingCardioEntryIndex === idx) ? null : idx;
+    if(editingCardioEntryIndex === idx){
+      editingCardioEntryIndex = null; cardioEditDraft = null;
+    } else {
+      editingCardioEntryIndex = idx;
+      cardioEditDraft = { sport: cardioLog[idx].sport, intensity: cardioLog[idx].intensity };
+    }
+    renderCardioDetail();
+  }
+  function selectEditSport(sport){
+    if(cardioEditDraft) cardioEditDraft.sport = sport;
+    renderCardioDetail();
+  }
+  function selectEditIntensity(intensity){
+    if(cardioEditDraft) cardioEditDraft.intensity = intensity;
     renderCardioDetail();
   }
   function saveCardioEntryEdit(idx){
+    const e = cardioLog[idx];
+    // Retire la contribution ACTUELLE (avant édition) du total hebdo si cette séance tombe dans
+    // la semaine en cours — indispensable même si la date ne change pas, car intensité/durée
+    // peuvent changer et le total hebdo est un compteur, pas une valeur recalculée à la volée.
+    const wasInWeek = isDateInCurrentWeek(e.date);
+    if(wasInWeek){
+      if(e.intensity==='intense') weeklyProgress.cardioHiit -= e.minutes;
+      else weeklyProgress.cardioLeger -= e.minutes;
+    }
+    const minEl = document.getElementById('edit-minutes-'+idx);
     const distEl = document.getElementById('edit-distance-'+idx);
     const eleEl = document.getElementById('edit-elevation-'+idx);
+    const mins = minEl ? parseInt(minEl.value, 10) : NaN;
     const d = distEl ? parseFloat(distEl.value) : NaN;
     const el = eleEl ? parseInt(eleEl.value, 10) : NaN;
-    if(!isNaN(d) && d > 0) cardioLog[idx].distanceKm = Math.round(d*10)/10; else delete cardioLog[idx].distanceKm;
-    if(!isNaN(el) && el > 0) cardioLog[idx].elevationM = el; else delete cardioLog[idx].elevationM;
+    if(!isNaN(mins) && mins > 0) e.minutes = mins;
+    if(!isNaN(d) && d > 0) e.distanceKm = Math.round(d*10)/10; else delete e.distanceKm;
+    if(!isNaN(el) && el > 0) e.elevationM = el; else delete e.elevationM;
+    if(cardioEditDraft){ e.sport = cardioEditDraft.sport; e.intensity = cardioEditDraft.intensity; }
+    // Rajoute la contribution NOUVELLE (après édition) si toujours dans la semaine en cours.
+    if(isDateInCurrentWeek(e.date)){
+      if(e.intensity==='intense') weeklyProgress.cardioHiit += e.minutes;
+      else weeklyProgress.cardioLeger += e.minutes;
+    }
+    weeklyProgress.cardioLeger = Math.max(0, weeklyProgress.cardioLeger);
+    weeklyProgress.cardioHiit = Math.max(0, weeklyProgress.cardioHiit);
     editingCardioEntryIndex = null;
-    renderCardioDetail();
-    if(typeof saveState==='function') saveState();
+    cardioEditDraft = null;
+    refreshAfterCardioLogChange();
+  }
+  function deleteCardioEntry(idx){
+    const e = cardioLog[idx];
+    const sportLabel = (cardioProtocols[e.sport] && cardioProtocols[e.sport].label) || e.sport;
+    if(!confirm('Supprimer cette séance : '+sportLabel+', '+e.minutes+'min, '+fmtDateFr(e.date)+' ?\n\nCette action est irréversible.')) return;
+    if(isDateInCurrentWeek(e.date)){
+      if(e.intensity==='intense') weeklyProgress.cardioHiit = Math.max(0, weeklyProgress.cardioHiit - e.minutes);
+      else weeklyProgress.cardioLeger = Math.max(0, weeklyProgress.cardioLeger - e.minutes);
+    }
+    cardioLog.splice(idx, 1);
+    editingCardioEntryIndex = null;
+    cardioEditDraft = null;
+    refreshAfterCardioLogChange();
   }
   function openCardioDetail(intensityType){
     cardioDetailIntensity = intensityType;
@@ -4574,10 +4643,26 @@
           '<div style="font-size:11px; color:var(--text-faint);">'+fmtDateFr(e.date)+(e.distanceKm?' · '+e.distanceKm+'km':'')+(e.elevationM?' · '+e.elevationM+'m D+':'')+'</div></div>'+
           '<button class="sec-btn" style="padding:4px 10px; font-size:11px; flex-shrink:0;" onclick="startEditCardioEntry('+idx+')">'+(isEditing?'✕':'✏️')+'</button></div>';
         if(isEditing){
-          html += '<div style="display:flex; gap:8px; margin-top:8px;">'+
+          const draft = cardioEditDraft || { sport:e.sport, intensity:e.intensity };
+          html += '<div style="margin-top:8px;">';
+          html += '<div class="chip-row" style="flex-wrap:wrap; margin-bottom:6px;">';
+          Object.keys(cardioProtocols).forEach(sk=>{
+            html += '<div class="chip'+(draft.sport===sk?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditSport(\''+sk+'\')">'+cardioProtocols[sk].label+'</div>';
+          });
+          html += '</div>';
+          html += '<div class="chip-row" style="margin-bottom:6px;">'+
+            '<div class="chip'+(draft.intensity==='faible'?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditIntensity(\'faible\')">Z2</div>'+
+            '<div class="chip'+(draft.intensity==='intense'?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditIntensity(\'intense\')">Intense</div>'+
+            '</div>';
+          html += '<div style="display:flex; gap:8px;">'+
+            '<input type="number" id="edit-minutes-'+idx+'" placeholder="min" value="'+e.minutes+'" min="1" inputmode="numeric" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
             '<input type="number" id="edit-distance-'+idx+'" placeholder="km" value="'+(e.distanceKm||'')+'" step="0.1" min="0" inputmode="decimal" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
             '<input type="number" id="edit-elevation-'+idx+'" placeholder="m D+" value="'+(e.elevationM||'')+'" min="0" inputmode="numeric" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
-            '<button class="log-btn" style="padding:0 14px; flex-shrink:0;" onclick="saveCardioEntryEdit('+idx+')">💾</button></div>';
+            '</div>';
+          html += '<div style="display:flex; gap:8px; margin-top:8px;">'+
+            '<button class="log-btn" style="flex:1;" onclick="saveCardioEntryEdit('+idx+')">💾 Enregistrer</button>'+
+            '<button class="sec-btn danger" style="flex:0 0 auto; padding:0 14px;" onclick="deleteCardioEntry('+idx+')">🗑️</button>'+
+            '</div></div>';
         }
         html += '</div>';
       });
