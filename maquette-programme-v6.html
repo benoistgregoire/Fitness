@@ -3293,7 +3293,7 @@
   function advanceRampUpOnRollover(newWeekNum){
     if(!rampUpActive) return false;
     const weeksSinceStart = newWeekNum - rampUpStartWeek;
-    const stepIdx = weeksSinceStart - 1;
+    const stepIdx = weeksSinceStart;
     if(stepIdx >= RAMP_STEPS.length - 1){
       // Semaine finale : restaure les VRAIES valeurs sauvegardées, pas un recalcul via factor/share
       // (qui pourrait légèrement différer du ratio réellement établi par l'utilisateur).
@@ -3747,10 +3747,10 @@
     if(!wrap) return;
     if(!rampUpActive){ wrap.innerHTML=''; return; }
     const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
-    const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+    const stepIdx = Math.max(0, Math.min(weeksSinceStart, RAMP_STEPS.length-1));
     const step = RAMP_STEPS[stepIdx];
     wrap.innerHTML = '<div style="margin-top:10px; padding:8px 12px; background:rgba(90,200,180,0.1); border:1px solid var(--petrol); border-radius:10px; font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">'+
-      '<span>🐢 Reprise progressive — semaine '+(stepIdx+1)+'/'+RAMP_STEPS.length+' ('+Math.round(step.renfoFactor*100)+'% renfo)</span>'+
+      '<span>🐢 Reprise progressive — palier '+(stepIdx+1)+'/'+RAMP_STEPS.length+' ('+Math.round(step.renfoFactor*100)+'% renfo)</span>'+
       '<button class="link-btn" style="font-size:11px; padding:0;" onclick="showSection(\'equipement\',\'dashboard\')">Détail →</button></div>';
   }
 
@@ -3760,10 +3760,10 @@
     let html = '';
     if(rampUpActive){
       const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
-      const stepIdx = Math.max(0, weeksSinceStart - 1);
+      const stepIdx = Math.max(0, weeksSinceStart);
       const step = RAMP_STEPS[Math.min(stepIdx, RAMP_STEPS.length-1)];
       html += '<div class="card" style="margin-bottom:12px;">'+
-        '<div style="font-size:13px; font-weight:600; margin-bottom:4px;">🐢 En cours — semaine '+(stepIdx+1)+'/'+RAMP_STEPS.length+'</div>'+
+        '<div style="font-size:13px; font-weight:600; margin-bottom:4px;">🐢 En cours — palier '+(stepIdx+1)+'/'+RAMP_STEPS.length+'</div>'+
         '<div style="font-size:12px; color:var(--text-dim);">Renfo à '+Math.round(step.renfoFactor*100)+'% · Cardio à '+Math.round(step.cardioFactor*100)+'% (Z2 '+Math.round(step.z2Share*100)+'%/Intense '+Math.round((1-step.z2Share)*100)+'%)</div></div>'+
         '<button class="sec-btn" style="width:100%;" onclick="if(confirm(\'Revenir directement à 100% des objectifs ?\')) deactivateRampUp(); renderRampUpSettings(); renderGroupOverview(); renderDashMuscleChart(); renderSeancesList();">Arrêter et revenir à 100%</button>';
     } else {
@@ -4191,7 +4191,7 @@
         rampUpFullTargets.cardioHiit = newTotalFull - rampUpFullTargets.cardioLeger;
       }
       const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
-      const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+      const stepIdx = Math.max(0, Math.min(weeksSinceStart, RAMP_STEPS.length-1));
       applyRampUpStep(stepIdx); // réapplique le palier ACTUEL du ramp à cette nouvelle cible pleine
     } else {
       volState[key] = Math.max(0, volState[key]+delta);
@@ -4208,7 +4208,7 @@
       // réapplique juste son palier actuel dessus pour la valeur affichée cette semaine.
       rampUpFullTargets.muscles[muscle] = m.target;
       const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
-      const stepIdx = Math.max(0, Math.min(weeksSinceStart - 1, RAMP_STEPS.length-1));
+      const stepIdx = Math.max(0, Math.min(weeksSinceStart, RAMP_STEPS.length-1));
       const step = RAMP_STEPS[stepIdx];
       const scaled = Math.max(1, Math.round(m.target * step.renfoFactor));
       m.target = scaled;
