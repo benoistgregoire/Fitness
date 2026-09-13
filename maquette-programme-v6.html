@@ -273,7 +273,8 @@
 
     <div id="week-recap" style="margin-top:14px;"><!-- généré par renderWeekRecap() --></div>
     <div id="rampup-dash-badge"><!-- généré par renderRampUpDashBadge() --></div>
-    <div id="readiness-widget" style="margin-top:14px;"><!-- généré par renderReadinessWidget() --></div>
+    <div id="deload-dash-badge"><!-- généré par renderDeloadBadge() --></div>
+    <div id="periodisation-dash" style="margin-top:14px;"><!-- généré par renderPeriodisation() --></div>
     <div id="day-planner" style="margin-top:14px;"><!-- généré par renderDayPlanner() --></div>
 
     <div id="today-suggestion" style="margin-top:14px;"><!-- généré par renderTodaySuggestion() --></div>
@@ -312,6 +313,15 @@
 
     <h2 class="section-title" style="margin-top:24px;">Reprise progressive</h2>
     <div id="rampup-content"><!-- généré par renderRampUpSettings() --></div>
+
+    <h2 class="section-title" style="margin-top:24px;">Objectif &amp; périodisation</h2>
+    <div id="periodisation-settings"><!-- généré par renderPeriodisationSettings() --></div>
+
+    <h2 class="section-title" style="margin-top:24px;">Semaines de décharge</h2>
+    <div id="deload-settings"><!-- généré par renderDeloadSettings() --></div>
+
+    <h2 class="section-title" style="margin-top:24px;">Comparaison hebdo</h2>
+    <div id="comparison-weeks-content"><!-- généré par renderComparisonWeeksSettings() --></div>
 
     <h2 class="section-title" style="margin-top:24px;">Zone avancée</h2>
     <button class="sec-btn" style="width:100%;" id="test-mode-btn" onclick="toggleTestMode()">🧪 Activer le mode test</button>
@@ -494,32 +504,38 @@
         <div class="chip" data-muscle="Abducteurs" onclick="selectStretchManual(this)">Abducteurs</div>
         <div class="chip" data-muscle="Gainage" onclick="selectStretchManual(this)">Gainage</div>
       </div>
+      <div class="field-label">Intensité</div>
+      <div class="chip-row" id="stretch-intensity-chips">
+        <div class="chip" data-intensity="dynamique" onclick="selectStretchIntensity(this)">🌬️ Dynamique (tenues courtes)</div>
+        <div class="chip sel" data-intensity="normal" onclick="selectStretchIntensity(this)">🧘 Normal</div>
+        <div class="chip" data-intensity="profond" onclick="selectStretchIntensity(this)">🐢 Profond (tenues longues)</div>
+      </div>
+      <div id="savasana-duration-wrap" style="display:none;">
+        <div class="field-label">Durée de la relaxation finale (Savasana)</div>
+        <div class="chip-row" id="savasana-duration-chips">
+          <div class="chip" data-savmin="2" onclick="selectSavasanaDuration(this)">2 min</div>
+          <div class="chip sel" data-savmin="3" onclick="selectSavasanaDuration(this)">3 min</div>
+          <div class="chip" data-savmin="5" onclick="selectSavasanaDuration(this)">5 min</div>
+        </div>
+      </div>
     </div>
 
     <div id="cardio-options" style="display:none;">
-      <div class="field-label">Mode</div>
-      <div class="chip-row" style="margin-bottom:4px;">
-        <div class="chip sel cardio" id="cardio-auto-chip" onclick="setCardioAutoMode(true)">⚡ Auto</div>
-        <div class="chip" id="cardio-manual-chip" onclick="setCardioAutoMode(false)">Manuel</div>
+      <div class="field-label">Sport</div>
+      <div class="chip-row" id="sport-chips">
+        <div class="chip sel cardio" data-sport="route_velo" onclick="selectSport(this)">Vélo route</div>
+        <div class="chip" data-sport="ht_velo" onclick="selectSport(this)">HT vélo</div>
+        <div class="chip" data-sport="course" onclick="selectSport(this)">Course à pied</div>
+        <div class="chip" data-sport="rameur" onclick="selectSport(this)">Rameur</div>
+        <div class="chip" data-sport="natation" onclick="selectSport(this)">Natation</div>
+        <div class="chip" data-sport="circuit_hiit" onclick="selectSport(this)">⚡ Circuit HIIT</div>
       </div>
-      <div id="cardio-manual-block" style="display:none;">
-        <div class="field-label">Sport</div>
-        <div class="chip-row" id="sport-chips">
-          <div class="chip sel cardio" data-sport="ht_velo" onclick="selectSport(this)">HT vélo</div>
-          <div class="chip" data-sport="route_velo" onclick="selectSport(this)">Vélo route</div>
-          <div class="chip" data-sport="velib_vae" onclick="selectSport(this)">Vélib/VAE</div>
-          <div class="chip" data-sport="course" onclick="selectSport(this)">Course à pied</div>
-          <div class="chip" data-sport="rameur" onclick="selectSport(this)">Rameur</div>
-          <div class="chip" data-sport="natation" onclick="selectSport(this)">Natation</div>
-          <div class="chip" data-sport="circuit_hiit" onclick="selectSport(this)">⚡ Circuit HIIT</div>
-        </div>
-        <div class="field-label" id="intensity-label">Intensité</div>
-        <div class="chip-row" id="intensity-chips">
-          <div class="chip sel cardio" data-intensity="faible" onclick="selectIntensity(this)">Faible (Z2)</div>
-          <div class="chip" data-intensity="intense" onclick="selectIntensity(this)">Intense / HIIT</div>
-        </div>
+      <div class="field-label" id="intensity-label">Intensité</div>
+      <div class="chip-row" id="intensity-chips">
+        <div class="chip sel cardio" data-intensity="faible" onclick="selectIntensity(this)">Z2 (endurance)</div>
+        <div class="chip" data-intensity="intense" onclick="selectIntensity(this)">Intense / HIIT</div>
+        <div class="chip" data-intensity="mixte" onclick="selectIntensity(this)">🔀 Mixte (par zone)</div>
       </div>
-      <div id="cardio-auto-explain" style="font-size:11.5px; color:var(--text-dim); margin-top:10px; line-height:1.6;"></div>
     </div>
 
     <div id="result-zone"></div>
@@ -668,6 +684,10 @@
   // Adducteurs/Abducteurs ajoutés (équilibre + prévention genou pour Abducteurs).
   // Temps de travail (tempo 3s/3s, 10-15 reps) et repos SÉPARÉS — corrigé suite au retour :
   // ~1,5 min de travail réel pour un composé jambes, pas 2,5 min tout compris.
+  // Déclarée tout en haut : plusieurs fonctions appelées pendant l'initialisation de la page
+  // (renderAutoExplain -> pickAutoMuscles -> recentLegLoad) s'en servent. Plus bas, elle tombait
+  // dans la zone morte temporelle du const et plantait dès que cardioLog n'était pas vide.
+  const MS_PER_DAY = 24*60*60*1000;
   const GROUP_LABELS = { jambes:'Jambes', haut:'Haut du corps', tronc:'Tronc' };
   const GROUP_ICONS = { jambes:'🦵', haut:'💪', tronc:'🌳' };
 
@@ -749,13 +769,19 @@
         volState: volState,
         exerciseLog: exerciseLog,
         cardioLog: cardioLog,
-        readinessLog: readinessLog,
         dayPlans: dayPlans,
         pendingWeekRecap: pendingWeekRecap,
         rampUpActive: rampUpActive,
         rampUpStartWeek: rampUpStartWeek,
         rampUpFullTargets: rampUpFullTargets,
         userFCmax: userFCmax,
+        comparisonWeeks: comparisonWeeks,
+        raceDate: raceDate,
+        raceLabel: raceLabel,
+        deloadEnabled: deloadEnabled,
+        deloadEveryNWeeks: deloadEveryNWeeks,
+        deloadHistory: deloadHistory,
+        deloadFullTargets: deloadFullTargets,
         savedSessions: savedSessions,
         weeklyTotalsHistory: weeklyTotalsHistory,
         muscleWeeklyHistory: muscleWeeklyHistory,
@@ -804,13 +830,19 @@
       if(state.volState) Object.assign(volState, state.volState);
       if(Array.isArray(state.exerciseLog)) exerciseLog = state.exerciseLog;
       if(Array.isArray(state.cardioLog)) cardioLog = state.cardioLog;
-      if(Array.isArray(state.readinessLog)) readinessLog = state.readinessLog;
       if(state.dayPlans) dayPlans = state.dayPlans;
       if(state.pendingWeekRecap !== undefined) pendingWeekRecap = state.pendingWeekRecap;
       if(state.rampUpActive !== undefined) rampUpActive = state.rampUpActive;
       if(state.rampUpStartWeek !== undefined) rampUpStartWeek = state.rampUpStartWeek;
       if(state.rampUpFullTargets !== undefined) rampUpFullTargets = state.rampUpFullTargets;
       if(state.userFCmax !== undefined) userFCmax = state.userFCmax;
+      if(typeof state.comparisonWeeks === 'number') comparisonWeeks = state.comparisonWeeks;
+      if(typeof state.raceDate === 'string') raceDate = state.raceDate;
+      if(typeof state.raceLabel === 'string') raceLabel = state.raceLabel;
+      if(typeof state.deloadEnabled === 'boolean') deloadEnabled = state.deloadEnabled;
+      if(typeof state.deloadEveryNWeeks === 'number') deloadEveryNWeeks = state.deloadEveryNWeeks;
+      if(Array.isArray(state.deloadHistory)) deloadHistory = state.deloadHistory;
+      if(state.deloadFullTargets !== undefined) deloadFullTargets = state.deloadFullTargets;
       if(Array.isArray(state.savedSessions)) savedSessions = state.savedSessions;
       if(Array.isArray(state.weeklyTotalsHistory)) weeklyTotalsHistory = state.weeklyTotalsHistory;
       if(Array.isArray(state.muscleWeeklyHistory)) muscleWeeklyHistory = state.muscleWeeklyHistory;
@@ -822,6 +854,32 @@
       console.warn('Chargement impossible :', e.message);
       return false;
     }
+  }
+
+  // Vélib/VAE a été retiré : les trajets déjà loggés sous cette étiquette sont reversés dans
+  // Vélo route (durée, distance et D+ conservés à l'identique, seul le sport change). Idempotent —
+  // s'exécute à chaque chargement, ne fait rien quand il n'y a plus rien à migrer.
+  const RETIRED_SPORT_MAP = { velib_vae: 'route_velo' };
+  // Le ramp a cessé de piloter le cardio. Un état sauvegardé d'avant cette version peut contenir
+  // des cibles cardio réduites dans volState, les vraies étant planquées dans rampUpFullTargets.
+  // Sans ça, les cibles resteraient bloquées à leur valeur rabotée pour toujours.
+  function migrateRampCardioTargets(){
+    if(!rampUpFullTargets) return false;
+    let changed = false;
+    if(typeof rampUpFullTargets.cardioLeger === 'number'){ volState.cardioLeger = rampUpFullTargets.cardioLeger; delete rampUpFullTargets.cardioLeger; changed = true; }
+    if(typeof rampUpFullTargets.cardioHiit === 'number'){ volState.cardioHiit = rampUpFullTargets.cardioHiit; delete rampUpFullTargets.cardioHiit; changed = true; }
+    if(typeof rampUpFullTargets.etirements === 'number'){ volState.etirements = rampUpFullTargets.etirements; delete rampUpFullTargets.etirements; changed = true; }
+    if(changed && typeof saveState==='function') saveState();
+    return changed;
+  }
+
+  function migrateRetiredSports(){
+    let n = 0;
+    cardioLog.forEach(e=>{
+      if(RETIRED_SPORT_MAP[e.sport]){ e.sport = RETIRED_SPORT_MAP[e.sport]; n++; }
+    });
+    if(n && typeof saveState==='function') saveState();
+    return n;
   }
 
   function resetAllData(){
@@ -957,15 +1015,15 @@
       detail:{ position:"Allongé sur le dos, haltères tendus au-dessus de la poitrine, léger fléchissement des coudes fixé.", mouvement:"Ouvrir les bras en grand arc sur les côtés jusqu'à sentir l'étirement de la poitrine, puis refermer en suivant le même arc.", tempo:"2s ouverture, 1s pause étirée, 2s fermeture.", repRange:"10-12 reps.", vigilance:"L'angle du coude reste fixe tout du long — ce n'est pas un développé, le mouvement vient de l'épaule qui s'ouvre, pas du coude qui plie." } },
     'Développé couché haltères': { equip:["db3", "db5"], instr:"Amplitude limitée par le sol — protège l\'épaule.", unilateral:false, recSets:3, compound:true, restSec:105, priorityBonus:3, muscles:{'Pectoraux':1.0, 'Épaules':0.5, 'Triceps':0.5} ,
       detail:{ position:"Allongé au sol, haltères au niveau de la poitrine, coudes fléchis.", mouvement:"Pousser les haltères vers le haut jusqu\'à extension quasi complète, puis redescendre contrôlé.", tempo:"2s poussée, 3s descente contrôlée.", repRange:"8-12 reps.", vigilance:"Au sol, l\'amplitude est naturellement limitée par le contact des coudes — c\'est volontaire, ça protège l\'épaule." } },
-    'Presse à pectoraux machine (salle)': { equip:["gym"], instr:"Assis, poussée horizontale contrôlée, ne pas verrouiller les coudes en extension.", unilateral:false, recSets:3, compound:true, restSec:90, priorityBonus:3, muscles:{'Pectoraux':1.0, 'Triceps':0.5} ,
+    'Presse à pectoraux machine (salle)': { equip:["gym"], instr:"Assis, poussée horizontale contrôlée, ne pas verrouiller les coudes en extension.", unilateral:false, recSets:3, compound:true, restSec:90, priorityBonus:3, muscles:{'Pectoraux':1.0, 'Épaules':0.5, 'Triceps':0.5} ,
       detail:{ position:"Assis, dos calé au dossier, poignées à hauteur de poitrine.", mouvement:"Pousser vers l'avant jusqu'à extension quasi complète des bras, retour contrôlé sans relâcher toute la tension.", tempo:"2s poussée, 1s pause contractée, 2s retour.", repRange:"10-12 reps.", vigilance:"Trajectoire guidée — bon complément chargeable au développé couché, moins de demande de stabilisation." } },
     'Écarté aux câbles (salle)': { equip:["gym"], instr:"Poulies réglées à hauteur de poitrine, bras arrondis, rapprochement des mains devant soi.", unilateral:false, recSets:3, compound:false, restSec:60, priorityBonus:2, muscles:{'Pectoraux':1.0} ,
       detail:{ position:"Debout entre les deux poulies réglées à hauteur de poitrine, une poignée dans chaque main, léger pas en avant.", mouvement:"Rapprocher les mains devant soi en gardant les bras légèrement arrondis, contraction en position fermée, retour contrôlé.", tempo:"2s fermeture, 1s pause contractée, 2s retour.", repRange:"12-15 reps.", vigilance:"La tension reste constante sur tout le mouvement (contrairement à l'écarté haltères où elle chute en haut) — la meilleure option isolation pec quand la salle a des câbles réglables." } },
-    'Dips machine/barre parallèle (salle)': { equip:["gym"], instr:"Buste penché en avant pour cibler les pectoraux, descente contrôlée jusqu'à l'étirement.", unilateral:false, recSets:3, compound:true, restSec:90, priorityBonus:3, muscles:{'Pectoraux':1.0, 'Triceps':0.5} ,
+    'Dips machine/barre parallèle (salle)': { equip:["gym"], instr:"Buste penché en avant pour cibler les pectoraux, descente contrôlée jusqu'à l'étirement.", unilateral:false, recSets:3, compound:true, restSec:90, priorityBonus:3, muscles:{'Pectoraux':1.0, 'Épaules':0.5, 'Triceps':0.5} ,
       detail:{ position:"Sur barres parallèles ou machine à dips (assistée ou lestée selon niveau), bras tendus, buste légèrement penché en avant.", mouvement:"Descendre en fléchissant les coudes jusqu'à un bon étirement pectoral, puis pousser pour remonter en extension complète.", tempo:"2s descente, légère pause en bas, 2s remontée.", repRange:"8-12 reps.", vigilance:"Le buste penché en avant oriente le travail vers les pecs plutôt que les triceps — rester droit déplacerait l'emphase, pas d'erreur en soi mais change l'objectif de l'exercice." } },
     'Écarté machine assise (salle)': { equip:["gym"], instr:"Assis, bras arrondis, rapprochement des mains devant la poitrine contre la résistance.", unilateral:false, recSets:3, compound:false, restSec:60, priorityBonus:2, muscles:{'Pectoraux':1.0} ,
       detail:{ position:"Assis, dos calé au dossier, avant-bras contre les coussinets, bras légèrement arrondis.", mouvement:"Rapprocher les bras devant la poitrine en gardant l'arrondi, puis revenir contrôlé sans écarter à l'excès.", tempo:"2s fermeture, 1s pause contractée, 2s retour.", repRange:"12-15 reps.", vigilance:"Isolation pure, bon complément après un compound — la même machine sert souvent aussi pour le dos (oiseau inversé), à ne pas confondre côté réglage." } },
-    'Presse à pectoraux poids du corps (extérieur)': { equip:["park_machine"], instr:"Machine de parc à levier, poussée horizontale contre le poids du corps.", unilateral:false, recSets:3, compound:true, restSec:75, priorityBonus:2, muscles:{'Pectoraux':1.0, 'Triceps':0.5} ,
+    'Presse à pectoraux poids du corps (extérieur)': { equip:["park_machine"], instr:"Machine de parc à levier, poussée horizontale contre le poids du corps.", unilateral:false, recSets:3, compound:true, restSec:75, priorityBonus:2, muscles:{'Pectoraux':1.0, 'Épaules':0.5, 'Triceps':0.5} ,
       detail:{ position:"Assis ou debout selon le modèle de machine, mains sur les poignées à hauteur de poitrine.", mouvement:"Pousser vers l'avant contre la résistance du levier (réglée par le poids du corps), retour contrôlé.", tempo:"2s poussée, 1s pause, 2s retour.", repRange:"12-15 reps.", vigilance:"Présent seulement dans certains parcs équipés — pas systématiquement disponible, à vérifier sur place." } },
     'Chest press élastique': { equip:["elastic_light", "door"], instr:"Élastique ancré à hauteur de poitrine.", unilateral:false, recSets:3, compound:true, restSec:75, priorityBonus:2, muscles:{'Pectoraux':1.0, 'Épaules':0.5, 'Triceps':0.5} ,
       detail:{ position:"Élastique ancré derrière (porte), une extrémité dans chaque main, à hauteur de poitrine.", mouvement:"Pousser les mains vers l\'avant jusqu\'à extension des bras, puis retour contrôlé.", tempo:"2s poussée, 3s retour.", repRange:"12-15 reps.", vigilance:"Garder les omoplates stables — ne pas les laisser partir vers l\'avant en fin de mouvement." } },
@@ -1085,9 +1143,9 @@
       detail:{ position:"Élastique fort sous les pieds, extrémités tenues à deux mains devant les cuisses.", mouvement:"Même trajectoire que le RDL haltères — hanches reculent en premier, dos plat.", tempo:"3s descente, 2-3s remontée contre la résistance croissante.", repRange:"12-15 reps.", vigilance:"Le dos ne doit jamais s\'arrondir ; contrôler la remontée sans à-coup malgré la résistance croissante." } },
     'Tirage poids du corps (extérieur)': { equip:["park_machine"], instr:"Machine de parc à levier, tirage horizontal ou vertical contre le poids du corps.", unilateral:false, recSets:3, compound:true, restSec:75, priorityBonus:3, muscles:{'Biceps':0.5, 'Dos':1.0} ,
       detail:{ position:"Assis ou debout selon le modèle de machine, mains sur les poignées.", mouvement:"Tirer vers soi contre la résistance du levier (réglée par le poids du corps), retour contrôlé sans relâcher toute la tension.", tempo:"2s tirage, 1s pause contractée, 2s retour.", repRange:"12-15 reps.", vigilance:"Présente seulement dans certains parcs équipés — pas systématiquement disponible, à vérifier sur place." } },
-    'Traction pronation (pull-up)': { equip:["pullbar"], instr:"Mains écartées, paumes vers l\'avant — dos et lats en priorité, moins de biceps.", unilateral:false, recSets:3, compound:true, restSec:105, priorityBonus:4, muscles:{'Dos':1.0, 'Biceps':0.5, 'Avant-bras':0.5} ,
+    'Traction pronation (pull-up)': { equip:["pullbar"], instr:"Mains écartées, paumes vers l\'avant — dos et lats en priorité, un peu moins de biceps.", unilateral:false, recSets:3, compound:true, restSec:105, priorityBonus:4, muscles:{'Dos':1.0, 'Biceps':0.4, 'Avant-bras':0.5} ,
       detail:{ position:"Suspendu à la barre, mains écartées largeur épaules, paumes vers l\'avant.", mouvement:"Tirer le corps vers le haut jusqu\'à ce que le menton dépasse la barre.", tempo:"2s montée, 3s descente contrôlée (la partie la plus formatrice).", repRange:"Max reps propres (viser 5-8 à terme).", vigilance:"Pas de balancement pour prendre de l\'élan — utiliser l\'assistance élastique plutôt que de dégrader la forme." } },
-    'Traction supination (chin-up)': { equip:["pullbar"], instr:"Mains rapprochées, paumes vers soi — dos toujours sollicité, avec plus d\'aide des biceps.", unilateral:false, recSets:3, compound:true, restSec:105, priorityBonus:4, muscles:{'Dos':1.0, 'Biceps':0.5, 'Avant-bras':0.5} ,
+    'Traction supination (chin-up)': { equip:["pullbar"], instr:"Mains rapprochées, paumes vers soi — dos toujours sollicité, avec un peu plus d\'aide des biceps.", unilateral:false, recSets:3, compound:true, restSec:105, priorityBonus:4, muscles:{'Dos':1.0, 'Biceps':0.6, 'Avant-bras':0.5} ,
       detail:{ position:"Suspendu à la barre, mains rapprochées, paumes vers soi.", mouvement:"Tirer le corps vers le haut jusqu\'à ce que le menton dépasse la barre.", tempo:"2s montée, 3s descente contrôlée.", repRange:"Max reps propres (viser 5-8 à terme, généralement un peu plus facile que la pronation).", vigilance:"Prise plus facile pour débuter grâce à l\'aide des biceps — bon point de départ si la pronation est encore difficile." } },
     'Relevé de jambes en appui bras (chaise)': { equip:["chair"], instr:"Appui sur les bras (dossier/accoudoirs solides), buste vertical, remontée des jambes contrôlée.", unilateral:false, recSets:3, compound:true, restSec:60, priorityBonus:4, muscles:{'Abdos':1.0} ,
       detail:{ position:"En appui sur les bras (dossier de chaise robuste ou équivalent), buste vertical, jambes qui pendent.", mouvement:"Remonter les genoux (ou jambes tendues selon niveau) vers la poitrine, contraction en haut, redescente contrôlée sans élan.", tempo:"2s montée, légère pause contractée, 2s descente lente.", repRange:"10-15 reps.", vigilance:"Version 'appui-bras' du relevé suspendu — activation équivalente selon la littérature EMG, utile quand pas de barre de traction dispo ou pour varier la prise de grip." } },
@@ -1189,7 +1247,6 @@
   // qu'une mesure à une seule question capture déjà l'essentiel (fatigue/stress/humeur sont assez
   // corrélés entre eux pour ne pas avoir besoin d'un questionnaire complet). Comparé à sa propre
   // moyenne récente, pas à une norme absolue.
-  let readinessLog = [];
   // Calendrier — widget compact sur Dashboard (lecture rapide) + écran "Planif" pour le détail
   // (lieu prévu par jour, en plus des 2 marqueurs facultatifs). Le lieu réutilise directement les
   // profils déjà construits (mêmes icônes), donc pas de nouvelle notion à apprendre.
@@ -1350,23 +1407,44 @@
     { name:'Extension du dos debout', muscle:'Lombaires', sec:20, instr:"Mains sur les hanches, légère extension arrière puis retour, amplitude modérée." },
   ];
 
+  // Ordre pensé selon la logique de séquençage yoga/étirement documentée : mise en jambe douce et
+  // dynamique en premier (chat-chameau), hanches libérées AVANT le travail ischios (un bassin plus
+  // mobile rend l'étirement ischio plus efficace), variété d'angles pour un même muscle plutôt que
+  // répétition, finit par le haut du corps puis relaxation passive/Savasana.
   const yogaPool = [
+    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos', pos:'tapis', detail:{ position:"À quatre pattes, mains sous les épaules, genoux sous les hanches.", mouvement:"En inspirant, creuser le dos et lever la tête (chameau) ; en expirant, arrondir le dos et rentrer le menton (chat).", tempo:"Un cycle complet par respiration, mouvement fluide et continu.", vigilance:"Mouvement toujours guidé par la respiration, jamais forcé ou brusque." }},
     {classic:'Étirement des fléchisseurs de hanche (fente basse)', yoga:'Crescent Lunge', hold:50, per:true, instr:"Bassin poussé légèrement vers l'avant, buste droit.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Un genou au sol, l\'autre jambe fléchie devant à 90°, mains sur la cuisse avant ou levées au ciel.", mouvement:"Pousser légèrement le bassin vers l\'avant tout en gardant le buste droit, jusqu\'à sentir l\'étirement à l\'avant de la hanche arrière.", tempo:"Respiration lente et profonde, approfondir légèrement à chaque expiration sans forcer.", vigilance:"Sensation d\'étirement, jamais de douleur articulaire au genou au sol — glisser un coussin dessous si besoin." }},
     {classic:'Étirement du piriforme (figure-4)', yoga:'Posture du pigeon', hold:75, per:true, instr:"Cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis', detail:{ position:"Cheville de la jambe pliée posée devant, sur ou juste devant le genou opposé, jambe arrière tendue derrière.", mouvement:"Incliner le buste vers l\'avant en gardant le dos long, jusqu\'à sentir l\'étirement dans la fesse.", tempo:"Respiration profonde, rester immobile en laissant la tension se relâcher progressivement.", vigilance:"Le genou avant ne doit jamais forcer en torsion — si inconfortable, réduire l\'angle de la cheville." }},
+    {classic:'Figure-4 allongée (variante douce du pigeon)', yoga:'Supine Pigeon', hold:60, per:true, instr:"Allongé sur le dos, cheville sur le genou opposé, tirer la cuisse vers la poitrine.", muscle:'Fessiers', pos:'tapis', detail:{ position:"Allongé sur le dos, une cheville posée sur le genou opposé.", mouvement:"Attraper l\'arrière de la cuisse de la jambe au sol et la tirer doucement vers la poitrine.", tempo:"Respiration profonde, approfondir à chaque expiration.", vigilance:"Le bas du dos doit rester au sol — si ça cambre, réduire l\'amplitude du tirage." }},
+    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs', pos:'tapis', detail:{ position:"Assis, plantes de pieds jointes devant soi, genoux ouverts vers l\'extérieur.", mouvement:"Laisser les genoux descendre vers le sol sous leur propre poids, buste qui peut s\'incliner légèrement vers l\'avant.", tempo:"Respiration lente, aucune poussée active sur les genoux avec les mains.", vigilance:"Ne jamais appuyer avec force sur les genoux pour les rapprocher du sol — laisser la gravité faire le travail." }},
+    {classic:'Étirement des ischios-jambiers (assis)', yoga:'Pince assise (Paschimottanasana)', hold:50, per:false, instr:"Assis, jambes tendues, buste qui s\'incline vers l\'avant sans forcer.", muscle:'Ischios', pos:'tapis', detail:{ position:"Assis au sol, jambes tendues devant soi, dos long.", mouvement:"Incliner le buste vers l\'avant depuis les hanches (pas depuis le dos), mains qui glissent vers les pieds ou les tibias selon la souplesse.", tempo:"Respiration lente, le buste qui descend un peu plus à chaque expiration, sans à-coup.", vigilance:"Genoux légèrement fléchis autorisés si la tension est excessive à l\'arrière — jamais de douleur derrière le genou." }},
     {classic:'Étirement des ischios-jambiers', yoga:'Pince (Forward Fold)', hold:50, per:false, instr:"Dos qui s'arrondit progressivement.", muscle:'Ischios', pos:'debout', detail:{ position:"Debout ou assis, jambes tendues (légère flexion des genoux autorisée si tension excessive).", mouvement:"Plier au niveau des hanches (pas du dos) en laissant le buste descendre vers les jambes.", tempo:"Respiration lente, le dos qui s\'arrondit progressivement à chaque expiration, sans à-coup.", vigilance:"Ne jamais forcer avec les mains pour tirer plus bas — la tension doit rester modérée, jamais douloureuse à l\'arrière du genou." }},
     {classic:'Étirement des quadriceps', yoga:'Demi-grenouille', hold:40, per:true, instr:"Talon vers la fesse, bassin qui ne bascule pas vers l'avant.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Allongé sur le ventre ou sur le côté, une main attrape la cheville du même côté.", mouvement:"Tirer doucement le talon vers la fesse, bassin qui reste stable sans basculer vers l\'avant.", tempo:"Respiration profonde, tenir sans à-coup.", vigilance:"Le genou ne doit pas subir de torsion — arrêter si douleur à l\'articulation plutôt qu\'à l\'avant de la cuisse." }},
-    {classic:'Étirement des adducteurs (papillon)', yoga:'Baddha Konasana', hold:55, per:false, instr:"Plantes de pieds jointes, genoux qui descendent sans forcer.", muscle:'Adducteurs', pos:'tapis', detail:{ position:"Assis, plantes de pieds jointes devant soi, genoux ouverts vers l\'extérieur.", mouvement:"Laisser les genoux descendre vers le sol sous leur propre poids, buste qui peut s\'incliner légèrement vers l\'avant.", tempo:"Respiration lente, aucune poussée active sur les genoux avec les mains.", vigilance:"Ne jamais appuyer avec force sur les genoux pour les rapprocher du sol — laisser la gravité faire le travail." }},
     {classic:'Étirement combiné ischios-mollets-épaules', yoga:'Chien tête en bas', hold:40, per:false, instr:"Talons qui cherchent le sol sans forcer, dos long.", muscle:'Épaules', pos:'tapis', detail:{ position:"Mains et pieds au sol, bassin poussé vers le haut, corps formant un V inversé.", mouvement:"Talons qui cherchent le sol sans forcer, dos qui s\'allonge, légers pédalages des jambes pour étirer alternativement chaque mollet.", tempo:"Respiration profonde et régulière, quelques respirations par côté.", vigilance:"Les talons n\'ont pas besoin de toucher le sol — le dos long compte plus que la position des talons." }},
+    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets', pos:'debout', detail:{ position:"Debout face à un mur, une jambe reculée tendue, talon au sol, l\'autre jambe fléchie devant.", mouvement:"Pousser le buste vers le mur en gardant le talon arrière plaqué au sol.", tempo:"Respiration régulière, tenue stable sans rebond.", vigilance:"Le talon arrière ne doit jamais décoller — réduire la distance au mur si nécessaire." }},
+    {classic:'Étirement de la cheville (dorsiflexion assise)', yoga:'—', hold:40, per:true, instr:"Assis, orteils tirés doucement vers soi avec une sangle ou la main.", muscle:'Mollets', pos:'tapis', detail:{ position:"Assis au sol, une jambe tendue devant, l\'autre pliée confortablement.", mouvement:"Tirer doucement les orteils vers soi avec une sangle ou la main, jusqu\'à sentir l\'étirement à l\'arrière de la cheville/bas du mollet. Quelques cercles de cheville dans chaque sens peuvent compléter.", tempo:"Respiration lente, mouvement toujours contrôlé.", vigilance:"La cheville est une articulation sensible — jamais de à-coup, amplitude progressive uniquement." }},
     {classic:'Étirement du bas du dos (genoux à la poitrine)', yoga:"Posture de l'enfant", hold:60, per:false, instr:"Fesses vers les talons, bras tendus devant, respiration lente.", muscle:'Lombaires', pos:'tapis', detail:{ position:"Assis sur les talons, buste qui s\'incline vers l\'avant, bras tendus devant ou le long du corps.", mouvement:"Laisser le poids du buste s\'enfoncer doucement vers le sol, front posé si possible.", tempo:"Respiration très lente, chaque expiration accompagnant un relâchement supplémentaire.", vigilance:"Si inconfortable aux genoux, écarter légèrement les genoux ou glisser un coussin sous les fesses." }},
     {classic:'Rotation lombaire allongée', yoga:'Supine Twist', hold:50, per:true, instr:"Genoux qui tombent d'un côté, épaules qui restent au sol.", muscle:'Obliques', pos:'tapis', detail:{ position:"Allongé sur le dos, genoux pliés ramenés vers la poitrine.", mouvement:"Laisser les genoux tomber d\'un côté, épaules qui restent au sol, regard qui peut partir du côté opposé.", tempo:"Respiration profonde, rester immobile en laissant la torsion se relâcher naturellement.", vigilance:"Les deux épaules doivent rester au sol — si l\'une décolle, réduire l\'angle de la torsion." }},
-    {classic:'Dos rond / chat-chameau', yoga:'Cat-Cow', hold:50, per:false, instr:"Inspiration en creusant, expiration en arrondissant.", muscle:'Dos', pos:'tapis', detail:{ position:"À quatre pattes, mains sous les épaules, genoux sous les hanches.", mouvement:"En inspirant, creuser le dos et lever la tête (chameau) ; en expirant, arrondir le dos et rentrer le menton (chat).", tempo:"Un cycle complet par respiration, mouvement fluide et continu.", vigilance:"Mouvement toujours guidé par la respiration, jamais forcé ou brusque." }},
+    {classic:'Torsion assise', yoga:'Ardha Matsyendrasana (torsion simple)', hold:45, per:true, instr:"Assis, dos droit, buste qui pivote vers l\'arrière en s\'aidant d\'une main au sol.", muscle:'Obliques', pos:'tapis', detail:{ position:"Assis, jambes tendues ou une jambe pliée par-dessus l\'autre, dos droit.", mouvement:"Pivoter le buste vers l\'arrière en s\'aidant d\'une main posée au sol derrière soi, l\'autre main sur le genou opposé.", tempo:"Respiration profonde, approfondir la torsion à chaque expiration sans forcer.", vigilance:"La torsion vient du buste, pas d\'une traction du bras — arrêter si tension dans le bas du dos plutôt que dans les flancs." }},
     {classic:'Rotation thoracique (open book)', yoga:'Thread the Needle', hold:45, per:true, instr:"Un bras glisse sous le corps, épaule et tempe au sol.", muscle:'Dos', pos:'tapis', detail:{ position:"À quatre pattes, un bras qui glisse sous le corps, paume vers le ciel.", mouvement:"L\'épaule et la tempe viennent se poser au sol, l\'autre bras peut s\'allonger ou se poser sur le dos.", tempo:"Respiration lente, rester immobile plusieurs respirations avant de changer de côté.", vigilance:"Le mouvement vient du haut du dos, pas d\'une torsion forcée du cou." }},
-    {classic:'Étirement des mollets', yoga:'Variante : chien tête en bas dynamique', hold:40, per:true, instr:"Talon au sol, jambe arrière tendue, buste vers le mur.", muscle:'Mollets', pos:'debout', detail:{ position:"Debout face à un mur, une jambe reculée tendue, talon au sol, l\'autre jambe fléchie devant.", mouvement:"Pousser le buste vers le mur en gardant le talon arrière plaqué au sol.", tempo:"Respiration régulière, tenue stable sans rebond.", vigilance:"Le talon arrière ne doit jamais décoller — réduire la distance au mur si nécessaire." }},
+    {classic:'Étirement des biceps (assis)', yoga:'—', hold:35, per:true, instr:"Bras tendu derrière soi, paume au sol, buste qui pivote doucement à l\'opposé.", muscle:'Biceps', pos:'tapis', detail:{ position:"Assis, une main posée au sol juste derrière la hanche, doigts pointant vers l\'arrière.", mouvement:"Pivoter doucement le buste à l\'opposé du bras tout en gardant le bras tendu, jusqu\'à sentir l\'étirement à l\'avant du bras.", tempo:"Respiration lente, approfondir légèrement à chaque expiration.", vigilance:"Sensation au niveau du coude = signal d\'arrêt, réduire l\'angle plutôt que forcer." }},
+    {classic:'Étirement de la bandelette ilio-tibiale (allongé, jambe croisée)', yoga:'—', hold:50, per:true, instr:"Allongé, une jambe croisée par-dessus l\'autre, genou qui descend vers le sol opposé.", muscle:'Abducteurs', pos:'tapis', detail:{ position:"Allongé sur le dos, une jambe tendue, l\'autre pliée et croisée par-dessus vers le côté opposé.", mouvement:"Laisser le genou descendre doucement vers le sol du côté opposé, épaules qui restent au sol.", tempo:"Respiration profonde, approfondir à chaque expiration sans forcer les épaules à décoller.", vigilance:"Si une épaule décolle, réduire l\'amplitude de la rotation — la tension doit rester sur le côté de la hanche." }},
+    {classic:'Grenouille (adducteurs profond)', yoga:'Mandukasana', hold:60, per:false, instr:"À quatre pattes, genoux largement écartés, hanches qui reculent doucement.", muscle:'Adducteurs', pos:'tapis', detail:{ position:"À quatre pattes, genoux largement écartés, chevilles alignées avec les genoux, avant-bras au sol devant soi.", mouvement:"Laisser les hanches reculer doucement vers les talons, jusqu\'à sentir l\'étirement profond à l\'intérieur des cuisses.", tempo:"Respiration très lente, ne jamais forcer — cette posture est plus intense que le papillon.", vigilance:"Genoux sensibles = réduire l\'écartement ou la profondeur — arrêter immédiatement en cas de douleur articulaire." }},
+    {classic:'Cobra douce (extension lombaire)', yoga:'Cobra (variante douce)', hold:40, per:false, instr:"Allongé sur le ventre, mains sous les épaules, buste qui se soulève doucement.", muscle:'Lombaires', pos:'tapis', detail:{ position:"Allongé sur le ventre, mains à plat sous les épaules, jambes tendues et détendues.", mouvement:"Pousser légèrement dans les mains pour soulever le buste, coudes qui restent légèrement fléchis, bassin qui reste au sol.", tempo:"Respiration profonde, extension progressive à chaque expiration.", vigilance:"Sensation de compression dans le bas du dos = réduire la hauteur, ça doit s\'étirer à l\'avant, pas comprimer à l\'arrière." }},
+    {classic:'Torsion allongée jambes tendues', yoga:'Supine Twist (jambes tendues)', hold:50, per:true, instr:"Allongé, jambes tendues qui basculent d\'un côté, épaules qui restent au sol.", muscle:'Obliques', pos:'tapis', detail:{ position:"Allongé sur le dos, bras en croix, jambes tendues et jointes.", mouvement:"Laisser les jambes tendues basculer doucement d\'un côté, regard qui peut partir du côté opposé.", tempo:"Respiration profonde, rester immobile en laissant la torsion se relâcher.", vigilance:"Si une épaule décolle nettement, plier légèrement les genoux pour réduire l\'amplitude." }},
+    {classic:'Fente latérale au sol (adducteurs)', yoga:'Skandasana (variante douce)', hold:50, per:true, instr:"Un genou plié sur le côté, l\'autre jambe tendue, bassin qui recule doucement.", muscle:'Adducteurs', pos:'tapis', detail:{ position:"Accroupi ou à genoux, une jambe pliée sur le côté, l\'autre tendue latéralement.", mouvement:"Laisser le bassin reculer doucement vers le talon de la jambe pliée, jambe tendue qui reste active.", tempo:"Respiration lente, approfondir progressivement.", vigilance:"Le genou de la jambe pliée ne doit pas partir vers l\'intérieur — garder l\'alignement avec les orteils." }},
+    {classic:'Étirement global bras-jambe opposés (Superman doux)', yoga:'Bird Dog (statique)', hold:45, per:true, instr:"À quatre pattes, un bras et la jambe opposée tendus et allongés, sans bouger.", muscle:'Lombaires', pos:'tapis', detail:{ position:"À quatre pattes, dos neutre, regard vers le sol.", mouvement:"Tendre un bras devant et la jambe opposée derrière simultanément, s\'allonger doucement dans les deux directions sans les lever haut.", tempo:"Respiration lente, tenue stable, sensation d\'allongement plutôt que d\'effort.", vigilance:"Le bassin ne doit pas basculer — garder les hanches de niveau plutôt que de chercher à lever haut." }},
+    {classic:'Demi-pont (ouverture douce des hanches)', yoga:'Setu Bandhasana (variante douce)', hold:40, per:false, instr:"Allongé, genoux pliés, bassin qui se soulève doucement, sans forcer.", muscle:'Quadriceps', pos:'tapis', detail:{ position:"Allongé sur le dos, genoux pliés, pieds à plat au sol proches des fesses.", mouvement:"Soulever doucement le bassin en appuyant dans les pieds, jusqu\'à sentir l\'étirement à l\'avant des hanches.", tempo:"Respiration profonde, montée et descente lentes et contrôlées.", vigilance:"Le bas du dos ne doit pas subir de pression excessive — s\'arrêter à une hauteur confortable, pas besoin d\'aller haut." }},
+    {classic:'Étirement du grand dorsal (posture du chiot)', yoga:'Anahatasana (Puppy Pose)', hold:50, per:false, instr:"Fesses vers les talons, bras tendus loin devant, poitrine qui descend vers le sol.", muscle:'Dos', pos:'tapis', detail:{ position:"À genoux, bras tendus loin devant sur le tapis, fesses qui restent proches des talons.", mouvement:"Laisser la poitrine descendre doucement vers le sol, front posé si possible, étirement senti sous les bras et dans le haut du dos.", tempo:"Respiration profonde, chaque expiration accompagnant un léger relâchement supplémentaire.", vigilance:"Les fesses ne doivent pas décoller des talons — c\'est ça qui donne l\'étirement, pas la distance des mains." }},
     {classic:'Étirement de la nuque et des trapèzes', yoga:'—', hold:30, per:true, instr:"Oreille qui se rapproche de l'épaule, sans forcer avec la main.", muscle:'Épaules', pos:'debout', detail:{ position:"Debout ou assis, dos droit.", mouvement:"Incliner doucement la tête d\'un côté, oreille qui se rapproche de l\'épaule, main qui peut ajouter une légère pression.", tempo:"Respiration lente, jamais de à-coup avec la main.", vigilance:"La pression de la main doit rester très légère — c\'est le poids de la tête qui étire, pas la force du bras." }},
+    {classic:'Étirement de la nuque (assis)', yoga:'—', hold:30, per:true, instr:"Assis, oreille qui se rapproche de l\'épaule, sans forcer avec la main.", muscle:'Épaules', pos:'tapis', detail:{ position:"Assis en tailleur ou jambes tendues, dos droit.", mouvement:"Incliner doucement la tête d\'un côté, oreille qui se rapproche de l\'épaule, main qui peut ajouter une légère pression.", tempo:"Respiration lente, jamais de à-coup avec la main.", vigilance:"La pression de la main doit rester très légère — c\'est le poids de la tête qui étire, pas la force du bras." }},
+    {classic:'Étirement des avant-bras et poignets', yoga:'—', hold:30, per:true, instr:"Bras tendu devant, poignet fléchi, l\'autre main tire doucement les doigts vers soi.", muscle:'Avant-bras', pos:'tapis', detail:{ position:"Assis, un bras tendu devant soi, paume vers le haut ou vers le bas selon la variante.", mouvement:"Avec l\'autre main, tirer doucement les doigts vers soi pour étirer l\'avant-bras, puis inverser la paume pour l\'autre face.", tempo:"Respiration lente, tenue stable des deux côtés du poignet.", vigilance:"Sensation d\'étirement modérée uniquement — les poignets sont sollicités par le vélo, pas la peine d\'ajouter de la tension excessive." }},
+    {classic:'Étirement des triceps (bras au-dessus de la tête)', yoga:'Gomukhasana (bras)', hold:35, per:true, instr:"Coude plié derrière la tête, l\'autre main tire doucement le coude vers le bas.", muscle:'Triceps', pos:'tapis', detail:{ position:"Assis ou à genoux, un bras levé puis plié pour poser la main entre les omoplates.", mouvement:"L\'autre main attrape le coude et tire doucement vers le bas et l\'intérieur.", tempo:"Respiration lente, tenue stable sans à-coup.", vigilance:"Douleur à l\'épaule = signal d\'arrêt — la sensation doit rester à l\'arrière du bras, jamais dans l\'articulation." }},
     {classic:'Étirement des pectoraux', yoga:'—', hold:40, per:true, instr:"Avant-bras contre le mur, buste qui pivote doucement à l'opposé.", muscle:'Pectoraux', pos:'debout', detail:{ position:"Avant-bras contre un mur ou un cadre de porte, coude à hauteur d\'épaule.", mouvement:"Pivoter doucement le buste à l\'opposé du bras, jusqu\'à sentir l\'étirement à l\'avant de l\'épaule/poitrine.", tempo:"Respiration profonde, approfondir légèrement à chaque expiration.", vigilance:"Douleur à l\'épaule = signal d\'arrêt immédiat, pas juste réduire l\'intensité." }},
     {classic:'Ouverture de poitrine allongée', yoga:'Matsyasana (Fish Pose)', hold:45, per:false, instr:"Appui sur les avant-bras, poitrine ouverte vers le haut.", muscle:'Pectoraux', pos:'tapis', detail:{ position:"Allongé sur le dos, appui sur les avant-bras, poitrine qui s\'ouvre vers le haut.", mouvement:"Laisser la tête basculer légèrement en arrière si confortable, cage thoracique qui s\'ouvre.", tempo:"Respiration ample et profonde, c\'est l\'ouverture de la cage thoracique qui compte.", vigilance:"Ne jamais mettre de poids sur le sommet du crâne — l\'appui reste sur les avant-bras." }},
     {classic:'Étirement abdominal doux', yoga:'Sphinx Pose', hold:50, per:false, instr:"Avant-bras au sol, coudes sous les épaules, bassin qui reste au sol.", muscle:'Abdos', pos:'tapis', detail:{ position:"Allongé sur le ventre, avant-bras au sol, coudes sous les épaules.", mouvement:"Pousser légèrement dans les avant-bras pour soulever le buste, bassin qui reste au sol.", tempo:"Respiration profonde, extension douce et progressive.", vigilance:"Sensation dans le bas du dos = réduire l\'extension, ça ne doit se sentir qu\'à l\'avant du corps." }},
     {classic:'Jambes au mur (récupération)', yoga:'Legs-Up-The-Wall', hold:180, per:false, instr:"Bassin proche du mur, jambes tendues verticalement.", pos:'tapis', detail:{ position:"Allongé sur le dos, bassin proche d\'un mur, jambes tendues verticalement contre le mur.", mouvement:"Rester immobile, bras relâchés le long du corps.", tempo:"Respiration lente et naturelle, c\'est une posture de récupération passive.", vigilance:"Si les jambes fourmillent après plusieurs minutes, les plier légèrement ou sortir de la posture." }},
+    {classic:'Étirement croisé de l\'épaule (bras devant la poitrine)', yoga:'—', hold:35, per:true, instr:"Bras tendu devant la poitrine, l\'autre bras qui le presse doucement contre le corps.", muscle:'Épaules', pos:'tapis', detail:{ position:"Assis ou à genoux, un bras tendu devant la poitrine.", mouvement:"Avec l\'autre bras (au niveau du coude ou de l\'avant-bras), presser doucement le bras tendu contre le corps.", tempo:"Respiration lente, tenue stable des deux côtés.", vigilance:"La pression doit rester légère — c\'est l\'arrière de l\'épaule qui s\'étire, pas une torsion de l\'articulation." }},
     {classic:'Relaxation finale allongée', yoga:'Savasana', hold:180, per:false, instr:"Corps totalement relâché, respiration naturelle, yeux fermés.", isClosing:true, pos:'tapis', detail:{ position:"Allongé sur le dos, bras et jambes légèrement écartés, corps totalement relâché.", mouvement:"Aucun mouvement — relâchement progressif de chaque partie du corps.", tempo:"Respiration naturelle, sans contrôle particulier.", vigilance:"Aucune — c'est la seule posture où rien n'est à surveiller, juste à laisser aller." } }
   ];
 
@@ -1486,8 +1564,6 @@
                  intense:{label:'Intervalles norvégiens', work:240, rest:180, desc:"4×4 min à ~95% FCmax, 3 min récupération active."} },
     route_velo:{ label:'Vélo route', faible:{label:'Z2 continu', desc:"Sortie longue allure conversationnelle."},
                  intense:{label:'30/30', work:30, rest:30, desc:"30s effort soutenu / 30s récupération, répété."} },
-    velib_vae: { label:'Vélib/VAE', faible:{label:'Trajet tranquille', desc:"Déplacement urbain, effort assisté, allure de balade."},
-                 intense:{label:'Trajet rythmé', work:60, rest:60, desc:"Portions plus rythmées (feux, côtes) alternant avec portions calmes."} },
     course:    { label:'Course à pied', faible:{label:'Footing Z2', desc:"Footing allure conversationnelle."},
                  intense:{label:'Sprint Interval', work:30, rest:150, desc:"30s sprint quasi maximal / 2-4 min récupération (marche/jog léger)."} },
     rameur:    { label:'Rameur', faible:{label:'Z2 continu', desc:"Rythme régulier, technique propre, effort continu."},
@@ -1500,9 +1576,12 @@
   let selectedTime = 30;
   let manualPatterns = [];
   let autoMode = true;
-  let cardioAutoMode = true;
-  let selectedSport = 'ht_velo';
+  let selectedSport = 'route_velo';
   let selectedIntensity = 'faible';
+  // Répartition par zone d'une sortie « mixte » — une sortie réelle passe rarement dans une seule
+  // zone. Une entrée cardio peut donc porter un objet `zones` en minutes, avec UNE seule durée,
+  // distance et D+ pour toute la sortie (fidèle à ce que renvoie une montre).
+  let mixteZones = { z2: 45, z3: 15, z4: 10 };
 
   let currentSectionId = 'dashboard';
   function showSection(id, navTarget){
@@ -1542,13 +1621,15 @@
     Object.keys(musclesData).forEach(g=>{
       Object.keys(musclesData[g]).forEach(m=>{
         musclesData[g][m].done = 0;
-        musclesData[g][m].lastTrained = 99; // rien d'entraîné dans cette semaine fraîche -> tout de suite éligible
+        // lastTrained/lastSetsCount volontairement préservés : on remet à zéro le volume de la
+        // semaine, pas l'état de fraîcheur des muscles.
         musclesData[g][m].lastSetsCount = 0;
       });
     });
     Object.keys(musclesData).forEach(g=>{ Object.keys(musclesData[g]).forEach(m=>{ musclesFlat[m] = {...musclesData[g][m], group:g}; }); });
     weeklyProgress.cardioLeger = 0;
     weeklyProgress.cardioHiit = 0;
+    weeklyProgress.cardioZ3 = 0;
     weeklyProgress.etirement = 0;
     renderGroupOverview();
     renderDashMuscleChart();
@@ -1581,7 +1662,6 @@
     pill.className = 'mode-pill ' + m;
     pill.textContent = m==='renfo' ? '💪 Renfo' : (m==='yoga' ? '🧘 Étirements / Yoga' : '🏃 Cardio');
 
-    if(m==='cardio') renderCardioAutoExplain();
     if(m==='renfo'){
       refreshPatternChipColors();
       // Si une sélection manuelle est déjà active, on la déplie et on remet les bonnes puces en
@@ -1602,7 +1682,6 @@
     if(!confirmLeaveLoadedSession()) return;
     document.querySelectorAll('#time-chips .chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel'); selectedTime = parseInt(el.dataset.time);
-    if(mode==='cardio') renderCardioAutoExplain();
     if(mode==='renfo'){ if(autoMode) renderAutoExplain(); renderFormatExplain(); }
     refreshPreview();
   }
@@ -1711,11 +1790,51 @@
   // tier 3 = Épaules seul — aucune pertinence vélo directe, et déjà bien exposé indirectement via
   // Pectoraux/Triceps/Dos.
   const MUSCLE_IMPORTANCE_TIER = {
-    Quadriceps:1, Ischios:1, Dos:1, Pectoraux:1, Gainage:1,
-    Fessiers:2, Triceps:2, Abducteurs:2, Mollets:2, Obliques:2, Adducteurs:2, Biceps:2, Abdos:2, Lombaires:2,
-    Épaules:3, 'Avant-bras':3
+    // Tier 1 — moteurs du pédalage et transfert de puissance. Ce qui fait avancer le vélo.
+    Quadriceps:1, Ischios:1, Fessiers:1, Gainage:1,
+    // Tier 2 — tenue de la position aéro sur plusieurs heures et prévention (genou, cheville, dos).
+    Lombaires:2, Abducteurs:2, Mollets:2, Dos:2, Abdos:2, Obliques:2, Adducteurs:2,
+    // Tier 3 — entretien général. Aucun rôle direct en cyclisme, et déjà servis en secondaire par
+    // les tirages/poussées. Pectoraux rétrogradé depuis le tier 1 : c'est du haut du corps de
+    // confort, pas une priorité pour un cycliste sur route.
+    Pectoraux:3, Triceps:3, Biceps:3, Épaules:3, 'Avant-bras':3
   };
   function muscleImportanceTier(name){ return MUSCLE_IMPORTANCE_TIER[name] || 2; }
+  // Poids appliqué au déficit selon l'importance cycliste. Avant, l'importance n'était qu'un
+  // départage à déficit quasi égal : un petit muscle accessoire à 0/8 (déficit 100%) passait
+  // mécaniquement devant Quadriceps à 4/14 (71%). Pour un cycliste c'est le mauvais arbitrage —
+  // combler un accessoire ne vaut pas avancer sur un moteur du pédalage. L'importance multiplie
+  // donc maintenant le déficit au lieu de le départager.
+  const TIER_WEIGHT = { 1: 1.0, 2: 0.62, 3: 0.32 };
+
+  // Combien les jambes ont déjà encaissé ces 2 derniers jours, d'après le journal cardio. Un renfo
+  // jambes le lendemain d'une grosse séance d'intensité n'est pas interdit, mais il est moins
+  // opportun — on dépriorise sans jamais exclure. Volontairement piloté par l'INTENSITÉ plus que
+  // par le volume : une longue sortie Z2 n'interfère quasiment pas avec du renfo, une séance de
+  // seuil oui. Sans ça, un cycliste qui roule presque tous les jours ne verrait plus jamais ses
+  // jambes proposées.
+  const SPORT_LEG_LOAD = { route_velo:1, ht_velo:1, course:1.1, rameur:0.6, natation:0.2, circuit_hiit:0.8 };
+  const LEG_SENSITIVITY = { Quadriceps:1.0, Ischios:0.9, Fessiers:0.85, Mollets:0.7, Adducteurs:0.35, Abducteurs:0.35 };
+  const MAX_LEG_DAMPING = 0.40; // plafond : au pire −40% de priorité, jamais une exclusion
+  function recentLegLoad(){
+    const today = new Date(todayISO()+'T12:00:00');
+    let units = 0;
+    cardioLog.forEach(e=>{
+      const d = new Date(e.date+'T12:00:00');
+      const days = Math.floor((today - d)/MS_PER_DAY);
+      if(days < 0 || days > 1) return;
+      const decay = days === 0 ? 1 : 0.7;
+      const z = entryZoneMinutes(e);
+      const sportW = SPORT_LEG_LOAD[e.sport] != null ? SPORT_LEG_LOAD[e.sport] : 0.8;
+      units += (z.z4*2.5 + z.z3*1.0 + z.z2*0.25) * decay * sportW;
+    });
+    return Math.min(1, units/120); // 120 unités ≈ une très grosse journée d'intensité
+  }
+  function legLoadDamping(muscleName, load){
+    const sens = LEG_SENSITIVITY[muscleName];
+    if(!sens || load <= 0) return 1;
+    return 1 - MAX_LEG_DAMPING * sens * load;
+  }
   // Exposition croisée : % du temps où ce muscle n'est que secondaire dans les exercices RÉELLEMENT
   // disponibles (équipement du profil actif) — recalculé à chaque appel plutôt que figé, pour
   // refléter automatiquement le lieu courant. Sert UNIQUEMENT de départage fin à importance égale
@@ -1735,40 +1854,70 @@
 
   function pickAutoMuscles(nSlots){
     const categoryFilter = CATEGORY_MUSCLES[autoCategory];
+    let categoryReleased = false;
     let all = Object.keys(musclesFlat).map(name=>{
       const d = musclesFlat[name];
       return { name, group:d.group, deficit:(d.target-d.done)/d.target, lastTrained:d.lastTrained, lastSetsCount:d.lastSetsCount, minRecovery:d.minRecovery, target:d.target, done:d.done };
     });
-    if(categoryFilter) all = all.filter(m => categoryFilter.includes(m.name));
-    const eligible = all.filter(isMuscleEligible);
+    // Un filtre de catégorie (choix manuel, ou biais automatique lié au lieu prévu) ne doit pas
+    // enfermer la sélection dans un groupe déjà bouclé : si plus rien n'y a de besoin réel, on
+    // relâche le filtre plutôt que de proposer du remplissage. C'est ce qui faisait proposer des
+    // Pectoraux déjà au-delà de l'objectif quand la catégorie « Haut du corps » était active.
+    const hasNeed = (m) => (m.target - m.done) > 0.5;
+    if(categoryFilter){
+      const filtered = all.filter(m => categoryFilter.includes(m.name));
+      if(filtered.some(hasNeed)) all = filtered;
+      else categoryReleased = true;
+    }
+    const eligibleAll = all.filter(isMuscleEligible);
     const excluded = all.filter(m => !isMuscleEligible(m));
-    // Tri par palier de déficit (pas de valeur exacte), puis importance d'entraînement (tier fixe,
-    // reflète la pertinence réelle), puis exposition croisée comme simple départage fin à
-    // importance égale, puis ancienneté d'entraînement, puis aléatoire.
+    // Règle dure : tant qu'un muscle a encore un besoin réel cette semaine, aucun muscle déjà à
+    // son objectif ne prend un créneau. Le remplissage de fin de liste pouvait sinon compléter
+    // une séance avec des muscles à 110% pendant que d'autres étaient à 30%.
+    const withNeed = eligibleAll.filter(hasNeed);
+    const allCovered = withNeed.length === 0;
+    const eligible = allCovered ? eligibleAll : withNeed;
+    // Score composite : déficit × importance cycliste × fraîcheur des jambes. Les trois comptent
+    // ensemble au lieu de s'appliquer en cascade — c'est ce qui évite qu'un accessoire à 0%
+    // écrase un moteur du pédalage à 30%. L'exposition croisée ne sert plus que de départage fin.
+    const legLoad = recentLegLoad();
+    eligible.forEach(m=>{
+      m.tier = muscleImportanceTier(m.name);
+      m.damping = legLoadDamping(m.name, legLoad);
+      m.score = m.deficit * (TIER_WEIGHT[m.tier] || 0.62) * m.damping;
+    });
     eligible.sort((a,b)=>{
-      const bucketA = Math.round(a.deficit / 0.15), bucketB = Math.round(b.deficit / 0.15);
-      if(bucketA !== bucketB) return bucketB - bucketA;
-      const tierDiff = muscleImportanceTier(a.name) - muscleImportanceTier(b.name);
-      if(tierDiff !== 0) return tierDiff;
+      if(Math.abs(a.score-b.score) > 0.001) return b.score - a.score;
       const expoDiff = muscleCrossExposure(a.name) - muscleCrossExposure(b.name);
       if(Math.abs(expoDiff) > 0.001) return expoDiff;
       return b.lastTrained-a.lastTrained || Math.random()-0.5;
     });
 
     let chosen = [];
-    if(eligible.length) chosen.push(eligible[0]); // le plus faible absolu, toujours
+    if(eligible.length) chosen.push(eligible[0]); // la plus grosse priorité, toujours
+    // Représentation par groupe — mais seulement si le groupe a encore un vrai retard. Avant, un
+    // créneau était réservé d'office au haut du corps même à 92% d'objectif atteint, au détriment
+    // des jambes. Un groupe déjà servi laisse maintenant sa place aux muscles les plus prioritaires.
+    const GROUP_DEFICIT_FLOOR = 0.25;
     ['jambes','haut','tronc'].forEach(g=>{
       if(chosen.length>=nSlots) return;
-      // Le tri ci-dessus place déjà les muscles polyarticulaires en tête à déficit comparable —
-      // simple recherche du premier du groupe suffit maintenant, plus besoin de logique dédiée ici.
-      const weakestInGroup = eligible.find(m=>m.group===g && !chosen.includes(m));
+      const inGroup = eligible.filter(m=>m.group===g);
+      if(!inGroup.length) return;
+      const groupDeficit = inGroup.reduce((sum,m)=>sum+(m.target-m.done),0) / Math.max(1, inGroup.reduce((sum,m)=>sum+m.target,0));
+      if(groupDeficit < GROUP_DEFICIT_FLOOR) return;
+      const weakestInGroup = inGroup.find(m=>!chosen.includes(m));
       if(weakestInGroup) chosen.push(weakestInGroup);
     });
     for(const m of eligible){
       if(chosen.length>=nSlots) break;
       if(!chosen.includes(m)) chosen.push(m);
     }
-    return { chosen: chosen.slice(0,Math.max(1,nSlots)).map(m=>m.name), excluded: excluded.map(m=>m.name) };
+    const cap = Math.max(1, Math.min(nSlots, eligible.length));
+    return {
+      chosen: chosen.slice(0, cap).map(m=>m.name),
+      excluded: excluded.map(m=>m.name),
+      legLoad, allCovered, categoryReleased
+    };
   }
   function renderAutoExplain(){
     const nSlots = slotsForTime(selectedTime);
@@ -1776,6 +1925,17 @@
     let html = '<b style="color:var(--text)">Sélection auto :</b> ' + r.chosen.map(name=>{
       const d=musclesFlat[name]; return name+' ('+d.done+'/'+d.target+')';
     }).join(', ') + '.';
+    if(r.allCovered){
+      html += '<br><span style="color:var(--green);">✅ Tous tes objectifs hebdo sont atteints</span> — ce qui suit est du bonus, pas du rattrapage.';
+    }
+    if(r.categoryReleased){
+      html += '<br><span style="color:var(--text-faint);">La catégorie choisie n\'a plus de besoin cette semaine — sélection élargie au corps entier.</span>';
+    }
+    if(r.legLoad > 0.15){
+      const pct = Math.round(r.legLoad*100);
+      const level = r.legLoad > 0.5 ? 'élevée' : 'modérée';
+      html += '<br><span style="color:var(--amber);">🚴 Charge jambes récente '+level+' ('+pct+'%)</span> — d\'après ton journal cardio des 2 derniers jours. Les moteurs du pédalage sont dépriorisés, pas exclus : si tu veux quand même faire les jambes, passe en Manuel ou choisis la catégorie Bas du corps.';
+    }
     if(r.excluded.length){
       html += '<br>Mis de côté aujourd\'hui : ' + r.excluded.map(name=>{
         const d=musclesFlat[name];
@@ -1790,14 +1950,6 @@
   }
   renderAutoExplain();
 
-  function setCardioAutoMode(v){
-    cardioAutoMode = v;
-    document.getElementById('cardio-auto-chip').classList.toggle('sel', v);
-    document.getElementById('cardio-manual-chip').classList.toggle('sel', !v);
-    document.getElementById('cardio-manual-block').style.display = v ? 'none':'block';
-    if(v){ renderCardioAutoExplain(); } else { document.getElementById('cardio-auto-explain').innerHTML=''; }
-    refreshPreview();
-  }
   function selectSport(el){
     document.querySelectorAll('#sport-chips .chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel'); selectedSport = el.dataset.sport;
@@ -1810,12 +1962,6 @@
     document.querySelectorAll('#intensity-chips .chip').forEach(c=>c.classList.remove('sel'));
     el.classList.add('sel'); selectedIntensity = el.dataset.intensity;
     refreshPreview();
-  }
-  function renderCardioAutoExplain(){
-    if(!cardioAutoMode) return;
-    document.getElementById('cardio-auto-explain').innerHTML =
-      '<b style="color:var(--text)">Sélection auto (simplifiée) :</b> Vélo route, intensité faible — la vraie logique auto ' +
-      '(basée sur ta phase et ton historique) arrivera avec la périodisation. Passe en Manuel pour choisir toi-même.';
   }
 
   const ANTAGONIST_PAIRS = [['Pectoraux','Dos'], ['Quadriceps','Ischios'], ['Biceps','Triceps'], ['Adducteurs','Abducteurs']];
@@ -1900,7 +2046,7 @@
     return [...tierPrimary, ...tierSecondary];
   }
 
-  function nextBlock(muscleName, cursor, remainingBudget, useRec, forcedSets, remainingNeedCap, remainingNeedMap, preferIsolation){
+  function nextBlock(muscleName, cursor, remainingBudget, useRec, forcedSets, remainingNeedCap, remainingNeedMap, preferIsolation, usedNames){
     // Le pool mélangé est calculé une seule fois par muscle par génération et mis en cache sur le
     // curseur — sinon rappeler sortedPool() à chaque bloc referait un mélange différent à chaque
     // fois, et le cycle poolIdx sauterait ou répéterait des exercices au hasard.
@@ -1913,13 +2059,25 @@
     // touche pas — évite qu'un muscle déjà à sa cible continue de grimper juste parce qu'un autre
     // muscle pioche plusieurs compounds qui le traversent en secondaire (ex. Fessiers à 154% alors
     // que Quadriceps enchaîne Squat + Squat bulgare, tous deux Fessiers en secondaire).
+    const touchesSaturatedSecondary = (candidate) => !!remainingNeedMap && Object.entries(candidate.muscles).some(([m2,w2]) =>
+      m2 !== muscleName && remainingNeedMap[m2] != null && remainingNeedMap[m2] <= 0);
     if(remainingNeedMap){
-      const touchesSaturatedSecondary = (candidate) => Object.entries(candidate.muscles).some(([m2,w2]) =>
-        m2 !== muscleName && remainingNeedMap[m2] != null && remainingNeedMap[m2] <= 0);
       if(touchesSaturatedSecondary(ex)){
         const altIdx = pool.findIndex(c => !touchesSaturatedSecondary(c));
         if(altIdx !== -1) ex = pool[altIdx];
       }
+    }
+    // Anti-doublon GLOBAL à la séance. Le curseur poolIdx empêche déjà de repiocher le même
+    // exercice pour le MÊME muscle, mais un exercice présent dans deux pools (RDL barre est à la
+    // fois un exercice Ischios et un exercice Fessiers) pouvait sortir deux fois dans la même
+    // séance sous deux étiquettes différentes. On repique donc d'abord un exercice non encore
+    // utilisé ; si tout le pool est déjà pris, on laisse passer plutôt que de renvoyer null et de
+    // laisser un trou dans la séance.
+    let isRepeat = false;
+    if(usedNames && usedNames.has(ex.name)){
+      const fresh = pool.find(c => !usedNames.has(c.name) && !touchesSaturatedSecondary(c))
+                 || pool.find(c => !usedNames.has(c.name));
+      if(fresh) ex = fresh; else isRepeat = true;
     }
     let sets;
     if(useRec){
@@ -1939,7 +2097,7 @@
       sets = Math.min(sets, Math.max(1, Math.ceil(remainingNeedCap / weightForThisMuscle)));
     }
     const t = sessionFormat==='circuit' ? blockTimeMinCircuit(sets, ex) : blockTimeMin(sets, ex);
-    return { name:ex.name, sets, instr:ex.instr, unilateral:ex.unilateral, est:t, compound:ex.compound, restSec:ex.restSec, equip:ex.equip, isHold:ex.isHold, muscles:ex.muscles, role:ex.role, focusNote:ex.focusNote, detail:ex.detail, controlledTempo:ex.controlledTempo };
+    return { isRepeat, name:ex.name, sets, instr:ex.instr, unilateral:ex.unilateral, est:t, compound:ex.compound, restSec:ex.restSec, equip:ex.equip, isHold:ex.isHold, muscles:ex.muscles, role:ex.role, focusNote:ex.focusNote, detail:ex.detail, controlledTempo:ex.controlledTempo };
   }
 
   let includeClosingStretch = true;
@@ -2103,6 +2261,8 @@
     let totalUsed = warmup;
     let queue = []; let resultLines = [];
     let cursors = {}; muscles.forEach(m=>{ cursors[m] = {poolIdx:0, blocks:0}; });
+    // Noms d'exercices déjà placés dans CETTE séance, tous muscles confondus — voir nextBlock().
+    const usedExerciseNames = new Set();
 
     let uniformSets = null;
     if(!useRecommendedSets){
@@ -2145,8 +2305,17 @@
       // d'abord), le finisher isolation a besoin de SON PROPRE curseur — sinon il hériterait du
       // pool déjà trié compound-d'abord au lieu d'obtenir un vrai tri isolation-d'abord.
       const cursorKey = (m) => preferIsolation ? ('iso_'+m) : m;
+      // Deux temps : on remplit d'abord uniquement avec des exercices neufs. Si un tour complet
+      // n'ajoute plus rien (pools épuisés pour les muscles restants), et seulement alors, on
+      // autorise le recyclage d'un exercice déjà placé — mieux vaut une répétition signalée qu'un
+      // créneau à moitié vide.
+      let allowRepeats = false;
       let safety2 = 0; let addedSomething2 = true;
-      while(!fillTargetReached(targetMin) && addedSomething2 && safety2 < 120){
+      while(!fillTargetReached(targetMin) && safety2 < 120){
+        if(!addedSomething2){
+          if(allowRepeats) break;
+          allowRepeats = true; // dernier recours pour le tour suivant
+        }
         addedSomething2 = false;
         for(const mOrig of muscleList){
           if(fillTargetReached(targetMin)) break;
@@ -2171,13 +2340,15 @@
           if(remainingNeed[m] <= 0) continue;
           const cursor = cursors[cursorKey(m)];
           const budgetHint = sessionFormat==='circuit' ? Math.max(1, (targetMin - circuitElapsedMin())/muscleList.length) : remaining/muscleList.length;
-          const block = nextBlock(m, cursor, budgetHint, useRecommendedSets, uniformSets, remainingNeed[m], remainingNeed, preferIsolation);
+          const block = nextBlock(m, cursor, budgetHint, useRecommendedSets, uniformSets, remainingNeed[m], remainingNeed, preferIsolation, usedExerciseNames);
           if(!block) continue;
+          if(block.isRepeat && !allowRepeats) continue; // un autre muscle a peut-être encore du neuf à offrir
           if(sessionFormat!=='circuit' && cursor.blocks>0 && block.est > remaining) continue;
           const queueItem = {type:'strength', pattern:m, patternKey:m, name:block.name, targetSets:block.sets, instr:block.instr, unilateral:block.unilateral,
             restSec:block.restSec, compound:block.compound, equip:block.equip, isHold:block.isHold, muscles:block.muscles, role:block.role, focusNote:block.focusNote, detail:block.detail, controlledTempo:block.controlledTempo};
           queue.push(queueItem);
           resultLines.push({pattern:m, name:block.name, sets:block.sets, estSec:Math.round(block.est*60), unilateral:block.unilateral, compound:block.compound, queueRef:queueItem});
+          usedExerciseNames.add(block.name);
           totalUsed += block.est;
           remaining -= block.est;
           cursor.poolIdx++;
@@ -2339,7 +2510,15 @@
     let html = '<div class="result-card"><div class="result-total"><div><div class="l">Durée estimée</div><div class="n">'+displayedTotal+' min</div></div>'+
       '<div class="l" style="text-align:right;">'+(warmup?warmup+' min échauffement<br>':'')+muscles.length+' muscle(s)</div></div>';
     html += '<div id="preview-exercise-rows"></div>';
-    html += circuitNote + setsRuleNote;
+    // Répétition d'exercice : ne peut arriver que si le pool disponible pour un muscle est
+    // entièrement épuisé (profil Hôtel/Extérieur sur une séance très longue). nextBlock() préfère
+    // toujours un exercice neuf ; quand il n'y en a plus, mieux vaut répéter que laisser un trou —
+    // mais on le signale au lieu de le faire en silence.
+    const repeatedNames = [...new Set(resultLines.map(l=>l.name).filter((n,i,a)=>a.indexOf(n)!==i))];
+    const repeatNote = repeatedNames.length
+      ? '<div style="font-size:11px;color:var(--amber);margin-top:6px;">⚠️ Matériel limité pour cette durée : '+repeatedNames.join(', ')+' revient deux fois (plus d\'exercice disponible pour ce muscle avec le profil actif). Raccourcis la séance ou change de profil de lieu pour l\'éviter.</div>'
+      : '';
+    html += circuitNote + setsRuleNote + repeatNote;
     html += '<div id="preview-stretch-rows"></div>';
     html += '</div><div style="font-size:11px;color:var(--text-faint);margin-top:8px;">Règle : 3 séries max par exercice — au-delà, 2 exercices pour varier.</div>';
     html += '<div style="display:flex; gap:8px; margin-top:4px;">'+
@@ -2767,29 +2946,43 @@
       if(filtered.length) withoutClosing = filtered;
     }
     const includeClosing = (stretchSub==='yoga' && selectedTime>=15);
-    const closingTime = includeClosing ? closing.hold : 0;
+    const savWrap = document.getElementById('savasana-duration-wrap');
+    if(savWrap) savWrap.style.display = includeClosing ? '' : 'none';
+    const savasanaSec = savasanaMinutes*60;
+    const closingTime = includeClosing ? savasanaSec : 0;
     const workBudget = budget - closingTime;
+    const mult = STRETCH_INTENSITY_MULT[stretchIntensity] || 1;
 
     const displayName = (p) => stretchSub==='yoga' ? (p.yoga==='—' ? p.classic : p.yoga) : p.classic;
 
-    let idx = 0; let guard = 0;
-    while(used < workBudget && guard < 40){
-      const p = withoutClosing[idx % withoutClosing.length];
-      const dur = p.hold*(p.per?2:1);
-      if(used > 0 && used+dur > workBudget*1.15) { guard++; idx++; continue; } // évite un gros dépassement en fin de liste
-      pushStretchItem(queue, p, null, displayName(p));
+    // Une seule passe sur le pool : chaque posture au plus une fois par séance. Avant, l'index
+    // rebouclait (idx % pool.length) et un garde-fou fixe à 40 itérations coupait la boucle —
+    // résultat, au-delà d'une certaine durée la séance répétait des postures ET se retrouvait
+    // tronquée (ex. Dynamique 40min rendait 29min avec 10 répétitions). Si le pool ne suffit pas
+    // à remplir la durée demandée, on rend une séance plus courte et on le dit, plutôt que de
+    // boucler en silence.
+    let idx = 0;
+    while(used < workBudget && idx < withoutClosing.length){
+      const p = withoutClosing[idx];
+      const scaledHold = Math.max(10, Math.round(p.hold*mult));
+      const dur = scaledHold*(p.per?2:1);
+      if(used > 0 && used+dur > workBudget*1.15) { idx++; continue; } // évite un gros dépassement en fin de liste
+      pushStretchItem(queue, p, {holdSeconds:scaledHold}, displayName(p));
       used += dur;
       idx++;
-      guard++;
     }
+    const poolExhausted = used < workBudget*0.9;
     if(includeClosing){
-      queue.push({type:'hold', pattern:'Étirements', name:displayName(closing), holdSeconds:closing.hold, per:false, instr:closing.instr, detail:closing.detail});
+      queue.push({type:'hold', pattern:'Étirements', name:displayName(closing), holdSeconds:savasanaSec, per:false, instr:closing.instr, detail:closing.detail});
       used += closingTime;
     }
     lastGeneratedQueue = queue;
 
     let html = '<div class="result-card"><div class="result-total"><div><div class="l">Durée estimée</div><div class="n">'+Math.round(used/60)+' min</div></div>'+
       '<div class="l" style="text-align:right;">'+queue.length+' postures</div></div>';
+    if(poolExhausted){
+      html += '<div style="font-size:11.5px; color:var(--amber); padding:8px 0 2px;">⚠️ Toutes les postures disponibles sont utilisées — séance de '+Math.round(used/60)+'min au lieu de '+selectedTime+'min. Passe en intensité Normal ou Profond (tenues plus longues) pour une séance plus longue sans répétition.</div>';
+    }
     queue.forEach(q=>{
       html += '<div class="result-line"><div><div class="rp">Étirement</div><div class="rn">'+q.name+'</div></div>'+
         '<div class="rd">'+(q.per?'2×':'')+q.holdSeconds+'s</div></div>';
@@ -2798,17 +2991,88 @@
     document.getElementById('result-zone').innerHTML = html;
   }
 
+  // ===== Modèle de zones cardio =====
+  // Une entrée cardio porte soit une seule `intensity` ('faible' | 'intense'), soit — pour une
+  // sortie mixte — un objet `zones` en minutes. Les deux formes cohabitent : les entrées
+  // historiques restent lisibles sans migration, entryZoneMinutes() normalise tout le monde.
+  const ZONE_LABELS = { z2:'Z2 — endurance', z3:'Z3 — tempo', z4:'Z4+ — seuil/VO2' };
+  function entryZoneMinutes(e){
+    if(e && e.zones) return { z2: e.zones.z2||0, z3: e.zones.z3||0, z4: e.zones.z4||0 };
+    if(e && e.intensity === 'intense') return { z2:0, z3:0, z4: e.minutes||0 };
+    return { z2: (e && e.minutes)||0, z3:0, z4:0 };
+  }
+  // Contribution aux compteurs hebdo. La Z3 compte dans le VOLUME aérobie (compteur Z2) : c'est
+  // du temps de selle, pas de l'intensité au sens polarisé 80/20. Mais elle est aussi suivie à
+  // part, parce que trop de Z3 est l'erreur classique — assez dur pour fatiguer, pas assez pour
+  // développer. Le compteur z3 est donc un signal de dérive, pas un objectif à remplir.
+  function entryWeeklyContribution(e){
+    const z = entryZoneMinutes(e);
+    return { leger: z.z2 + z.z3, hiit: z.z4, z3: z.z3 };
+  }
+  function applyEntryToWeekly(e, sign){
+    const c = entryWeeklyContribution(e);
+    weeklyProgress.cardioLeger = Math.max(0, weeklyProgress.cardioLeger + sign*c.leger);
+    weeklyProgress.cardioHiit  = Math.max(0, weeklyProgress.cardioHiit  + sign*c.hiit);
+    weeklyProgress.cardioZ3    = Math.max(0, (weeklyProgress.cardioZ3||0) + sign*c.z3);
+  }
+  function mixteTotalMin(){ return (mixteZones.z2||0) + (mixteZones.z3||0) + (mixteZones.z4||0); }
+  function adjustMixteZone(zone, delta){
+    mixteZones[zone] = Math.max(0, (mixteZones[zone]||0) + delta);
+    refreshPreview();
+  }
+  function setMixteZone(zone, v){
+    const n = parseInt(v, 10);
+    mixteZones[zone] = (!isNaN(n) && n >= 0) ? n : 0;
+    const totalEl = document.getElementById('mixte-total');
+    if(totalEl) totalEl.textContent = mixteTotalMin()+' min au total';
+  }
+
   function generateCardio(){
-    if(!cardioAutoMode && selectedSport === 'circuit_hiit'){ generateHiitCircuit(); return; }
-    const sport = cardioAutoMode ? 'route_velo' : selectedSport;
-    const intensity = cardioAutoMode ? 'faible' : selectedIntensity;
+    if(selectedSport === 'circuit_hiit'){ generateHiitCircuit(); return; }
+    const sport = selectedSport;
+    const intensity = selectedIntensity;
     const proto = cardioProtocols[sport];
-    const conf = proto[intensity];
     const warmupSec = 300;
     let queue = [];
     let html = '';
     let estimatedMin = selectedTime;
 
+    // Sortie mixte : pas de protocole guidé à proposer — c'est un relevé de sortie réelle. On
+    // affiche directement la répartition par zone, avec une seule durée/distance/D+ pour
+    // l'ensemble (comme le renvoie une montre), et le ratio polarisé qui en découle.
+    if(intensity==='mixte'){
+      const total = mixteTotalMin();
+      const hardPct = total>0 ? Math.round(100*mixteZones.z4/total) : 0;
+      const greyPct = total>0 ? Math.round(100*mixteZones.z3/total) : 0;
+      html = '<div class="result-card"><div class="result-total"><div><div class="l">Durée totale</div>'+
+        '<div class="n" id="mixte-total">'+total+' min au total</div></div>'+
+        '<div class="l" style="text-align:right;">'+proto.label+'</div></div>';
+      ['z2','z3','z4'].forEach(z=>{
+        html += '<div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-top:1px solid var(--line);">'+
+          '<div style="flex:1; font-size:13px;">'+ZONE_LABELS[z]+'</div>'+
+          '<button class="stepper-btn" onclick="adjustMixteZone(\''+z+'\',-5)">−5</button>'+
+          '<input type="number" id="mixte-input-'+z+'" value="'+(mixteZones[z]||0)+'" min="0" inputmode="numeric" oninput="setMixteZone(\''+z+'\',this.value)" style="width:56px; text-align:center; padding:6px 4px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-family:var(--font-data);">'+
+          '<button class="stepper-btn" onclick="adjustMixteZone(\''+z+'\',5)">+5</button></div>';
+      });
+      html += '<div style="font-size:11.5px; color:var(--text-faint); padding-top:10px; line-height:1.6;">'+
+        hardPct+'% du temps en Z4+ · '+greyPct+'% en Z3. La Z3 compte dans ton volume d\'endurance mais est suivie à part : c\'est la zone grise, assez dure pour fatiguer sans apporter le bénéfice de la Z4.</div>';
+      html += '</div>';
+      html += '<div style="display:flex; gap:10px; margin-top:12px;">'+
+        '<div style="flex:1;"><div class="field-label" style="margin-top:0;">Distance (facultatif)</div>'+
+        '<input type="number" id="cardio-log-distance" inputmode="decimal" step="0.1" min="0" placeholder="km" oninput="setCardioLogDistance(this.value)" style="width:100%; padding:9px 10px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px;"></div>'+
+        '<div style="flex:1;"><div class="field-label" style="margin-top:0;">D+ (facultatif)</div>'+
+        '<input type="number" id="cardio-log-elevation" inputmode="numeric" min="0" placeholder="m" oninput="setCardioLogElevation(this.value)" style="width:100%; padding:9px 10px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px;"></div>'+
+        '</div>'+
+        '<button class="gen-btn primary" style="background:var(--coral); color:#2a1210; margin-top:12px;" onclick="logCardioTime()">✓ Logger cette sortie</button>';
+      lastGeneratedQueue = null;
+      document.getElementById('result-zone').innerHTML = html;
+      cardioLogValue = total;
+      cardioLogIntensity = 'mixte';
+      cardioLogDistance = null; cardioLogElevation = null;
+      return;
+    }
+
+    const conf = proto[intensity];
     if(intensity==='faible'){
       const durSec = selectedTime*60 - warmupSec;
       queue = [{type:'steady', pattern:proto.label, name:proto.label+' — '+conf.label, durSeconds:Math.max(durSec,300), instr:conf.desc}];
@@ -2880,14 +3144,15 @@
   }
   function logCardioTime(){
     // Enregistre directement le temps fait, sans passer par la séance guidée.
-    if(cardioLogIntensity === 'intense') weeklyProgress.cardioHiit += cardioLogValue;
-    else weeklyProgress.cardioLeger += cardioLogValue;
-    // Journal détaillé par sport — selectedSport reflète déjà le sport choisi dans les chips (ou
-    // 'route_velo' par défaut en mode auto), donc rien à redemander à l'utilisateur ici.
-    const sportKey = cardioAutoMode ? 'route_velo' : selectedSport;
-    const entry = { date: todayISO(), sport: sportKey, intensity: cardioLogIntensity, minutes: cardioLogValue };
+    const entry = { date: todayISO(), sport: selectedSport, intensity: cardioLogIntensity, minutes: cardioLogValue };
+    if(cardioLogIntensity === 'mixte'){
+      entry.zones = { z2: mixteZones.z2||0, z3: mixteZones.z3||0, z4: mixteZones.z4||0 };
+      entry.minutes = mixteTotalMin();
+      if(entry.minutes <= 0) return; // rien à logger
+    }
     if(cardioLogDistance != null) entry.distanceKm = cardioLogDistance;
     if(cardioLogElevation != null) entry.elevationM = cardioLogElevation;
+    applyEntryToWeekly(entry, +1);
     cardioLog.push(entry);
     cardioLogDistance = null; cardioLogElevation = null;
     renderGroupOverview();
@@ -2897,7 +3162,7 @@
     document.getElementById('result-zone').innerHTML =
       '<div class="result-card" style="text-align:center; padding:24px 16px;">'+
       '<div style="font-size:32px; margin-bottom:8px;">✓</div>'+
-      '<div style="font-weight:700; margin-bottom:4px;">'+cardioLogValue+' min loggées'+(entry.distanceKm?' — '+entry.distanceKm+' km':'')+(entry.elevationM?' — '+entry.elevationM+' m D+':'')+'</div>'+
+      '<div style="font-weight:700; margin-bottom:4px;">'+entry.minutes+' min loggées'+(entry.distanceKm?' — '+entry.distanceKm+' km':'')+(entry.elevationM?' — '+entry.elevationM+' m D+':'')+'</div>'+
       '<div style="font-size:12px; color:var(--text-dim);">Ajouté à ton suivi cardio de la semaine</div>'+
       '<button class="gen-btn" style="margin-top:16px;" onclick="showSection(\'dashboard\',\'dashboard\')">Retour au dashboard</button>'+
       '</div>';
@@ -3195,14 +3460,18 @@
   // le principe de base aérobie avant intensité en début de bloc. Paliers resserrés en fin de
   // progression (montée plus franche au début, plus fine en approchant du plein volume) — étendu
   // sur 7 semaines (vs 4 initialement) suite à une cible cardio nettement plus élevée (500min/sem).
+  // RENFO UNIQUEMENT. Le volet cardio a été retiré : il réduisait les cibles hebdo alors que le
+  // volume réellement roulé était déjà au niveau plein, ce qui n'freinait rien et affichait juste
+  // du rouge en permanence. La progressivité cardio relève d'une périodisation à l'année, pas
+  // d'une rampe de reprise de 7 semaines.
   const RAMP_STEPS = [
-    { renfoFactor: 0.60, cardioFactor: 0.55, z2Share: 0.95 }, // semaine 1 du ramp
-    { renfoFactor: 0.70, cardioFactor: 0.65, z2Share: 0.92 }, // semaine 2
-    { renfoFactor: 0.78, cardioFactor: 0.75, z2Share: 0.89 }, // semaine 3
-    { renfoFactor: 0.85, cardioFactor: 0.82, z2Share: 0.86 }, // semaine 4
-    { renfoFactor: 0.91, cardioFactor: 0.89, z2Share: 0.83 }, // semaine 5
-    { renfoFactor: 0.96, cardioFactor: 0.95, z2Share: 0.81 }, // semaine 6
-    { renfoFactor: 1.00, cardioFactor: 1.00, z2Share: 0.80 }  // semaine 7 — retour aux vraies cibles
+    { renfoFactor: 0.60 }, // semaine 1 du ramp
+    { renfoFactor: 0.70 }, // semaine 2
+    { renfoFactor: 0.78 }, // semaine 3
+    { renfoFactor: 0.85 }, // semaine 4
+    { renfoFactor: 0.91 }, // semaine 5
+    { renfoFactor: 0.96 }, // semaine 6
+    { renfoFactor: 1.00 }  // semaine 7 — retour aux vraies cibles
   ];
   // Zones FC — juste un aide-mémoire basé sur FCmax (%FCmax standard), pour ne plus avoir à s'en
   // souvenir. Ne pilote aucun calcul ailleurs dans l'appli, purement informatif/consultable.
@@ -3248,11 +3517,6 @@
         if(musclesFlat[m]) musclesFlat[m].target = scaled;
       });
     });
-    const totalCardioFull = rampUpFullTargets.cardioLeger + rampUpFullTargets.cardioHiit;
-    const totalCardioScaled = Math.round(totalCardioFull * step.cardioFactor);
-    volState.cardioLeger = Math.round(totalCardioScaled * step.z2Share);
-    volState.cardioHiit = totalCardioScaled - volState.cardioLeger;
-    volState.etirements = rampUpFullTargets.etirements;
     // Rafraîchit ICI (pas seulement chez l'appelant) — "temps restant / % fait" du Dashboard
     // utilise ces mêmes cibles ; l'oublier laissait un calcul périmé (cibles d'avant le ramp)
     // jusqu'au prochain rechargement complet de page.
@@ -3260,7 +3524,7 @@
   }
   function activateRampUp(){
     if(rampUpActive) return;
-    rampUpFullTargets = { muscles:{}, cardioLeger: volState.cardioLeger, cardioHiit: volState.cardioHiit, etirements: volState.etirements };
+    rampUpFullTargets = { muscles:{} };
     ['jambes','haut','tronc'].forEach(g=>{
       Object.keys(musclesData[g]).forEach(m=>{ rampUpFullTargets.muscles[m] = musclesData[g][m].target; });
     });
@@ -3278,9 +3542,6 @@
           if(musclesFlat[m]) musclesFlat[m].target = rampUpFullTargets.muscles[m];
         });
       });
-      volState.cardioLeger = rampUpFullTargets.cardioLeger;
-      volState.cardioHiit = rampUpFullTargets.cardioHiit;
-      volState.etirements = rampUpFullTargets.etirements;
     }
     rampUpActive = false;
     rampUpStartWeek = null;
@@ -3306,7 +3567,7 @@
   // Progression réelle de la semaine — était absent avant (cardioLegerDone/etirDone étaient des
   // chiffres d'exemple codés en dur dans renderGroupOverview, jamais mis à jour). Maintenant du vrai
   // état, crédité à la fin de chaque séance cardio/étirement (temps réellement passé, pas l'estimation).
-  const weeklyProgress = { cardioLeger:0, cardioHiit:0, etirement:0 };
+  const weeklyProgress = { cardioLeger:0, cardioHiit:0, cardioZ3:0, etirement:0 };
   // Historique des totaux par catégorie, un instantané par semaine terminée — alimente le
   // graphique d'évolution. weekNumForLabel permet d'étiqueter chaque point sans dépendre de la
   // position dans le tableau (utile si des semaines sont un jour sautées/rejouées).
@@ -3329,6 +3590,7 @@
       weekNum: weekNumForLabel != null ? weekNumForLabel : lastKnownWeek,
       jambes: Math.round(jambes*10)/10, haut: Math.round(haut*10)/10, tronc: Math.round(tronc*10)/10,
       cardioLeger: Math.round(weeklyProgress.cardioLeger), cardioHiit: Math.round(weeklyProgress.cardioHiit),
+      cardioZ3: Math.round(weeklyProgress.cardioZ3||0),
       etirement: Math.round(weeklyProgress.etirement)
     };
   }
@@ -3340,8 +3602,313 @@
   // sert de référence pour voir si le rythme actuel accélère, stagne ou ralentit par rapport à
   // l'habitude récente. Plus utile qu'un chevauchement "cette semaine vs 7 derniers jours", qui se
   // recoupe presque toujours tôt dans la semaine et n'apporte pas de vrai signal différent.
-  function compute4WeekAverage(){
-    const recent = weeklyTotalsHistory.slice(-4);
+  // Nombre de semaines terminées servant de référence au « vs moy. ». 0 = toutes les semaines
+  // connues. 4 par défaut : assez court pour suivre une vraie tendance, assez long pour ne pas
+  // être dominé par une semaine atypique (vacances, maladie, gros week-end).
+  let comparisonWeeks = 4;
+  function setComparisonWeeks(n){
+    comparisonWeeks = n;
+    renderComparisonWeeksSettings();
+    renderDashMuscleChart();
+    if(typeof saveState==='function') saveState();
+  }
+  function renderComparisonWeeksSettings(){
+    const wrap = document.getElementById('comparison-weeks-content');
+    if(!wrap) return;
+    const opts = [[2,'2 dernières'],[4,'4 dernières'],[0,'Toutes']];
+    let html = '<div style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; line-height:1.5;">Sur combien de semaines terminées calculer la moyenne de référence affichée dans « Répartition par groupe ».</div><div class="chip-row">';
+    opts.forEach(([v,lab])=>{
+      html += '<div class="chip'+(comparisonWeeks===v?' sel':'')+'" onclick="setComparisonWeeks('+v+')">'+lab+'</div>';
+    });
+    html += '</div><div style="font-size:11px; color:var(--text-faint); margin-top:6px;">'+weeklyTotalsHistory.length+' semaine'+(weeklyTotalsHistory.length>1?'s':'')+' terminée'+(weeklyTotalsHistory.length>1?'s':'')+' en mémoire.</div>';
+    wrap.innerHTML = html;
+  }
+  // ===== Périodisation annuelle =====
+  // Un seul objectif cible. Les blocs sont calculés À REBOURS depuis la date de course : c'est la
+  // course qui fixe le calendrier, pas la date du jour. Chaque bloc ne porte qu'une intention de
+  // volume et une répartition par zone — volontairement pas de séances prescrites : l'appli
+  // suggère le cadre, tu remplis. Le volume est exprimé en % de ta cible pleine (volState), donc
+  // il suit automatiquement si tu révises tes objectifs.
+  let raceDate = '2027-08-28';   // 24 Heures du Mans
+  let raceLabel = '24 Heures du Mans';
+  // Du plus proche de la course au plus lointain — weeks = durée du bloc.
+  const PERIOD_BLOCKS = [
+    { key:'affutage',  label:'Affûtage',      weeks:3,  volume:0.60, split:{z2:70,z3:5,z4:17,z5:8},
+      intent:"Fraîcheur avant tout. Le volume chute, l'intensité reste pour garder le jus." },
+    { key:'specifique',label:'Spécifique',    weeks:6,  volume:0.90, split:{z2:75,z3:5,z4:14,z5:6},
+      intent:"Reproduire les contraintes de la course : relais longs à allure cible, enchaînements." },
+    { key:'developpement',label:'Développement', weeks:8, volume:1.00, split:{z2:80,z3:5,z4:12,z5:3},
+      intent:"Plateau de volume haut, le seuil devient le chantier principal." },
+    { key:'base',      label:'Base',          weeks:99, volume:0.95, split:{z2:90,z3:5,z4:5,z5:0},
+      intent:"Construire le moteur aérobie et l'endurance de position. Peu d'intensité, beaucoup de Z2." }
+  ];
+  const PERIOD_AFTER_RACE = { key:'transition', label:'Transition', volume:0.50, split:{z2:95,z3:5,z4:0,z5:0},
+    intent:"Récupération active après la course. Rouler pour le plaisir, sans structure." };
+
+  function weeksUntilRace(now){
+    const race = new Date(raceDate+'T12:00:00');
+    const today = new Date((now || todayISO())+'T12:00:00');
+    return Math.floor((race - today)/(7*MS_PER_DAY));
+  }
+  function currentPeriodBlock(){
+    const w = weeksUntilRace();
+    if(w < 0){
+      const since = -w;
+      if(since <= 4) return Object.assign({}, PERIOD_AFTER_RACE, { weeksLeft: 4-since, weeksToRace:w });
+      return Object.assign({}, PERIOD_BLOCKS[PERIOD_BLOCKS.length-1], { weeksLeft:null, weeksToRace:w });
+    }
+    // Les blocs sont bornés en « semaines avant la course » : affûtage [0,3), spécifique [3,9),
+    // développement [9,17), base [17,∞). On est dans un bloc tant que w est au-dessus de sa borne
+    // basse ; il reste donc w - borneBasse + 1 semaines avant de passer au suivant.
+    let cursor = 0;
+    for(const b of PERIOD_BLOCKS){
+      const lower = cursor;
+      cursor += b.weeks;
+      if(w < cursor) return Object.assign({}, b, { weeksLeft: w - lower + 1, weeksToRace:w });
+    }
+    return Object.assign({}, PERIOD_BLOCKS[PERIOD_BLOCKS.length-1], { weeksLeft:null, weeksToRace:w });
+  }
+  function nextPeriodBlock(){
+    const w = weeksUntilRace();
+    if(w < 0) return null;
+    let cursor = 0, prev = null;
+    for(const b of PERIOD_BLOCKS){
+      cursor += b.weeks;
+      if(w < cursor) return prev; // le bloc suivant est celui d'AVANT dans la liste (on remonte vers la course)
+      prev = b;
+    }
+    return null;
+  }
+  // Répartition réelle de la semaine en cours, pour la comparer à celle suggérée par le bloc.
+  function currentWeekZoneSplit(){
+    const info = computeWeekInfo();
+    let z2=0, z3=0, z4=0;
+    cardioLog.forEach(e=>{
+      const d = new Date(e.date+'T12:00:00');
+      if(d < info.weekStart || d > new Date(info.weekEnd.getTime()+MS_PER_DAY-1)) return;
+      const z = entryZoneMinutes(e);
+      z2 += z.z2; z3 += z.z3; z4 += z.z4;
+    });
+    const total = z2+z3+z4;
+    if(total <= 0) return null;
+    return { total, z2: Math.round(100*z2/total), z3: Math.round(100*z3/total), z4: Math.round(100*z4/total) };
+  }
+
+  // ===== Semaines de décharge =====
+  // Cadence 3:1 ou 4:1 selon la littérature sur la surcharge progressive. Volontairement PAS
+  // appliqué d'office : la semaine est proposée, tu la déclenches. L'expérience de la rampe a
+  // montré qu'une réduction automatique des cibles, quand le volume réel ne suit pas la même
+  // logique, ne produit que de l'affichage rouge sans rien freiner.
+  let deloadEnabled = true;
+  let deloadEveryNWeeks = 4;
+  let deloadHistory = [];       // [{ weekNum, date }] — semaines effectivement passées en décharge
+  const DELOAD_VOLUME_FACTOR = 0.60;
+  let deloadFullTargets = null; // cibles pleines mises de côté pendant une décharge active
+
+  function isDeloadWeek(weekNum){ return deloadHistory.some(d => d.weekNum === weekNum); }
+  function lastDeload(){ return deloadHistory.length ? deloadHistory[deloadHistory.length-1] : null; }
+  function weeksSinceLastDeload(){
+    const last = lastDeload();
+    const info = computeWeekInfo();
+    if(!last) return info.weekNum - 1; // jamais de décharge : on compte depuis le début du programme
+    return info.weekNum - last.weekNum;
+  }
+  function deloadIsDue(){
+    if(!deloadEnabled) return false;
+    const info = computeWeekInfo();
+    if(isDeloadWeek(info.weekNum)) return false;
+    return weeksSinceLastDeload() >= deloadEveryNWeeks;
+  }
+  function startDeloadWeek(){
+    const info = computeWeekInfo();
+    if(isDeloadWeek(info.weekNum)) return;
+    deloadFullTargets = {
+      muscles:{}, cardioLeger: volState.cardioLeger, cardioHiit: volState.cardioHiit, etirements: volState.etirements
+    };
+    ['jambes','haut','tronc'].forEach(g=>{
+      Object.keys(musclesData[g]).forEach(m=>{
+        deloadFullTargets.muscles[m] = musclesData[g][m].target;
+        const scaled = Math.max(1, Math.round(musclesData[g][m].target * DELOAD_VOLUME_FACTOR));
+        musclesData[g][m].target = scaled;
+        if(musclesFlat[m]) musclesFlat[m].target = scaled;
+      });
+    });
+    volState.cardioLeger = Math.round(volState.cardioLeger * DELOAD_VOLUME_FACTOR);
+    volState.cardioHiit = Math.round(volState.cardioHiit * DELOAD_VOLUME_FACTOR);
+    deloadHistory.push({ weekNum: info.weekNum, date: todayISO() });
+    refreshAllDeloadViews();
+  }
+  function endDeloadWeek(){
+    const info = computeWeekInfo();
+    if(deloadFullTargets){
+      ['jambes','haut','tronc'].forEach(g=>{
+        Object.keys(musclesData[g]).forEach(m=>{
+          const full = deloadFullTargets.muscles[m];
+          if(full == null) return;
+          musclesData[g][m].target = full;
+          if(musclesFlat[m]) musclesFlat[m].target = full;
+        });
+      });
+      volState.cardioLeger = deloadFullTargets.cardioLeger;
+      volState.cardioHiit = deloadFullTargets.cardioHiit;
+      volState.etirements = deloadFullTargets.etirements;
+      deloadFullTargets = null;
+    }
+    deloadHistory = deloadHistory.filter(d => d.weekNum !== info.weekNum);
+    refreshAllDeloadViews();
+  }
+  function setDeloadEnabled(v){ deloadEnabled = v; refreshAllDeloadViews(); }
+  function setDeloadCadence(n){ deloadEveryNWeeks = n; refreshAllDeloadViews(); }
+  function refreshAllDeloadViews(){
+    if(typeof renderDeloadSettings==='function') renderDeloadSettings();
+    if(typeof renderDeloadBadge==='function') renderDeloadBadge();
+    if(typeof renderGroupOverview==='function') renderGroupOverview();
+    if(typeof renderRemainingTime==='function') renderRemainingTime();
+    if(typeof renderVolumeSettings==='function') renderVolumeSettings();
+    if(typeof renderPeriodisation==='function') renderPeriodisation();
+    if(typeof saveState==='function') saveState();
+  }
+
+  // ===== Rendus périodisation / décharge =====
+  function fmtDateShort(iso){
+    const mois = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const d = new Date(iso+'T12:00:00');
+    return d.getDate()+' '+mois[d.getMonth()]+' '+d.getFullYear();
+  }
+  function renderPeriodisation(){
+    const wrap = document.getElementById('periodisation-dash');
+    if(!wrap) return;
+    const b = currentPeriodBlock();
+    const nxt = nextPeriodBlock();
+    const w = b.weeksToRace;
+    const actual = currentWeekZoneSplit();
+    const volMin = Math.round((volState.cardioLeger + volState.cardioHiit) * b.volume);
+    let html = '<div class="chart-card">'+
+      '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">'+
+      '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint);">Bloc en cours</div>'+
+      '<div style="font-size:11px; color:var(--text-faint); font-family:var(--font-data);">'+(w>=0 ? w+' sem. avant '+raceLabel : 'course passée')+'</div></div>'+
+      '<div style="font-weight:700; font-size:15px;">'+b.label+(b.weeksLeft!=null ? ' <span style="font-weight:400; color:var(--text-dim); font-size:12.5px;">— '+b.weeksLeft+' semaine'+(b.weeksLeft>1?'s':'')+' restante'+(b.weeksLeft>1?'s':'')+'</span>' : '')+'</div>'+
+      '<div style="font-size:12px; color:var(--text-dim); margin-top:4px; line-height:1.55;">'+b.intent+'</div>';
+    html += '<div style="font-size:12px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">'+
+      '<span style="color:var(--text-dim);">Volume suggéré</span> <span style="font-family:var(--font-data);">~'+volMin+'min/sem.</span> '+
+      '<span style="color:var(--text-faint);">('+Math.round(b.volume*100)+'% de ta cible pleine)</span></div>';
+    const zoneRow = (label, target, real) => {
+      const bar = Math.min(100, target);
+      let cmp = '';
+      if(real != null){
+        const diff = real - target;
+        const col = Math.abs(diff) <= 5 ? 'var(--text-faint)' : (diff > 0 ? 'var(--amber)' : 'var(--text-faint)');
+        cmp = '<span style="color:'+col+'; font-family:var(--font-data);"> · réel '+real+'%</span>';
+      }
+      return '<div style="display:flex; align-items:center; gap:8px; font-size:12px; margin-top:5px;">'+
+        '<div style="width:34px; color:var(--text-dim);">'+label+'</div>'+
+        '<div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:'+bar+'%; background:var(--petrol);"></div></div>'+
+        '<div style="width:86px; text-align:right; font-family:var(--font-data); font-size:11.5px;">'+target+'%'+cmp+'</div></div>';
+    };
+    html += '<div style="margin-top:10px;">'+
+      '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:2px;">Répartition suggérée</div>'+
+      zoneRow('Z2', b.split.z2, actual?actual.z2:null)+
+      zoneRow('Z3', b.split.z3, actual?actual.z3:null)+
+      zoneRow('Z4+', b.split.z4 + b.split.z5, actual?actual.z4:null)+
+      '</div>';
+    if(!actual){
+      html += '<div style="font-size:11px; color:var(--text-faint); margin-top:8px;">Aucun cardio loggé cette semaine — le « réel » apparaîtra dès la première sortie.</div>';
+    }
+    if(nxt){
+      html += '<div style="font-size:11px; color:var(--text-faint); margin-top:10px; padding-top:8px; border-top:1px solid var(--line);">Ensuite : '+nxt.label+' ('+nxt.weeks+' semaines, Z2 '+nxt.split.z2+'%).</div>';
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+  function renderPeriodisationSettings(){
+    const wrap = document.getElementById('periodisation-settings');
+    if(!wrap) return;
+    const b = currentPeriodBlock();
+    const w = weeksUntilRace();
+    let html = '<div style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; line-height:1.5;">Objectif unique. Les blocs se recalculent à rebours depuis cette date — décale-la et tout suit.</div>';
+    html += '<div class="field-label" style="margin-top:0;">Date de la course</div>'+
+      '<input type="date" value="'+raceDate+'" onchange="setRaceDate(this.value)" style="width:100%; padding:9px 10px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px;">';
+    html += '<div class="field-label">Nom</div>'+
+      '<input type="text" value="'+raceLabel.replace(/"/g,'&quot;')+'" oninput="setRaceLabel(this.value)" style="width:100%; padding:9px 10px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px;">';
+    html += '<div class="card" style="margin-top:12px;">';
+    let cursor = 0;
+    PERIOD_BLOCKS.slice().reverse().forEach((blk,i)=>{
+      const isCurrent = blk.key === b.key;
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:9px 0;'+(i<PERIOD_BLOCKS.length-1?' border-bottom:1px solid var(--line);':'')+' font-size:12.5px;'+(isCurrent?' color:var(--petrol); font-weight:600;':'')+'">'+
+        '<span>'+(isCurrent?'▸ ':'')+blk.label+'</span>'+
+        '<span style="font-family:var(--font-data); color:'+(isCurrent?'var(--petrol)':'var(--text-dim)')+';">'+(blk.weeks>50?'—':blk.weeks+' sem.')+' · '+Math.round(blk.volume*100)+'% · Z2 '+blk.split.z2+'%</span></div>';
+    });
+    html += '</div>';
+    html += '<div style="font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.5;">'+(w>=0? w+' semaines avant la course.' : 'Course passée depuis '+(-w)+' semaines.')+' Les blocs sont indicatifs : ils ne modifient pas tes cibles, ils te disent où tu en es dans l\'année.</div>';
+    wrap.innerHTML = html;
+  }
+  function setRaceDate(v){
+    if(!v) return;
+    raceDate = v;
+    renderPeriodisationSettings(); renderPeriodisation();
+    if(typeof saveState==='function') saveState();
+  }
+  function setRaceLabel(v){
+    raceLabel = v || 'Objectif';
+    renderPeriodisation();
+    if(typeof saveState==='function') saveState();
+  }
+  function renderDeloadSettings(){
+    const wrap = document.getElementById('deload-settings');
+    if(!wrap) return;
+    const last = lastDeload();
+    const since = weeksSinceLastDeload();
+    const info = computeWeekInfo();
+    const inDeload = isDeloadWeek(info.weekNum);
+    let html = '<div style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px; line-height:1.5;">Une semaine allégée à '+Math.round(DELOAD_VOLUME_FACTOR*100)+'% des cibles, à intervalle régulier. Jamais déclenchée automatiquement : l\'appli te la propose, tu décides.</div>';
+    html += '<div class="chip-row" style="margin-bottom:10px;">'+
+      '<div class="chip'+(deloadEnabled?' sel':'')+'" onclick="setDeloadEnabled(true)">Activé</div>'+
+      '<div class="chip'+(!deloadEnabled?' sel':'')+'" onclick="setDeloadEnabled(false)">Désactivé</div></div>';
+    if(deloadEnabled){
+      html += '<div class="field-label" style="margin-top:0;">Cadence</div><div class="chip-row">';
+      [3,4,5,6].forEach(n=>{
+        html += '<div class="chip'+(deloadEveryNWeeks===n?' sel':'')+'" onclick="setDeloadCadence('+n+')">'+n+' sem.</div>';
+      });
+      html += '</div>';
+      html += '<div class="card" style="margin-top:12px;">'+
+        '<div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;">'+
+        '<span style="color:var(--text-dim);">Dernière décharge</span>'+
+        '<span style="font-family:var(--font-data);">'+(last ? fmtDateShort(last.date)+' (S'+last.weekNum+')' : 'jamais')+'</span></div>'+
+        '<div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0;">'+
+        '<span style="color:var(--text-dim);">Depuis</span>'+
+        '<span style="font-family:var(--font-data); color:'+(since>=deloadEveryNWeeks?'var(--amber)':'var(--text)')+';">'+since+' semaine'+(since>1?'s':'')+'</span></div></div>';
+      if(inDeload){
+        html += '<button class="sec-btn" style="width:100%; margin-top:10px;" onclick="endDeloadWeek()">↺ Annuler la décharge de cette semaine</button>';
+      } else {
+        html += '<button class="gen-btn primary" style="width:100%; background:var(--petrol); margin-top:10px;" onclick="startDeloadWeek()">🪫 Passer cette semaine en décharge</button>';
+      }
+    }
+    wrap.innerHTML = html;
+  }
+  function renderDeloadBadge(){
+    const wrap = document.getElementById('deload-dash-badge');
+    if(!wrap) return;
+    const info = computeWeekInfo();
+    if(isDeloadWeek(info.weekNum)){
+      wrap.innerHTML = '<div class="chart-card" style="border:1px solid var(--petrol); display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; margin-top:12px;">'+
+        '<span>🪫 Semaine de décharge — cibles à '+Math.round(DELOAD_VOLUME_FACTOR*100)+'%</span>'+
+        '<button class="sec-btn" style="padding:4px 10px; font-size:11px;" onclick="endDeloadWeek()">Annuler</button></div>';
+      return;
+    }
+    if(!deloadIsDue()){ wrap.innerHTML = ''; return; }
+    const since = weeksSinceLastDeload();
+    wrap.innerHTML = '<div class="chart-card" style="border:1px solid var(--amber); display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; margin-top:12px;">'+
+      '<span>🪫 Décharge recommandée — '+since+' semaines sans</span>'+
+      '<button class="sec-btn" style="padding:4px 10px; font-size:11px; flex-shrink:0;" onclick="startDeloadWeek()">Activer</button></div>';
+  }
+
+  function computeReferenceAverage(){
+    // Les semaines de décharge sont exclues : les compter tirerait la moyenne vers le bas et
+    // ferait passer une semaine normale pour une grosse semaine. On compare à l'habitude de
+    // travail, pas à l'habitude tous régimes confondus.
+    const normalWeeks = weeklyTotalsHistory.filter(w => !w.deload);
+    const pool = normalWeeks.length ? normalWeeks : weeklyTotalsHistory;
+    const recent = comparisonWeeks > 0 ? pool.slice(-comparisonWeeks) : pool.slice();
     if(recent.length === 0) return null;
     const avg = { jambes:0, haut:0, tronc:0, cardioLeger:0, cardioHiit:0, etirement:0 };
     recent.forEach(w=>{
@@ -3382,7 +3949,7 @@
     renderHistoRenfoChart(); renderHistoCardioChart();
   }
   let histoCardioViewBy = 'sport'; // 'sport' | 'type' — Par sport en défaut, c'est la donnée la plus utile au quotidien
-  let histoSelectedSports = new Set(['route_velo', 'velib_vae', 'course']);
+  let histoSelectedSports = new Set(['route_velo', 'course']);
   let histoSportsMetric = 'minutes'; // 'minutes' | 'distanceKm' | 'elevationM' — appliqué à tous les sports cochés
   function selectHistoCardioViewBy(el){
     histoCardioViewBy = el.dataset.viewby;
@@ -3659,7 +4226,7 @@
   // Rattrapage cardio rapide — pour reporter en une fois ce qu'il a déjà ailleurs (autre appli),
   // plutôt que de repasser par le flux séance-par-séance. Une ligne par sport, crée une entrée
   // cardioLog par sport rempli. Outil volontairement simple/temporaire.
-  const QUICK_FILL_SPORTS = ['route_velo', 'velib_vae', 'course'];
+  const QUICK_FILL_SPORTS = ['route_velo', 'course'];
   let quickFillState = {};
   function initQuickFillState(){
     QUICK_FILL_SPORTS.forEach(s=>{
@@ -3688,8 +4255,7 @@
       if(!isNaN(dist) && dist > 0) entry.distanceKm = Math.round(dist*10)/10;
       if(!isNaN(elev) && elev > 0) entry.elevationM = elev;
       cardioLog.push(entry);
-      if(entry.intensity === 'intense') weeklyProgress.cardioHiit += minutes;
-      else weeklyProgress.cardioLeger += minutes;
+      applyEntryToWeekly(entry, +1);
       count++;
     });
     quickFillState = {}; // repart propre pour la prochaine fois
@@ -3723,25 +4289,6 @@
     wrap.innerHTML = html;
   }
 
-  // Fraîcheur perçue — 1 tap, 1-5, jamais bloquant. Comparé à la moyenne des 14 derniers jours
-  // (traffic-light simple), pas à une norme absolue — cohérent avec la littérature sur les mesures
-  // à item unique pour le suivi de bien-être athlète.
-  function computeReadinessAverage(days){
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    const cutoffStr = cutoff.toISOString().slice(0,10);
-    const recent = readinessLog.filter(e=>e.date >= cutoffStr);
-    if(recent.length === 0) return null;
-    return recent.reduce((s,e)=>s+e.value,0) / recent.length;
-  }
-  function logReadiness(value){
-    const today = todayISO();
-    const existing = readinessLog.find(e=>e.date===today);
-    if(existing) existing.value = value;
-    else readinessLog.push({ date: today, value });
-    renderReadinessWidget();
-    if(typeof saveState==='function') saveState();
-  }
   function renderRampUpDashBadge(){
     const wrap = document.getElementById('rampup-dash-badge');
     if(!wrap) return;
@@ -3764,38 +4311,12 @@
       const step = RAMP_STEPS[Math.min(stepIdx, RAMP_STEPS.length-1)];
       html += '<div class="card" style="margin-bottom:12px;">'+
         '<div style="font-size:13px; font-weight:600; margin-bottom:4px;">🐢 En cours — palier '+(stepIdx+1)+'/'+RAMP_STEPS.length+'</div>'+
-        '<div style="font-size:12px; color:var(--text-dim);">Renfo à '+Math.round(step.renfoFactor*100)+'% · Cardio à '+Math.round(step.cardioFactor*100)+'% (Z2 '+Math.round(step.z2Share*100)+'%/Intense '+Math.round((1-step.z2Share)*100)+'%)</div></div>'+
+        '<div style="font-size:12px; color:var(--text-dim);">Objectifs renfo à '+Math.round(step.renfoFactor*100)+'% · le cardio n\'est pas concerné</div></div>'+
         '<button class="sec-btn" style="width:100%;" onclick="if(confirm(\'Revenir directement à 100% des objectifs ?\')) deactivateRampUp(); renderRampUpSettings(); renderGroupOverview(); renderDashMuscleChart(); renderSeancesList();">Arrêter et revenir à 100%</button>';
     } else {
-      html += '<div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">Réduit temporairement tes objectifs (renfo + cardio) sur 4 semaines avec remontée automatique — utile après une base de conditionnement basse, pour limiter le risque de blessure/courbatures excessives. Étirements non concernés.</div>'+
+      html += '<div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">Réduit temporairement tes objectifs de RENFO sur 7 paliers hebdomadaires, avec remontée automatique jusqu\'à 100%. Le cardio n\'est pas concerné : sa progressivité relève de la périodisation annuelle, pas d\'une rampe de reprise.</div>'+
         '<button class="gen-btn primary" style="width:100%; background:var(--petrol);" onclick="activateRampUp(); renderRampUpSettings(); renderGroupOverview(); renderDashMuscleChart(); renderSeancesList();">🐢 Activer une reprise progressive</button>';
     }
-    wrap.innerHTML = html;
-  }
-
-  function renderReadinessWidget(){
-    const wrap = document.getElementById('readiness-widget');
-    if(!wrap) return;
-    const today = todayISO();
-    const todayEntry = readinessLog.find(e=>e.date===today);
-    const avg = computeReadinessAverage(14);
-    let html = '<div class="chart-card">'+
-      '<div style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Comment tu te sens aujourd\'hui ?</div>'+
-      '<div style="display:flex; gap:6px; justify-content:space-between;">';
-    [1,2,3,4,5].forEach(v=>{
-      const isSel = todayEntry && todayEntry.value===v;
-      html += '<button class="stepper-btn" style="flex:1; padding:10px 0; font-size:14px;'+(isSel?' background:var(--petrol); color:#fff; border-color:var(--petrol);':'')+'" onclick="logReadiness('+v+')">'+v+'</button>';
-    });
-    html += '</div><div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); margin-top:3px;"><span>Fatigué</span><span>En forme</span></div>';
-    if(todayEntry && avg != null){
-      const diff = todayEntry.value - avg;
-      let indicator, color;
-      if(diff >= 0.5){ indicator = '🟢 Plutôt frais aujourd\'hui'; color = 'var(--green)'; }
-      else if(diff <= -0.5){ indicator = '🔴 Plutôt fatigué — vas-y doucement si besoin'; color = 'var(--coral)'; }
-      else { indicator = '🟡 Dans ta moyenne habituelle'; color = 'var(--amber)'; }
-      html += '<div style="font-size:11.5px; margin-top:8px; color:'+color+';">'+indicator+' <span style="color:var(--text-faint);">(moyenne 14j : '+(Math.round(avg*10)/10)+')</span></div>';
-    }
-    html += '</div>';
     wrap.innerHTML = html;
   }
 
@@ -3849,7 +4370,7 @@
     // équipement jambes, Extérieur est plutôt tractions/haut du corps (cf. profils de lieu).
     const todayPlan = dayPlans[todayISO()];
     let locationBias = null;
-    if(todayPlan && todayPlan.location === 'salle') locationBias = 'jambes';
+    if(todayPlan && todayPlan.location === 'salle') locationBias = 'bas'; // 'jambes' n'est pas une clé de CATEGORY_MUSCLES — le biais Salle ne s'appliquait donc jamais
     else if(todayPlan && todayPlan.location === 'exterieur') locationBias = 'haut';
     const savedCategory = autoCategory;
     if(avoidLegsToday) autoCategory = 'haut';
@@ -3954,7 +4475,7 @@
     const wrap = document.getElementById('dash-muscle-chart');
     if(!wrap) return;
     const totals = computeCurrentWeekTotals();
-    const avg = compute4WeekAverage();
+    const avg = computeReferenceAverage();
     const max = Math.max(1, totals.jambes, totals.haut, totals.tronc, avg ? Math.max(avg.jambes,avg.haut,avg.tronc) : 0);
     const rows = [
       { label:'Jambes', val:totals.jambes, avgVal: avg?avg.jambes:null, color:'var(--petrol)', max },
@@ -3967,42 +4488,58 @@
     rows.push({ label:'Cardio Z2', val:totals.cardioLeger, avgVal: avg?avg.cardioLeger:null, color:'var(--coral)', max:cardioMax, unit:'min' });
     rows.push({ label:'Cardio intense', val:totals.cardioHiit, avgVal: avg?avg.cardioHiit:null, color:'var(--coral)', max:cardioMax, unit:'min' });
     rows.push({ label:'Étirements', val:totals.etirement, avgVal: avg?avg.etirement:null, color:'var(--lav)', max:cardioMax, unit:'min' });
+    // La jauge est calibrée sur la MOYENNE de référence, pas sur la plus grosse valeur de la
+    // colonne. Avant, une ligne à « 0% vs moy. » pouvait apparaître quasi vide simplement parce
+    // qu'une autre ligne du même bloc était bien plus grosse (Cardio intense 35min à côté de
+    // Cardio Z2 320min) : la barre et le pourcentage racontaient deux histoires différentes.
+    // Maintenant l'échelle va de 0 à 2× la moyenne, avec un repère au milieu = la moyenne. Barre
+    // qui dépasse le repère = plus que d'habitude, en-deçà = moins. Les deux disent la même chose.
     let html = '<div class="chart-card">';
     rows.forEach((r,i)=>{
-      const pct = Math.round(100*r.val/r.max);
-      let deltaLabel = '';
-      if(r.avgVal != null && r.avgVal > 0){
-        const deltaPct = Math.round(100*(r.val-r.avgVal)/r.avgVal);
+      const hasRef = r.avgVal != null && r.avgVal > 0;
+      let pct, fillColor, deltaLabel = '';
+      if(hasRef){
+        const ratio = r.val / r.avgVal;
+        pct = Math.min(100, Math.round(50*ratio)); // 50% de la piste = la moyenne, plafond à 2×
+        const deltaPct = Math.round(100*(ratio-1));
         const sign = deltaPct > 0 ? '+' : '';
-        const deltaColor = deltaPct > 5 ? 'var(--green)' : (deltaPct < -5 ? 'var(--coral)' : 'var(--text-faint)');
-        deltaLabel = '<div style="font-size:10px; color:'+deltaColor+'; width:56px; text-align:right;">'+sign+deltaPct+'% vs moy.</div>';
+        fillColor = deltaPct > 5 ? 'var(--green)' : (deltaPct < -5 ? 'var(--coral)' : 'var(--amber)');
+        deltaLabel = '<div style="font-size:10px; color:'+fillColor+'; width:56px; text-align:right;">'+sign+deltaPct+'% vs moy.</div>';
+      } else {
+        // Pas encore de référence : on retombe sur l'échelle relative au plus gros de la colonne,
+        // uniquement pour donner une idée des proportions.
+        pct = Math.round(100*r.val/r.max);
+        fillColor = r.color;
       }
       const marginTop = i===3 ? 'margin-top:10px; padding-top:10px; border-top:1px solid var(--line);' : '';
+      const refMark = hasRef
+        ? '<div style="position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--text-faint); opacity:0.65;"></div>'
+        : '';
       html += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px; '+marginTop+'">'+
         '<div style="width:88px; color:var(--text-dim);">'+r.label+'</div>'+
-        '<div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:'+pct+'%; background:'+r.color+';"></div></div>'+
+        '<div class="bar-track" style="flex:1; position:relative;"><div class="bar-fill" style="width:'+pct+'%; background:'+fillColor+';"></div>'+refMark+'</div>'+
         '<div style="font-family:var(--font-data); font-size:12px; width:40px; text-align:right;">'+r.val+(r.unit?r.unit:'')+'</div>'+deltaLabel+'</div>';
     });
     html += '</div>';
     if(avg){
-      html += '<div style="font-size:10.5px; color:var(--text-faint); margin-top:2px;">Comparé à la moyenne des '+avg.weeksUsed+' dernière'+(avg.weeksUsed>1?'s':'')+' semaine'+(avg.weeksUsed>1?'s':'')+'.</div>';
+      html += '<div style="font-size:10.5px; color:var(--text-faint); margin-top:2px; line-height:1.5;">Repère central = moyenne des '+avg.weeksUsed+' dernière'+(avg.weeksUsed>1?'s':'')+' semaine'+(avg.weeksUsed>1?'s':'')+' terminée'+(avg.weeksUsed>1?'s':'')+'. Jauge pleine = 2× cette moyenne. Modifiable dans Réglages.</div>';
     } else {
       html += '<div style="font-size:10.5px; color:var(--text-faint); margin-top:2px;">Pas encore assez de semaines pour comparer — reviens après ta 1ère semaine complète.</div>';
     }
     wrap.innerHTML = html;
     renderTodaySuggestion();
-    renderReadinessWidget();
     renderDayPlanner();
     renderPlanifDetail();
     renderWeekRecap();
     renderRampUpDashBadge();
+    renderDeloadBadge();
+    renderPeriodisation();
   }
 
   // Semaine du programme — calculée depuis la vraie date, incrémente automatiquement tous les 7
   // jours depuis le 1er septembre 2026. Si la semaine calculée diffère de la dernière connue
   // (stockée), on réinitialise automatiquement la progression hebdo (comme resetWeekProgress()).
   const PROGRAM_START = new Date('2026-09-01T00:00:00');
-  const MS_PER_DAY = 24*60*60*1000;
   function computeWeekInfo(now){
     now = now || new Date();
     const diffDays = Math.floor((now - PROGRAM_START) / MS_PER_DAY);
@@ -4061,11 +4598,19 @@
     if(info.weekNum !== lastKnownWeek){
       // Moyenne des 4 semaines qui PRÉCÈDENT celle qui vient de finir — calculée avant de pousser
       // cette semaine dans l'historique, pour comparer "cette semaine" à l'habitude d'avant.
-      const avgBefore = compute4WeekAverage();
+      const avgBefore = computeReferenceAverage();
       // Capture les totaux de la semaine qui se termine AVANT de tout remettre à zéro — c'est ce
       // qui alimente le graphique d'évolution hebdomadaire par catégorie.
       const finishedWeekTotals = computeCurrentWeekTotals(lastKnownWeek);
+      if(isDeloadWeek(lastKnownWeek)) finishedWeekTotals.deload = true;
       weeklyTotalsHistory.push(finishedWeekTotals);
+      // Une décharge dure UNE semaine : on restaure les cibles pleines au passage à la suivante,
+      // sans effacer la trace dans deloadHistory (c'est elle qui date la dernière décharge).
+      if(deloadFullTargets){
+        const keep = deloadHistory.slice();
+        endDeloadWeek();
+        deloadHistory = keep;
+      }
       pendingWeekRecap = { weekNum: lastKnownWeek, totals: finishedWeekTotals, avgBefore };
       // Snapshot des 16 muscles avant reset — alimente le graphe long terme par muscle.
       const muscleSnapshot = { weekNum: lastKnownWeek, muscles:{} };
@@ -4075,12 +4620,12 @@
       Object.keys(musclesData).forEach(g=>{
         Object.keys(musclesData[g]).forEach(m=>{
           musclesData[g][m].done = 0;
-          musclesData[g][m].lastTrained = 99;
-          musclesData[g][m].lastSetsCount = 0;
+          // On ne remet PLUS lastTrained/lastSetsCount à zéro ici : la fraîcheur musculaire ne se
+          // réinitialise pas parce qu'on change de lundi. Seul le compteur de volume hebdo repart.
         });
       });
       Object.keys(musclesData).forEach(g=>{ Object.keys(musclesData[g]).forEach(m=>{ musclesFlat[m] = {...musclesData[g][m], group:g}; }); });
-      weeklyProgress.cardioLeger = 0; weeklyProgress.cardioHiit = 0; weeklyProgress.etirement = 0;
+      weeklyProgress.cardioLeger = 0; weeklyProgress.cardioHiit = 0; weeklyProgress.cardioZ3 = 0; weeklyProgress.etirement = 0;
       const rampJustFinished = advanceRampUpOnRollover(info.weekNum);
       if(rampJustFinished) pendingWeekRecap.rampFinished = true;
       lastKnownWeek = info.weekNum;
@@ -4177,25 +4722,9 @@
     return total;
   }
   function adjustVol(key, delta){
-    if(rampUpActive && rampUpFullTargets && (key==='cardioLeger' || key==='cardioHiit' || key==='etirements')){
-      // Le ramp est actif : on ajuste la VRAIE cible (celle vers laquelle il progresse), pas
-      // juste la valeur affichée cette semaine — sinon un réglage manuel se ferait écraser dès le
-      // prochain palier hebdo, et le ramp ne saurait jamais qu'on a changé d'avis sur la cible.
-      if(key === 'etirements'){
-        rampUpFullTargets.etirements = Math.max(0, rampUpFullTargets.etirements + delta);
-      } else {
-        const totalFull = rampUpFullTargets.cardioLeger + rampUpFullTargets.cardioHiit;
-        const newTotalFull = Math.max(0, totalFull + delta);
-        const currentZ2Share = totalFull>0 ? rampUpFullTargets.cardioLeger/totalFull : 0.8;
-        rampUpFullTargets.cardioLeger = Math.round(newTotalFull * currentZ2Share);
-        rampUpFullTargets.cardioHiit = newTotalFull - rampUpFullTargets.cardioLeger;
-      }
-      const weeksSinceStart = lastKnownWeek - rampUpStartWeek;
-      const stepIdx = Math.max(0, Math.min(weeksSinceStart, RAMP_STEPS.length-1));
-      applyRampUpStep(stepIdx); // réapplique le palier ACTUEL du ramp à cette nouvelle cible pleine
-    } else {
-      volState[key] = Math.max(0, volState[key]+delta);
-    }
+    // Le ramp ne concerne plus que le renfo : cardio et étirements sont de simples réglages
+    // directs, jamais réécrits par un palier.
+    volState[key] = Math.max(0, volState[key]+delta);
     document.getElementById('vol-'+key).textContent = volState[key];
     renderRemainingTime(); // couvre à la fois le dashboard (temps restant + jauge) et Réglages (temps total)
     if(typeof saveState==='function') saveState();
@@ -4463,8 +4992,15 @@
     const cardioRows = [
       { label:'Cardio Z2', done:weeklyProgress.cardioLeger, target:volState.cardioLeger, action:"openCardioDetail('faible')" },
       { label:'Cardio intense', done:weeklyProgress.cardioHiit, target:volState.cardioHiit, action:"openCardioDetail('intense')" },
-      { label:'Étirements', done:weeklyProgress.etirement, target:volState.etirements, action:'openEtirementsDetail()' }
+      { label:'Étirements', done:Math.round(weeklyProgress.etirement), target:volState.etirements, action:'openEtirementsDetail()' }
     ];
+    // Z3 n'est pas un objectif à remplir, c'est un plafond. Ces minutes sont déjà comptées dans le
+    // volume Z2 ci-dessus (c'est du volume aérobie), mais affichées à part : la dérive vers la
+    // zone grise est l'erreur classique en préparation polarisée — assez dur pour coûter en
+    // fraîcheur, pas assez pour développer. Repère usuel : moins de 10% du volume cardio.
+    const z3Min = Math.round(weeklyProgress.cardioZ3 || 0);
+    const cardioTotalMin = Math.round(weeklyProgress.cardioLeger + weeklyProgress.cardioHiit);
+    const z3Pct = cardioTotalMin > 0 ? Math.round(100*z3Min/cardioTotalMin) : 0;
     cardioRows.forEach((r,i)=>{
       const pct = Math.round(100*r.done/r.target);
       const isLast = i===cardioRows.length-1;
@@ -4474,6 +5010,13 @@
         '<div style="font-family:var(--font-data); font-size:13px; color:var(--text-dim);">'+r.done+'/'+r.target+'min</div></div>';
     });
     html += '</div>';
+    if(z3Min > 0){
+      const z3Color = z3Pct > 15 ? 'var(--coral)' : (z3Pct > 10 ? 'var(--amber)' : 'var(--text-faint)');
+      html += '<div style="font-size:11.5px; color:'+z3Color+'; margin-top:8px; line-height:1.5;">'+
+        '🔶 Zone grise — '+z3Min+'min en Z3 cette semaine ('+z3Pct+'% du volume cardio). '+
+        (z3Pct > 10 ? 'Au-delà de ~10%, c\'est du temps qui coûte en fraîcheur sans vraiment développer : soit plus facile, soit plus dur.' : 'Dans les clous.')+
+        '</div>';
+    }
     wrap.innerHTML = html;
   }
 
@@ -4522,27 +5065,39 @@
     // la semaine en cours — indispensable même si la date ne change pas, car intensité/durée
     // peuvent changer et le total hebdo est un compteur, pas une valeur recalculée à la volée.
     const wasInWeek = isDateInCurrentWeek(e.date);
-    if(wasInWeek){
-      if(e.intensity==='intense') weeklyProgress.cardioHiit -= e.minutes;
-      else weeklyProgress.cardioLeger -= e.minutes;
-    }
+    if(wasInWeek) applyEntryToWeekly(e, -1);
     const minEl = document.getElementById('edit-minutes-'+idx);
     const distEl = document.getElementById('edit-distance-'+idx);
     const eleEl = document.getElementById('edit-elevation-'+idx);
     const mins = minEl ? parseInt(minEl.value, 10) : NaN;
     const d = distEl ? parseFloat(distEl.value) : NaN;
     const el = eleEl ? parseInt(eleEl.value, 10) : NaN;
-    if(!isNaN(mins) && mins > 0) e.minutes = mins;
+    if(!isNaN(mins) && mins > 0){
+      // Entrée mixte : la durée saisie est le total, on redistribue au prorata des zones
+      // existantes pour ne pas perdre la répartition en changeant juste la durée.
+      if(e.zones){
+        const oldTotal = (e.zones.z2||0)+(e.zones.z3||0)+(e.zones.z4||0);
+        if(oldTotal > 0 && mins !== oldTotal){
+          const k = mins/oldTotal;
+          e.zones = { z2: Math.round((e.zones.z2||0)*k), z3: Math.round((e.zones.z3||0)*k), z4: Math.round((e.zones.z4||0)*k) };
+        }
+      }
+      e.minutes = mins;
+    }
     if(!isNaN(d) && d > 0) e.distanceKm = Math.round(d*10)/10; else delete e.distanceKm;
     if(!isNaN(el) && el > 0) e.elevationM = el; else delete e.elevationM;
-    if(cardioEditDraft){ e.sport = cardioEditDraft.sport; e.intensity = cardioEditDraft.intensity; }
-    // Rajoute la contribution NOUVELLE (après édition) si toujours dans la semaine en cours.
-    if(isDateInCurrentWeek(e.date)){
-      if(e.intensity==='intense') weeklyProgress.cardioHiit += e.minutes;
-      else weeklyProgress.cardioLeger += e.minutes;
+    if(cardioEditDraft){
+      e.sport = cardioEditDraft.sport;
+      if(cardioEditDraft.intensity !== e.intensity){
+        e.intensity = cardioEditDraft.intensity;
+        // Bascule Z2 <-> Intense sur une entrée mixte : la répartition par zone n'a plus de sens,
+        // on la supprime plutôt que de la laisser contredire l'intensité affichée.
+        if(e.intensity !== 'mixte') delete e.zones;
+        else if(!e.zones) e.zones = { z2: e.minutes, z3:0, z4:0 };
+      }
     }
-    weeklyProgress.cardioLeger = Math.max(0, weeklyProgress.cardioLeger);
-    weeklyProgress.cardioHiit = Math.max(0, weeklyProgress.cardioHiit);
+    // Rajoute la contribution NOUVELLE (après édition) si toujours dans la semaine en cours.
+    if(isDateInCurrentWeek(e.date)) applyEntryToWeekly(e, +1);
     editingCardioEntryIndex = null;
     cardioEditDraft = null;
     refreshAfterCardioLogChange();
@@ -4551,10 +5106,7 @@
     const e = cardioLog[idx];
     const sportLabel = (cardioProtocols[e.sport] && cardioProtocols[e.sport].label) || e.sport;
     if(!confirm('Supprimer cette séance : '+sportLabel+', '+e.minutes+'min, '+fmtDateFr(e.date)+' ?\n\nCette action est irréversible.')) return;
-    if(isDateInCurrentWeek(e.date)){
-      if(e.intensity==='intense') weeklyProgress.cardioHiit = Math.max(0, weeklyProgress.cardioHiit - e.minutes);
-      else weeklyProgress.cardioLeger = Math.max(0, weeklyProgress.cardioLeger - e.minutes);
-    }
+    if(isDateInCurrentWeek(e.date)) applyEntryToWeekly(e, -1);
     cardioLog.splice(idx, 1);
     editingCardioEntryIndex = null;
     cardioEditDraft = null;
@@ -4569,14 +5121,25 @@
     const info = computeWeekInfo();
     const weekEntries = cardioLog.filter(e=>{
       const d = new Date(e.date+'T12:00:00');
-      return d >= info.weekStart && d <= new Date(info.weekEnd.getTime()+MS_PER_DAY-1) && e.intensity===intensityType;
+      if(d < info.weekStart || d > new Date(info.weekEnd.getTime()+MS_PER_DAY-1)) return false;
+      // Une sortie mixte alimente les DEUX vues : on n'y compte que les minutes de la zone
+      // concernée, pas la sortie entière — sinon 90min de sortie mixte apparaîtraient comme
+      // 90min de Z2 ET 90min d'intense.
+      const c = entryWeeklyContribution(e);
+      return intensityType==='intense' ? c.hiit > 0 : c.leger > 0;
     });
     const bySport = {};
     weekEntries.forEach(e=>{
       if(!bySport[e.sport]) bySport[e.sport] = { minutes:0, distanceKm:0, elevationM:0 };
-      bySport[e.sport].minutes += e.minutes;
-      if(e.distanceKm) bySport[e.sport].distanceKm += e.distanceKm;
-      if(e.elevationM) bySport[e.sport].elevationM += e.elevationM;
+      const c = entryWeeklyContribution(e);
+      bySport[e.sport].minutes += (intensityType==='intense' ? c.hiit : c.leger);
+      // Distance/D+ : attribués une seule fois, à la vue qui porte le plus de minutes de la
+      // sortie, pour ne pas les compter deux fois entre Z2 et intense.
+      const dominant = c.hiit > c.leger ? 'intense' : 'faible';
+      if(dominant === intensityType){
+        if(e.distanceKm) bySport[e.sport].distanceKm += e.distanceKm;
+        if(e.elevationM) bySport[e.sport].elevationM += e.elevationM;
+      }
     });
     return bySport;
   }
@@ -4626,7 +5189,11 @@
     // Liste des séances individuelles (pas limitée à la semaine en cours, pour pouvoir compléter
     // distance/D+ sur d'anciennes séances) — édition en place, jamais de suppression/recréation.
     const matchingIndices = [];
-    cardioLog.forEach((e,i)=>{ if(e.intensity===intensityType) matchingIndices.push(i); });
+    cardioLog.forEach((e,i)=>{
+      const c = entryWeeklyContribution(e);
+      const belongs = intensityType==='intense' ? c.hiit > 0 : c.leger > 0;
+      if(belongs) matchingIndices.push(i);
+    });
     matchingIndices.sort((a,b)=> cardioLog[b].date.localeCompare(cardioLog[a].date));
     html += '<h2 class="section-title" style="margin-top:18px;">Séances individuelles</h2>';
     if(!matchingIndices.length){
@@ -4639,7 +5206,8 @@
         const isEditing = editingCardioEntryIndex === idx;
         html += '<div style="padding:10px 0;'+(pos<matchingIndices.length-1?' border-bottom:1px solid var(--line);':'')+'">'+
           '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">'+
-          '<div><div style="font-weight:600; font-size:13px;">'+sportLabel+' — '+e.minutes+'min</div>'+
+          '<div><div style="font-weight:600; font-size:13px;">'+sportLabel+' — '+e.minutes+'min'+(e.zones?' <span style="color:var(--lav); font-weight:500;">🔀 mixte</span>':'')+'</div>'+
+          (e.zones?'<div style="font-size:10.5px; color:var(--text-faint); font-family:var(--font-data);">'+(e.zones.z2||0)+"' Z2 · "+(e.zones.z3||0)+"' Z3 · "+(e.zones.z4||0)+"' Z4+</div>":'')+
           '<div style="font-size:11px; color:var(--text-faint);">'+fmtDateFr(e.date)+(e.distanceKm?' · '+e.distanceKm+'km':'')+(e.elevationM?' · '+e.elevationM+'m D+':'')+'</div></div>'+
           '<button class="sec-btn" style="padding:4px 10px; font-size:11px; flex-shrink:0;" onclick="startEditCardioEntry('+idx+')">'+(isEditing?'✕':'✏️')+'</button></div>';
         if(isEditing){
@@ -4653,6 +5221,7 @@
           html += '<div class="chip-row" style="margin-bottom:6px;">'+
             '<div class="chip'+(draft.intensity==='faible'?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditIntensity(\'faible\')">Z2</div>'+
             '<div class="chip'+(draft.intensity==='intense'?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditIntensity(\'intense\')">Intense</div>'+
+            '<div class="chip'+(draft.intensity==='mixte'?' sel':'')+'" style="font-size:11px; padding:5px 9px;" onclick="selectEditIntensity(\'mixte\')">🔀 Mixte</div>'+
             '</div>';
           html += '<div style="display:flex; gap:8px;">'+
             '<input type="number" id="edit-minutes-'+idx+'" placeholder="min" value="'+e.minutes+'" min="1" inputmode="numeric" style="flex:1; padding:7px 8px; background:var(--bg-card); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px;">'+
@@ -4695,7 +5264,7 @@
   function renderEtirementsDetail(){
     const pct = Math.round(100*weeklyProgress.etirement/volState.etirements);
     let html = '<div class="card" style="margin-bottom:16px;">'+
-      '<div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:4px;"><span style="font-weight:600;">Étirements</span><span style="color:var(--text-dim); font-family:var(--font-data);">'+weeklyProgress.etirement+'/'+volState.etirements+'min</span></div>'+
+      '<div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:4px;"><span style="font-weight:600;">Étirements</span><span style="color:var(--text-dim); font-family:var(--font-data);">'+Math.round(weeklyProgress.etirement)+'/'+volState.etirements+'min</span></div>'+
       '<div class="bar-track"><div class="bar-fill" style="width:'+Math.min(100,pct)+'%; background:'+pctColor(pct)+';"></div></div></div>';
     html += '<div class="card" style="margin-bottom:12px;">'+
       '<div style="font-size:12.5px; color:var(--text-dim); margin-bottom:8px;">Log rapide — pas besoin de composer une séance complète</div>'+
@@ -5037,6 +5606,11 @@
   renderSeancesList();
   renderBilan();
   renderRampUpSettings();
+  renderComparisonWeeksSettings();
+  renderPeriodisation();
+  renderPeriodisationSettings();
+  renderDeloadSettings();
+  renderDeloadBadge();
   renderFCZones();
   renderHistorique();
   renderHistoRenfoVignettes(); renderHistoRenfoChart(); renderHistoSportSummary(); renderHistoCardioVignettes(); renderHistoCardioChart(); renderCardioQuickFill();
@@ -5077,6 +5651,25 @@
     document.getElementById('stretch-sub-desc').textContent = v==='etirement'
       ? "Postures ciblées et efficaces, sans forme fixe imposée — va droit aux zones tendues."
       : "Séquence enchaînée façon cours de yoga, terminée par Savasana si ≥15 min.";
+    refreshPreview();
+  }
+  // Intensité — multiplie la durée de tenue de chaque posture. Bornes issues de la littérature :
+  // ~15s = étirement "maintenance" (ACSM), ~30-75s (valeurs actuelles du pool) = fourchette
+  // "développementale" la plus documentée pour les gains d'amplitude, ~90-150s = travail plus
+  // profond du tissu conjonctif/fascia (Wilke et al., recommandé pour du 90s+).
+  let stretchIntensity = 'normal';
+  const STRETCH_INTENSITY_MULT = { dynamique: 0.5, normal: 1, profond: 2 };
+  function selectStretchIntensity(el){
+    stretchIntensity = el.dataset.intensity;
+    document.querySelectorAll('#stretch-intensity-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
+    refreshPreview();
+  }
+  let savasanaMinutes = 3;
+  function selectSavasanaDuration(el){
+    savasanaMinutes = parseInt(el.dataset.savmin, 10);
+    document.querySelectorAll('#savasana-duration-chips .chip').forEach(c=>c.classList.remove('sel'));
+    el.classList.add('sel');
     refreshPreview();
   }
   function addExtraSet(){
@@ -5147,11 +5740,34 @@
   }
 
   function creditMuscles(muscles){
+    const today = todayISO();
     Object.entries(muscles).forEach(([muscleName, weight])=>{
       const d = musclesFlat[muscleName];
       if(!d) return;
       d.done = Math.round((d.done + weight) * 100) / 100;
-      musclesData[d.group][muscleName].done = d.done;
+      // Fraîcheur musculaire — était cassé : lastTrained/lastSetsCount n'étaient JAMAIS écrits
+      // quand un muscle était réellement travaillé (seulement remis à 99 au changement de semaine),
+      // donc toute la règle de récupération d'isMuscleEligible ne s'appliquait à personne. On
+      // horodate maintenant la dernière sollicitation et on compte les séries de CETTE séance.
+      if(d.lastTrainedDate !== today){ d.lastTrainedDate = today; d.lastSetsCount = 0; }
+      if(weight >= 1) d.lastSetsCount = (d.lastSetsCount||0) + 1;
+      d.lastTrained = 0;
+      Object.assign(musclesData[d.group][muscleName], {
+        done: d.done, lastTrained: 0, lastTrainedDate: today, lastSetsCount: d.lastSetsCount
+      });
+    });
+  }
+  // Recalcule « il y a combien de jours » depuis la date horodatée — à appeler au chargement et à
+  // chaque changement de jour, sinon un lastTrained figé à 0 rendrait un muscle éternellement
+  // inéligible.
+  function refreshMuscleRecency(){
+    const today = new Date(todayISO()+'T12:00:00');
+    Object.keys(musclesFlat).forEach(m=>{
+      const d = musclesFlat[m];
+      if(!d.lastTrainedDate) return;
+      const days = Math.max(0, Math.floor((today - new Date(d.lastTrainedDate+'T12:00:00'))/MS_PER_DAY));
+      d.lastTrained = days;
+      musclesData[d.group][m].lastTrained = days;
     });
   }
 
@@ -5387,7 +6003,17 @@
     // Étirements : compteur dédié au temps de tenue réellement complété (pas sauté), fonctionne
     // aussi bien pour une séance étirement pure que pour les étirements de clôture après un renfo
     // (où le premier item de la queue n'est pas 'hold', donc firstType ne suffit pas).
-    if(session.stretchSecondsDone > 0) weeklyProgress.etirement += session.stretchSecondsDone/60;
+    // Séance d'étirement PURE (que des tenues) : on crédite le temps réellement passé dans la
+    // séance, transitions entre postures comprises. stretchSecondsDone ne compte que les tenues
+    // elles-mêmes, ce qui sous-comptait systématiquement une séance complète (30min demandées,
+    // ~26min crédités). Pour les étirements de CLÔTURE après un renfo, on garde stretchSecondsDone :
+    // session.elapsed couvre là toute la séance de renfo, il ne représente pas les étirements.
+    const isPureStretch = session.queue.length > 0 && session.queue.every(ex => ex.type==='hold' || ex.type==='warmup');
+    if(isPureStretch && session.elapsed > 0){
+      weeklyProgress.etirement += session.elapsed/60;
+    } else if(session.stretchSecondsDone > 0){
+      weeklyProgress.etirement += session.stretchSecondsDone/60;
+    }
     renderGroupOverview();
     renderDashMuscleChart();
     renderRemainingTime();
@@ -5455,9 +6081,17 @@
       el.classList.toggle('on', !!equipState[keys[0]]);
     });
   }
+  // Tout premier lancement (ou après un reset) : lastKnownWeek vaut encore 1 par défaut. Si le
+  // programme a déjà démarré depuis plusieurs semaines, checkWeekRollover() déclencherait alors un
+  // faux rollover — il pousserait une « Semaine 1 » vide dans l'historique et afficherait le récap
+  // « Semaine 1 terminée — 0 séries » alors qu'aucune semaine n'a été vécue dans l'app. On cale
+  // donc lastKnownWeek sur la semaine réelle avant de vérifier quoi que ce soit.
+  migrateRetiredSports();
+  refreshMuscleRecency();
+  migrateRampCardioTargets();
+  if(!dataWasLoaded) lastKnownWeek = computeWeekInfo().weekNum;
   // Dans tous les cas (données rechargées ou tout premier lancement), on vérifie la semaine
-  // et on l'affiche APRÈS le chargement — sinon lastKnownWeek vaudrait encore sa valeur par
-  // défaut (1) et un reset hebdo pourrait se déclencher à tort au premier chargement.
+  // et on l'affiche APRÈS le chargement.
   checkWeekRollover();
   renderWeekHeader();
   renderRemainingTime();
@@ -5465,6 +6099,11 @@
   renderDashMuscleChart();
   renderSeancesList();
   renderRampUpSettings();
+  renderComparisonWeeksSettings();
+  renderPeriodisation();
+  renderPeriodisationSettings();
+  renderDeloadSettings();
+  renderDeloadBadge();
   renderFCZones();
   updateSavedCount();
   /* ================= FIN PERSISTANCE ================= */
